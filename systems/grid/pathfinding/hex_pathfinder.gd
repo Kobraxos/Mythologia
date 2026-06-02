@@ -1,11 +1,13 @@
 class_name HexPathfinder
 extends RefCounted
 
+# PRIVATE VARIABLES
 var _astar: AStar3D = AStar3D.new()
-var _hex_to_id: Dictionary = {}
-var _id_to_hex: Dictionary = {}
+var _hex_to_id: Dictionary[Vector3i, int] = {}
+var _id_to_hex: Dictionary[int, Vector3i] = {}
 var _next_id: int = 0
 
+# PUBLIC FUNCTIONS
 ## Ajoute une case franchissable au graphe de navigation.
 func add_hex(hex: Vector3i) -> void:
 	if _hex_to_id.has(hex):
@@ -47,10 +49,13 @@ func get_reachable_hexes(start: Vector3i, max_movement: int) -> Array[Vector3i]:
 
 	var reachable: Array[Vector3i] = []
 	var frontier: Array[Vector3i] = [start]
-	var cost_so_far: Dictionary = {start: 0}
+	var cost_so_far: Dictionary[Vector3i, int] = {start: 0}
+	var frontier_index: int = 0
 
-	while not frontier.is_empty():
-		var current: Vector3i = frontier.pop_front()
+	# Simulation d'une Queue O(1) via pointeur de lecture au lieu de pop_front()
+	while frontier_index < frontier.size():
+		var current: Vector3i = frontier[frontier_index]
+		frontier_index += 1
 		reachable.append(current)
 
 		var neighbors: Array[Vector3i] = HexMath.get_all_neighbors(current)

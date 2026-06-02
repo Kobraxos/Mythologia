@@ -1,15 +1,23 @@
 class_name HighlightManager
 extends Node3D
 
+# EXPORTS
 @export var highlight_prefab: PackedScene
 @export var grid_generator: GridGenerator
 
+# PRIVATE VARIABLES
 var _pool: Array[Node3D] = []
 
+# GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
+	# Lazy loading de sécurité pour rattraper un oubli dans l'inspecteur
+	if not grid_generator:
+		grid_generator = get_parent() as GridGenerator
+		
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
 
+# SIGNAL HANDLERS
 func _on_unit_selected(_unit: Unit, reachable_hexes: Array[Vector3i]) -> void:
 	_on_unit_deselected() # Réinitialise l'affichage précédent
 	

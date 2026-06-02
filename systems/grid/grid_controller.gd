@@ -2,8 +2,8 @@ class_name GridController
 extends Node
 
 # CONSTANTS
-## Masque de collision : Layer 1 (Terrain: 1) + Layer 2 (Unités: 2) = 3
-const TERRAIN_MASK: int = 3
+## Masque de collision AAA : Uniquement le Terrain (Layer 1). Les unités sont ignorées par le raycast.
+const TERRAIN_MASK: int = 1
 const RAY_LENGTH: float = 1000.0
 
 # EXPORTS
