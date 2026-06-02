@@ -1,0 +1,24 @@
+[gd_resource type="Theme" format=3 uid="uid://bvqqs8v7umed0"]
+
+[ext_resource type="FontFile" uid="uid://dwbrayj0cdacv" path="res://assets/fonts/Lato-Regular.ttf" id="1_vatbm"]
+[ext_resource type="FontFile" uid="uid://lyogjm3mfyii" path="res://assets/fonts/Lato-Bold.ttf" id="2_lato_bold"]
+[ext_resource type="FontFile" uid="uid://b26np3pynxwkp" path="res://assets/fonts/Lato-Italic.ttf" id="3_lato_italic"]
+[ext_resource type="FontFile" uid="uid://bn5wqno1yoje8" path="res://assets/fonts/Cinzel-Regular.ttf" id="4_cinzel_reg"]
+[ext_resource type="FontFile" uid="uid://bwiojiiwl7eif" path="res://assets/fonts/Cinzel-Bold.ttf" id="5_cinzel_bold"]
+
+[resource]
+default_font = ExtResource("1_vatbm")
+default_font_size = 18
+BoldLabel/base_type = &"Label"
+BoldLabel/fonts/font = ExtResource("2_lato_bold")
+HeaderLabel/base_type = &"Label"
+HeaderLabel/font_sizes/font_size = 32
+HeaderLabel/fonts/font = ExtResource("4_cinzel_reg")
+ItalicLabel/base_type = &"Label"
+ItalicLabel/fonts/font = ExtResource("3_lato_italic")
+RichTextLabel/fonts/bold_font = ExtResource("2_lato_bold")
+RichTextLabel/fonts/italics_font = ExtResource("3_lato_italic")
+RichTextLabel/fonts/normal_font = ExtResource("1_vatbm")
+TitleLabel/base_type = &"Label"
+TitleLabel/font_sizes/font_size = 64
+TitleLabel/fonts/font = ExtResource("5_cinzel_bold")

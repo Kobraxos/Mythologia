@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://d23l1ko7bwimo"]
+
+[ext_resource type="Script" uid="uid://ik35efi7bweh" path="res://Scripts/Entities/SkillData.gd" id="1_rqive"]
+
+[resource]
+script = ExtResource("1_rqive")
+skill_name = "Boule de feu"
+max_range = 3
+area_of_effect = 1
+area_radius = 1
+physical_scaling = 1.0
+magical_scaling = 1.0
+metadata/_custom_type_script = "uid://ik35efi7bweh"

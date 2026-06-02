@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Fichiers de build et d'export (si vous créez un dossier 'build' pour vos exécutables)
+build/
+export_presets.cfg
+
+# Fichiers système invisibles (notamment sur Mac)
+.DS_Store

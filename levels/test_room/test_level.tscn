@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://cl846wy55qmn4"]
+
+[ext_resource type="Script" uid="uid://c1net0xfwu22l" path="res://systems/grid/grid_generator/grid_generator.gd" id="1_hw46n"]
+[ext_resource type="PackedScene" uid="uid://dj48qksmd0q8x" path="res://systems/camera/tactical_camera.tscn" id="2_camera"]
+[ext_resource type="PackedScene" uid="uid://d3j1abc123def" path="res://entities/unit/unit.tscn" id="3_unit"]
+[ext_resource type="Script" uid="uid://car7yf0c3gkxo" path="res://systems/grid/grid_controller.gd" id="4_controller"]
+[ext_resource type="Script" uid="uid://c2cgnt703ea2e" path="res://systems/grid/highlight_manager.gd" id="5_highlight"]
+[ext_resource type="PackedScene" uid="uid://c8k1x2y304w5v" path="res://systems/grid/hex_highlight.tscn" id="6_highlight_prefab"]
+
+[node name="GridGenerator" type="Node3D" unique_id=1068552106]
+script = ExtResource("1_hw46n")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=131529003]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)
+shadow_enabled = true
+
+[node name="TacticalCamera" parent="." unique_id=977092963 instance=ExtResource("2_camera")]
+
+[node name="Unit" parent="." unique_id=1801819382 instance=ExtResource("3_unit")]
+
+[node name="GridController" type="Node" parent="." unique_id=1985471039]
+script = ExtResource("4_controller")
+
+[node name="HighlightManager" type="Node3D" parent="." unique_id=29162174]
+script = ExtResource("5_highlight")
+highlight_prefab = ExtResource("6_highlight_prefab")
+grid_generator = NodePath("..")

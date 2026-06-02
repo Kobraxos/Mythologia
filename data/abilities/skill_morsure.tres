@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://bjd368em7psoj"]
+
+[ext_resource type="Script" uid="uid://ik35efi7bweh" path="res://Scripts/Entities/SkillData.gd" id="1_gwcwa"]
+
+[resource]
+script = ExtResource("1_gwcwa")
+skill_name = "Morsure"
+skill_type = 0
+base_damage = 10
+metadata/_custom_type_script = "uid://ik35efi7bweh"

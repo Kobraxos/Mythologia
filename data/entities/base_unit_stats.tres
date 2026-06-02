@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="UnitStats" format=3 uid="uid://bimd4xsmjnvm"]
+
+[ext_resource type="Script" uid="uid://didfbrl3fg4h5" path="res://data/entities/unit_stats.gd" id="1_s3umu"]
+
+[resource]
+script = ExtResource("1_s3umu")

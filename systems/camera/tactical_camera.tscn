@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://dj48qksmd0q8x"]
+
+[ext_resource type="Script" uid="uid://dr83yuepyqu1n" path="res://systems/camera/tactical_camera.gd" id="1_script"]
+
+[node name="TacticalCamera" type="Node3D" unique_id=1801407243]
+script = ExtResource("1_script")
+
+[node name="Elevation" type="Node3D" parent="." unique_id=255801407]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Elevation" unique_id=1263893214]
+collision_mask = 0
+spring_length = 30.0
+margin = 0.5
+
+[node name="Camera3D" type="Camera3D" parent="Elevation/SpringArm3D" unique_id=989207051]
+current = true
+fov = 35.0
