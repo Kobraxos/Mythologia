@@ -8,7 +8,13 @@ enum UnitClass { WARRIOR, TANK, MAGE, RANGER, ASSASSIN, SUPPORT }
 
 @export_category("General")
 @export_group("Identity")
+@export var id: StringName = &""
 @export var unit_name: String = "Unknown Unit"
+@export_multiline var description: String = ""
+@export_multiline var lore: String = ""
+@export var icon: Texture2D
+@export var portrait: Texture2D
+@export var world_sprite: Texture2D
 
 @export_group("Classification")
 @export var mythology: Mythology = Mythology.NONE
