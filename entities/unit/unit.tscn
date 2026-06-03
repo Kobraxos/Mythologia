@@ -1,14 +1,14 @@
 [gd_scene format=3 uid="uid://d3j1abc123def"]
 
-[ext_resource type="Script" path="res://entities/unit/unit.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://icon.svg" id="2_icon"]
-[ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/entities/base_unit_stats.tres" id="3_stats"]
+[ext_resource type="Script" uid="uid://qjxu0h61yuce" path="res://entities/unit/unit.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dsqgvi8aue1da" path="res://icon.svg" id="2_icon"]
+[ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/units/heroes/base_unit_stats.tres" id="3_stats"]
 
-[node name="Unit" type="Node3D"]
+[node name="Unit" type="Node3D" unique_id=638072848]
 script = ExtResource("1_script")
 stats = ExtResource("3_stats")
 
-[node name="Sprite3D" type="Sprite3D" parent="."]
+[node name="Sprite3D" type="Sprite3D" parent="." unique_id=334227285]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 billboard = 1
 texture = ExtResource("2_icon")
