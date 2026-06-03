@@ -5,6 +5,7 @@ enum MovementType { WALKING, FLYING, HOVERING }
 enum Mythology { NONE, GREEK, NORSE, EGYPTIAN, JAPANESE, CELTIC }
 enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC }
 enum UnitClass { WARRIOR, TANK, MAGE, RANGER, ASSASSIN, SUPPORT }
+enum UnitType { HUMANOID, BEAST, UNDEAD, DEMON, CONSTRUCT, ELEMENTAL, DRAGON }
 
 @export_category("General")
 @export_group("Identity")
@@ -17,7 +18,9 @@ enum UnitClass { WARRIOR, TANK, MAGE, RANGER, ASSASSIN, SUPPORT }
 @export var world_sprite: Texture2D
 
 @export_group("Classification")
+@export var level: int = 1
 @export var mythology: Mythology = Mythology.NONE
+@export var unit_type: UnitType = UnitType.HUMANOID
 @export var rarity: Rarity = Rarity.COMMON
 @export var unit_class: UnitClass = UnitClass.WARRIOR
 
@@ -61,6 +64,16 @@ enum UnitClass { WARRIOR, TANK, MAGE, RANGER, ASSASSIN, SUPPORT }
 @export var mythic_penetration: float = 0.0
 @export var base_accuracy: float = 1.0
 @export var base_evasion: float = 0.0
+
+@export_group("Elemental Resistances")
+@export var res_fire: float = 0.0
+@export var res_water: float = 0.0
+@export var res_ice: float = 0.0
+@export var res_lightning: float = 0.0
+@export var res_earth: float = 0.0
+@export var res_poison: float = 0.0
+@export var res_light: float = 0.0
+@export var res_shadow: float = 0.0
 
 @export_group("Critical Hits")
 @export var base_crit_chance: float = 0.05
