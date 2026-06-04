@@ -118,6 +118,8 @@ enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CAST
 @export_group("Grid Manipulation")
 ## Ressource de terrain ou de surface (ex: TerrainData de Feu/Poison) à générer sur les cases touchées.
 @export var spawned_surface: Resource
+## Si Vrai, détruit le terrain ciblé (le remplace par du vide/gouffre). Déclenche les chutes si des unités s'y trouvent.
+@export var destroys_terrain: bool = false
 
 @export_group("Grid Physics & Displacement")
 ## Nombre d'hexagones dont la cible est repoussée (en s'éloignant du lanceur).

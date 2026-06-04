@@ -1,7 +1,7 @@
 class_name UnitStats
 extends Resource
 
-enum MovementType { WALKING, FLYING, HOVERING }
+enum MovementType { WALKING, FLYING, HOVERING, TELEPORTING }
 enum Mythology { NONE, GREEK, NORSE, EGYPTIAN, JAPANESE, CELTIC }
 enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC }
 enum UnitClass { WARRIOR, TANK, MAGE, RANGER, ASSASSIN, SUPPORT }

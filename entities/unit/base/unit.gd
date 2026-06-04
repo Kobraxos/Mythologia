@@ -2,9 +2,12 @@ class_name Unit
 extends Node3D
 
 # EXPORTS
-@export var hex_size: float = 1.0
 @export var move_duration: float = 0.3
 @export var stats: UnitStats
+## Référence au composant d'économie (Portefeuille de PA/PM).
+@export var action_economy: ActionEconomyComponent
+## Référence au composant de vie.
+@export var health_component: HealthComponent
 
 # PUBLIC VARIABLES
 var current_hex: Vector3i = Vector3i.ZERO
@@ -19,14 +22,28 @@ func _ready() -> void:
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
 	
-	if not stats:
-		push_error("Unit: Ressource 'stats' manquante.")
-		return
-		
 	# Enregistrement spatial initial au lancement
-	current_hex = HexMath.world_to_hex(position, hex_size)
-	position = HexMath.hex_to_world(current_hex, hex_size) # Snap visuel strict
+	current_hex = HexMath.world_to_hex(position, GridManager.hex_size, GridManager.elevation_step)
+	position = HexMath.hex_to_world(current_hex, GridManager.hex_size, GridManager.elevation_step) # Snap visuel strict
 	GridManager.unit_positions[current_hex] = self
+
+## Appelé par le BattleManager lors du Spawn pour injecter l'âme (les données) dans la coquille.
+func initialize(new_stats: UnitStats) -> void:
+	stats = new_stats
+	if action_economy:
+		action_economy.initialize(stats)
+	if health_component:
+		health_component.initialize(stats)
+
+## Appelé par le TurnManager. L'unité délègue la gestion temporelle à ses organes (SRP).
+func start_turn() -> void:
+	if action_economy:
+		action_economy.start_turn()
+
+## Appelé par le TurnManager à la fin du tour.
+func end_turn() -> void:
+	if action_economy:
+		action_economy.end_turn()
 
 # PRIVATE FUNCTIONS
 func _move_along_path(path: Array[Vector3i]) -> void:
@@ -43,7 +60,7 @@ func _move_along_path(path: Array[Vector3i]) -> void:
 	# L'index 0 est toujours la case de départ. On commence à l'index 1.
 	for i: int in range(1, path.size()):
 		var step_hex: Vector3i = path[i]
-		var target_pos: Vector3 = HexMath.hex_to_world(step_hex, hex_size)
+		var target_pos: Vector3 = HexMath.hex_to_world(step_hex, GridManager.hex_size, GridManager.elevation_step)
 		
 		# Vitesse constante (LINEAR) idéale pour enchaîner plusieurs cases
 		_move_tween.tween_property(self, "position", target_pos, move_duration).set_trans(Tween.TRANS_LINEAR)
@@ -65,6 +82,14 @@ func _on_hex_clicked(target_hex: Vector3i) -> void:
 	if not _is_selected or not GridManager.pathfinder:
 		return
 		
-	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(current_hex, target_hex)
-	if not path.is_empty():
-		_move_along_path(path)
+	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(current_hex, target_hex, stats)
+	if path.is_empty():
+		return
+
+	if action_economy:
+		var path_cost: int = GridManager.pathfinder.get_path_cost(path, stats)
+		if not action_economy.has_enough_mp(path_cost):
+			return # Mouvement annulé : Fonds insuffisants.
+		action_economy.consume_mp(path_cost)
+
+	_move_along_path(path)

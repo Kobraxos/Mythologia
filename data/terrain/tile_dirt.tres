@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://75xqi4b6msv0"]
+
+[ext_resource type="Script" uid="uid://b67fvhv5qv7qo" path="res://data/terrain/terrain_data.gd" id="1_yfgsx"]
+
+[resource]
+script = ExtResource("1_yfgsx")
+id = &"dirt"
+terrain_name = "Terre Battue"
+description = "Un sol standard."
+metadata/_custom_type_script = "uid://b67fvhv5qv7qo"

@@ -8,98 +8,106 @@ const SQRT_3_3: float = 0.5773502691896257  # sqrt(3.0) / 3.0
 const ONE_THIRD: float = 0.3333333333333333
 const TWO_THIRDS: float = 0.6666666666666666
 
-## Constantes pour les 6 directions adjacentes d'un hexagone en coordonnées cubiques (X, Y, Z).
-## Règle d'or absolue : La somme de X + Y + Z doit toujours être égale à 0.
-const DIRECTIONS: Array[Vector3i] = [
-	Vector3i(1, -1, 0),  # Est
-	Vector3i(1, 0, -1),  # Nord-Est
-	Vector3i(0, 1, -1),  # Nord-Ouest
-	Vector3i(-1, 1, 0),  # Ouest
-	Vector3i(-1, 0, 1),  # Sud-Ouest
-	Vector3i(0, -1, 1)   # Sud-Est
-]
+## STANDARD AAA 2.5D : 
+## Un Vector3i de grille = (Q, R, Élévation). 
+## Q et R sont les coordonnées axiales (plan 2D). Z est la hauteur tactique.
+## La coordonnée cubique S n'est pas stockée, elle est déduite (-Q - R).
 
-## Décalage infinitésimal (nudge) pour éviter les bugs de sélection si une ligne de vue passe exactement sur une bordure.
-const NUDGE: Vector3 = Vector3(1e-06, 1e-06, -2e-06)
+## Directions adjacentes sur un plan plat (Q, R).
+const DIRECTIONS: Array[Vector2i] = [
+	Vector2i(1, 0),   # Est
+	Vector2i(1, -1),  # Nord-Est
+	Vector2i(0, -1),  # Nord-Ouest
+	Vector2i(-1, 0),  # Ouest
+	Vector2i(-1, 1),  # Sud-Ouest
+	Vector2i(0, 1)    # Sud-Est
+]
 
 # PUBLIC FUNCTIONS
 
-## Calcule la distance (en nombre de cases) entre deux hexagones.
-## Idéal pour déterminer la portée d'une attaque ou la distance de déplacement.
-static func distance(a: Vector3i, b: Vector3i) -> int:
-	return (abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z)) / 2
+## Calcule la distance planaire (2D) entre deux hexagones, ignorant la hauteur (Z).
+static func distance_2d(a: Vector3i, b: Vector3i) -> int:
+	var q_diff: int = a.x - b.x
+	var r_diff: int = a.y - b.y
+	return (abs(q_diff) + abs(q_diff + r_diff) + abs(r_diff)) / 2
 
 ## Retourne les coordonnées de l'hexagone voisin dans une direction donnée (de 0 à 5).
 static func get_neighbor(hex: Vector3i, direction: int) -> Vector3i:
-	return hex + DIRECTIONS[direction % DIRECTIONS.size()]
+	var dir: Vector2i = DIRECTIONS[direction % DIRECTIONS.size()]
+	return Vector3i(hex.x + dir.x, hex.y + dir.y, hex.z)
 
-## Retourne les coordonnées des 6 voisins adjacents à la case ciblée.
+## Retourne les coordonnées des 6 voisins adjacents sur le même niveau de hauteur.
 static func get_all_neighbors(hex: Vector3i) -> Array[Vector3i]:
 	var neighbors: Array[Vector3i] = []
 	for dir in DIRECTIONS:
-		neighbors.append(hex + dir)
+		neighbors.append(Vector3i(hex.x + dir.x, hex.y + dir.y, hex.z))
 	return neighbors
 
-## Arrondit des coordonnées cubiques flottantes (Vector3) vers l'hexagone (Vector3i) le plus proche.
-## Crucial pour les lancers de rayons (Raycasting) et les lignes de vue.
-static func round_hex(frac: Vector3) -> Vector3i:
-	var rx: int = roundi(frac.x)
-	var ry: int = roundi(frac.y)
-	var rz: int = roundi(frac.z)
+## Arrondit des fractions axiales (Q, R) vers la coordonnée axiale la plus proche.
+static func round_hex(frac_q: float, frac_r: float) -> Vector2i:
+	var frac_s: float = -frac_q - frac_r
+	var q: int = roundi(frac_q)
+	var r: int = roundi(frac_r)
+	var s: int = roundi(frac_s)
 
-	var x_diff: float = abs(rx - frac.x)
-	var y_diff: float = abs(ry - frac.y)
-	var z_diff: float = abs(rz - frac.z)
+	var q_diff: float = abs(q - frac_q)
+	var r_diff: float = abs(r - frac_r)
+	var s_diff: float = abs(s - frac_s)
 
-	# On ajuste la composante qui a subi le plus grand changement lors de l'arrondi
-	# afin de respecter la règle X + Y + Z = 0
-	if x_diff > y_diff and x_diff > z_diff:
-		rx = -ry - rz
-	elif y_diff > z_diff:
-		ry = -rx - rz
-	else:
-		rz = -rx - ry
+	if q_diff > r_diff and q_diff > s_diff:
+		q = -r - s
+	elif r_diff > s_diff:
+		r = -q - s
+		
+	return Vector2i(q, r)
 
-	return Vector3i(rx, ry, rz)
-
-## Calcule tous les hexagones traversés par une ligne droite de A à B.
+## Calcule les hexagones traversés par une ligne 3D (Bresenham 3D Hexagonal).
 static func draw_line(a: Vector3i, b: Vector3i) -> Array[Vector3i]:
-	var dist: int = distance(a, b)
+	var dist_2d: int = distance_2d(a, b)
+	var z_diff: int = abs(a.z - b.z)
+	var steps: int = maxi(dist_2d, z_diff)
+	
 	var line: Array[Vector3i] = []
-	if dist == 0:
+	if steps == 0:
 		line.append(a)
 		return line
 
-	var a_nudge: Vector3 = Vector3(a) + NUDGE
-	var b_nudge: Vector3 = Vector3(b) + NUDGE
+	var a_q: float = float(a.x) + 1e-06
+	var a_r: float = float(a.y) + 1e-06
+	var a_z: float = float(a.z)
+	
+	var b_q: float = float(b.x) + 1e-06
+	var b_r: float = float(b.y) + 1e-06
+	var b_z: float = float(b.z)
 
-	for i in range(dist + 1):
-		var t: float = float(i) / dist
-		var lerped: Vector3 = a_nudge.lerp(b_nudge, t)
-		line.append(round_hex(lerped))
+	for i in range(steps + 1):
+		var t: float = float(i) / steps
+		var flat_hex: Vector2i = round_hex(lerpf(a_q, b_q, t), lerpf(a_r, b_r, t))
+		var lerped_z: int = roundi(lerpf(a_z, b_z, t))
+		line.append(Vector3i(flat_hex.x, flat_hex.y, lerped_z))
 
 	return line
 
-## Convertit des coordonnées cubiques en position 3D spatiale (Flat Y=0, plan XZ).
+## Convertit des coordonnées axiales + hauteur en position 3D spatiale (Plan XZ, Hauteur Y).
 ## Orientation mathématique : Pointy-Topped (Pointes en haut/bas).
-static func hex_to_world(hex: Vector3i, size: float) -> Vector3:
-	var x: float = (SQRT_3 * hex.x + (SQRT_3 * 0.5) * hex.z) * size
-	var z: float = (1.5 * hex.z) * size
-	return Vector3(x, 0.0, z)
+static func hex_to_world(hex: Vector3i, hex_size: float, elevation_step: float) -> Vector3:
+	var x: float = hex_size * SQRT_3 * (hex.x + 0.5 * hex.y)
+	var z: float = hex_size * 1.5 * hex.y
+	var y: float = hex.z * elevation_step
+	return Vector3(x, y, z)
 
 ## Retourne toutes les coordonnées cubiques contenues dans un rayon donné autour d'un centre.
 static func get_hexes_in_radius(center: Vector3i, radius: int) -> Array[Vector3i]:
 	var results: Array[Vector3i] = []
 	for x in range(-radius, radius + 1):
 		for y in range(maxi(-radius, -x - radius), mini(radius, -x + radius) + 1):
-			var z: int = -x - y
-			results.append(center + Vector3i(x, y, z))
+			results.append(Vector3i(center.x + x, center.y + y, center.z))
 	return results
 
-## Convertit une position 3D spatiale (Flat Y=0, plan XZ) en coordonnées cubiques abstraites.
-## Orientation mathématique : Pointy-Topped (Pointes en haut/bas).
-static func world_to_hex(world_pos: Vector3, size: float) -> Vector3i:
-	var q: float = (SQRT_3_3 * world_pos.x - ONE_THIRD * world_pos.z) / size
-	var r: float = (TWO_THIRDS * world_pos.z) / size
-	var s: float = -q - r
-	return round_hex(Vector3(q, s, r))
+## Convertit une position 3D physique (XYZ) en coordonnées de grille abstraite (Axe Q, Axe R, Élévation).
+static func world_to_hex(world_pos: Vector3, hex_size: float, elevation_step: float) -> Vector3i:
+	var q: float = (SQRT_3_3 * world_pos.x - ONE_THIRD * world_pos.z) / hex_size
+	var r: float = (TWO_THIRDS * world_pos.z) / hex_size
+	var hex_2d: Vector2i = round_hex(q, r)
+	var elevation: int = roundi(world_pos.y / elevation_step)
+	return Vector3i(hex_2d.x, hex_2d.y, elevation)

@@ -1,19 +1,18 @@
 class_name HighlightManager
 extends Node3D
 
+# CONSTANTS
+## Décalage vertical pour empêcher le Z-Fighting (clignotement) avec la tuile de sol.
+const Z_FIGHTING_OFFSET: float = 0.05
+
 # EXPORTS
 @export var highlight_prefab: PackedScene
-@export var grid_generator: GridGenerator
 
 # PRIVATE VARIABLES
 var _pool: Array[Node3D] = []
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
-	# Lazy loading de sécurité pour rattraper un oubli dans l'inspecteur
-	if not grid_generator:
-		grid_generator = get_parent() as GridGenerator
-		
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
 
@@ -21,7 +20,7 @@ func _ready() -> void:
 func _on_unit_selected(_unit: Unit, reachable_hexes: Array[Vector3i]) -> void:
 	_on_unit_deselected() # Réinitialise l'affichage précédent
 	
-	if not grid_generator or not highlight_prefab:
+	if not highlight_prefab:
 		push_error("HighlightManager: Dépendances manquantes.")
 		return
 
@@ -37,8 +36,8 @@ func _on_unit_selected(_unit: Unit, reachable_hexes: Array[Vector3i]) -> void:
 		var hex: Vector3i = reachable_hexes[i]
 		var mesh: Node3D = _pool[i]
 		
-		var world_pos: Vector3 = HexMath.hex_to_world(hex, grid_generator.hex_size)
-		world_pos.y += 0.05 # Surélévation pour éviter le Z-Fighting avec la tuile de base
+		var world_pos: Vector3 = HexMath.hex_to_world(hex, GridManager.hex_size, GridManager.elevation_step)
+		world_pos.y += Z_FIGHTING_OFFSET 
 		mesh.position = world_pos
 		mesh.visible = true
 
