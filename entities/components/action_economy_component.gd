@@ -7,30 +7,35 @@ signal mp_changed(current_mp: int, max_mp: int)
 signal turn_started()
 signal turn_ended()
 
+# EXPORTS
+## Référence au gestionnaire de statistiques pour obtenir les valeurs en temps réel.
+@export var stat_manager: StatManagerComponent
+
 # PRIVATE VARIABLES
-var _stats: UnitStats
 var _current_ap: int = 0
 var _current_mp: int = 0
 var _max_ap: int = 0
 var _max_mp: int = 0
 
 # PUBLIC FUNCTIONS
-func initialize(stats: UnitStats) -> void:
-	_stats = stats
-	_max_ap = _stats.action_points
-	_max_mp = _stats.movement_points
+func initialize() -> void:
+	if not stat_manager:
+		push_error("ActionEconomyComponent: 'stat_manager' manquant.")
+		return
+		
+	_max_ap = roundi(stat_manager.get_stat(StatManagerComponent.StatType.ACTION_POINTS))
+	_max_mp = roundi(stat_manager.get_stat(StatManagerComponent.StatType.MOVEMENT_POINTS))
 	_current_ap = _max_ap
 	_current_mp = _max_mp
 
 ## Appelé par le TurnManager au début du tour de cette unité.
 func start_turn() -> void:
-	if not _stats:
+	if not stat_manager:
 		return
 		
-	# Note AAA : Plus tard, ces valeurs max seront potentiellement demandées au StatManagerComponent
-	# pour inclure les buffs/debuffs (ex: statut "Hâte" ou "Vertige des hauteurs").
-	_max_ap = _stats.action_points
-	_max_mp = _stats.movement_points
+	# Interrogation dynamique des statistiques modifiées (Cast float -> int)
+	_max_ap = roundi(stat_manager.get_stat(StatManagerComponent.StatType.ACTION_POINTS))
+	_max_mp = roundi(stat_manager.get_stat(StatManagerComponent.StatType.MOVEMENT_POINTS))
 	
 	_current_ap = _max_ap
 	_current_mp = _max_mp

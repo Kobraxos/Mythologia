@@ -5,11 +5,14 @@
 [ext_resource type="Resource" uid="uid://75xqi4b6msv0" path="res://data/terrain/tile_dirt.tres" id="2_kt0r7"]
 [ext_resource type="PackedScene" uid="uid://d3j1abc123def" path="res://entities/unit/base/unit.tscn" id="3_unit"]
 [ext_resource type="Script" uid="uid://car7yf0c3gkxo" path="res://systems/grid/grid_controller.gd" id="4_controller"]
-[ext_resource type="Script" uid="uid://c2cgnt703ea2e" path="res://systems/grid/highlight_manager.gd" id="5_highlight"]
-[ext_resource type="PackedScene" uid="uid://c8k1x2y304w5v" path="res://systems/grid/hex_highlight.tscn" id="6_highlight_prefab"]
+[ext_resource type="Script" uid="uid://c2cgnt703ea2e" path="res://systems/grid/highlights/highlight_manager.gd" id="5_highlight"]
+[ext_resource type="PackedScene" uid="uid://bfohpuopwfs7j" path="res://systems/grid/highlights/highlight_move.tscn" id="6_hw3ya"]
+[ext_resource type="PackedScene" uid="uid://bvnnrvkf264q4" path="res://systems/grid/highlights/highlight_attack.tscn" id="7_dajra"]
 [ext_resource type="Script" uid="uid://8c6b1lvvng1k" path="res://systems/combat/battle_manager.gd" id="7_felx7"]
 [ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/units/heroes/base_unit_stats.tres" id="9_4py08"]
 [ext_resource type="Script" uid="uid://cwh1s6wn21flg" path="res://systems/turn_logic/turn_manager.gd" id="10_ly45u"]
+[ext_resource type="PackedScene" path="res://ui/combat_hud/combat_hud.tscn" id="11_cblbi"]
+[ext_resource type="Script" uid="uid://c02cnmijv1gxt" path="res://systems/combat/combat_manager.gd" id="11_yqcj1"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.05
@@ -30,7 +33,8 @@ script = ExtResource("4_controller")
 
 [node name="HighlightManager" type="Node3D" parent="." unique_id=29162174]
 script = ExtResource("5_highlight")
-highlight_prefab = ExtResource("6_highlight_prefab")
+move_highlight_prefab = ExtResource("6_hw3ya")
+attack_highlight_prefab = ExtResource("7_dajra")
 
 [node name="BattleManager" type="Node" parent="." unique_id=1224661345 node_paths=PackedStringArray("grid_generator", "turn_manager")]
 script = ExtResource("7_felx7")
@@ -42,3 +46,11 @@ enemy_stats = ExtResource("9_4py08")
 
 [node name="TurnManager" type="Node" parent="." unique_id=2009532339]
 script = ExtResource("10_ly45u")
+
+[node name="CombatManager" type="Node" parent="." unique_id=969117626]
+script = ExtResource("11_yqcj1")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1610242160]
+
+[node name="CombatHUD" parent="HUD" unique_id=1463811692 instance=ExtResource("11_cblbi")]
+theme = null

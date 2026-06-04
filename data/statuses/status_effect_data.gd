@@ -18,7 +18,7 @@ enum StatScaling { NONE, MULTIPLY_BY_ELEVATION, MULTIPLY_BY_MISSING_HP }
 @export_category("Mechanics")
 @export var type: EffectType = EffectType.BUFF
 ## Durée de l'effet en tours (0 = Infini/Jusqu'à annulation).
-@export var duration_turns: int = 1
+@export var duration_in_turns: int = 1
 @export var merge_strategy: MergeStrategy = MergeStrategy.REPLACE
 ## Si Vrai, peut être annulé par un sort de "Purification" ou de "Dissipation".
 @export var is_dispellable: bool = true
@@ -30,14 +30,8 @@ enum StatScaling { NONE, MULTIPLY_BY_ELEVATION, MULTIPLY_BY_MISSING_HP }
 @export var activation_condition: StatusTriggerData.TriggerCondition = StatusTriggerData.TriggerCondition.ALWAYS
 ## Règle de calcul dynamique : multiplie les valeurs ci-dessous selon un contexte (ex: par le niveau de hauteur Z).
 @export var stat_scaling: StatScaling = StatScaling.NONE
-@export var bonus_action_points: int = 0
-@export var bonus_movement_points: int = 0
-@export var bonus_physical_damage: int = 0
-@export var bonus_mythic_damage: int = 0
-@export var bonus_defense: int = 0
-@export var bonus_accuracy: float = 0.0
-@export var bonus_evasion: float = 0.0
-@export var bonus_vision_range: int = 0
+## Liste strictement typée des altérations de statistiques appliquées pendant la durée de l'effet.
+@export var modifiers: Array[StatusModifierData] = []
 
 @export_category("Hard Crowd Control")
 ## Empêche toute action (Passe le tour).

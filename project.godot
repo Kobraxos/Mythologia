@@ -18,7 +18,8 @@ config/icon="res://icon.svg"
 
 GridEvents="*uid://8m3hpexdam5f"
 GridManager="*uid://dvydv8ux37s2x"
-TurnEvents="*uid://bqoifcxylp2hm"
+TurnEvents="*res://core/autoloads/turn_events.gd"
+CombatEvents="*res://core/autoloads/combat_events.gd"
 
 [display]
 

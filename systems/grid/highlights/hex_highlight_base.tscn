@@ -1,11 +1,6 @@
 [gd_scene format=3 uid="uid://c8k1x2y304w5v"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blue"]
-transparency = 1
-albedo_color = Color(0.117647, 0.564706, 1, 0.4)
-
 [sub_resource type="CylinderMesh" id="CylinderMesh_hex"]
-material = SubResource("StandardMaterial3D_blue")
 top_radius = 0.95
 bottom_radius = 0.95
 height = 0.1

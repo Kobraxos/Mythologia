@@ -4,15 +4,40 @@
 [ext_resource type="Texture2D" uid="uid://dsqgvi8aue1da" path="res://icon.svg" id="2_icon"]
 [ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/units/heroes/base_unit_stats.tres" id="3_stats"]
 [ext_resource type="Script" uid="uid://c4e3lwbdyynxo" path="res://entities/components/action_economy_component.gd" id="4_o06vs"]
+[ext_resource type="Script" uid="uid://edhixlttj85b" path="res://entities/components/health_component.gd" id="5_health"]
+[ext_resource type="Script" uid="uid://crrh4b8n2otgj" path="res://entities/components/stat_manager_component.gd" id="6_stat"]
+[ext_resource type="Script" uid="uid://bwfx005dm8l14" path="res://entities/components/skill_caster_component.gd" id="7_0lf1k"]
+[ext_resource type="Script" uid="uid://cytg80umbubtt" path="res://entities/components/status_receiver_component.gd" id="8_wjin4"]
 
-[node name="Unit" type="Node3D" unique_id=638072848]
+[node name="Unit" type="Node3D" unique_id=638072848 node_paths=PackedStringArray("stat_manager", "action_economy", "health_component", "skill_caster", "status_receiver")]
 script = ExtResource("1_script")
 stats = ExtResource("3_stats")
+stat_manager = NodePath("StatManagerComponent")
+action_economy = NodePath("ActionEconomyComponent")
+health_component = NodePath("HealthComponent")
+skill_caster = NodePath("SkillCasterComponent")
+status_receiver = NodePath("StatusReceiverComponent")
 
 [node name="Sprite3D" type="Sprite3D" parent="." unique_id=334227285]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 billboard = 1
 texture = ExtResource("2_icon")
 
-[node name="ActionEconomyComponent" type="Node" parent="." unique_id=1056535296]
+[node name="ActionEconomyComponent" type="Node" parent="." unique_id=1056535296 node_paths=PackedStringArray("stat_manager")]
 script = ExtResource("4_o06vs")
+stat_manager = NodePath("../StatManagerComponent")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=803920376]
+script = ExtResource("5_health")
+
+[node name="StatManagerComponent" type="Node" parent="." unique_id=1532187066]
+script = ExtResource("6_stat")
+
+[node name="SkillCasterComponent" type="Node" parent="." unique_id=2064438762 node_paths=PackedStringArray("action_economy")]
+script = ExtResource("7_0lf1k")
+action_economy = NodePath("../ActionEconomyComponent")
+
+[node name="StatusReceiverComponent" type="Node" parent="." unique_id=329390145 node_paths=PackedStringArray("stat_manager", "health_component")]
+script = ExtResource("8_wjin4")
+stat_manager = NodePath("../StatManagerComponent")
+health_component = NodePath("../HealthComponent")

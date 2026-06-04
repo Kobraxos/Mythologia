@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://d3x7y81aw1v2u"]
+
+[ext_resource type="Script" path="res://ui/combat_hud/skill_button.gd" id="1_skill"]
+
+[node name="SkillButton" type="Button"]
+custom_minimum_size = Vector2(120, 40)
+offset_right = 120.0
+offset_bottom = 40.0
+script = ExtResource("1_skill")

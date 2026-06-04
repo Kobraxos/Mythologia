@@ -4,4 +4,5 @@
 
 [resource]
 script = ExtResource("1_t58gu")
+mythology = 1
 max_elevation_jump = 2

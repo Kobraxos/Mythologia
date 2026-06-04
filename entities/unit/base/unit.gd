@@ -4,10 +4,16 @@ extends Node3D
 # EXPORTS
 @export var move_duration: float = 0.3
 @export var stats: UnitStats
+## Référence au gestionnaire central des statistiques.
+@export var stat_manager: StatManagerComponent
 ## Référence au composant d'économie (Portefeuille de PA/PM).
 @export var action_economy: ActionEconomyComponent
 ## Référence au composant de vie.
 @export var health_component: HealthComponent
+## Référence au composant de lancement de compétences.
+@export var skill_caster: SkillCasterComponent
+## Référence au gestionnaire des statuts.
+@export var status_receiver: StatusReceiverComponent
 
 # PUBLIC VARIABLES
 var current_hex: Vector3i = Vector3i.ZERO
@@ -30,13 +36,21 @@ func _ready() -> void:
 ## Appelé par le BattleManager lors du Spawn pour injecter l'âme (les données) dans la coquille.
 func initialize(new_stats: UnitStats) -> void:
 	stats = new_stats
+	if stat_manager:
+		stat_manager.initialize(stats)
 	if action_economy:
-		action_economy.initialize(stats)
+		action_economy.initialize()
 	if health_component:
 		health_component.initialize(stats)
 
 ## Appelé par le TurnManager. L'unité délègue la gestion temporelle à ses organes (SRP).
 func start_turn() -> void:
+	if skill_caster:
+		skill_caster.tick_cooldowns()
+	
+	if status_receiver:
+		status_receiver.apply_start_turn_effects()
+		
 	if action_economy:
 		action_economy.start_turn()
 
@@ -44,6 +58,9 @@ func start_turn() -> void:
 func end_turn() -> void:
 	if action_economy:
 		action_economy.end_turn()
+		
+	if status_receiver:
+		status_receiver.tick_durations()
 
 # PRIVATE FUNCTIONS
 func _move_along_path(path: Array[Vector3i]) -> void:
