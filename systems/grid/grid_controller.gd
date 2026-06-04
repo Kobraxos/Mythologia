@@ -9,7 +9,7 @@ const RAY_LENGTH: float = 1000.0
 const INVALID_HEX: Vector3i = Vector3i(0, 0, -999)
 
 # ENUMS
-enum State { DEFAULT, TARGETING }
+enum State { DEFAULT, SKILL_TARGETING, MOVE_TARGETING }
 
 # EXPORTS
 @export var camera: Camera3D
@@ -24,18 +24,21 @@ var _reachable_hexes: Array[Vector3i] = []
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
 	CombatEvents.skill_button_clicked.connect(_on_skill_button_clicked)
+	CombatEvents.move_button_clicked.connect(_on_move_button_clicked)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		if _state == State.TARGETING:
+		if _state == State.SKILL_TARGETING:
 			_process_hover()
 	elif event.is_action_pressed("interact_select"):
-		if _state == State.TARGETING:
+		if _state == State.SKILL_TARGETING:
 			_confirm_targeting()
+		elif _state == State.MOVE_TARGETING:
+			_confirm_movement()
 		else:
 			_perform_raycast()
 	elif event.is_action_pressed("interact_cancel"):
-		if _state == State.TARGETING:
+		if _state != State.DEFAULT:
 			cancel_targeting()
 		else:
 			_clear_selection()
@@ -43,12 +46,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		TurnEvents.turn_end_requested.emit()
 
 # PUBLIC FUNCTIONS
-## Annule la préparation du sort et nettoie l'écran.
+## Annule la préparation (Sort ou Mouvement) et nettoie l'écran.
 func cancel_targeting() -> void:
-	_targeted_skill = null
+	if _state == State.SKILL_TARGETING:
+		_targeted_skill = null
+		GridEvents.aoe_cleared.emit()
+	elif _state == State.MOVE_TARGETING:
+		_reachable_hexes.clear()
+		GridEvents.movement_cleared.emit()
+		
 	_state = State.DEFAULT
 	_hovered_hex = INVALID_HEX
-	GridEvents.aoe_cleared.emit()
 
 # PRIVATE FUNCTIONS
 func _get_hex_under_mouse() -> Vector3i:
@@ -105,6 +113,15 @@ func _confirm_targeting() -> void:
 		if success:
 			cancel_targeting()
 
+func _confirm_movement() -> void:
+	var hex_coord: Vector3i = _get_hex_under_mouse()
+	if hex_coord == INVALID_HEX:
+		return
+		
+	if is_instance_valid(_selected_unit) and _reachable_hexes.has(hex_coord):
+		GridEvents.hex_clicked.emit(hex_coord)
+		cancel_targeting()
+
 func _perform_raycast() -> void:
 	var hex_coord: Vector3i = _get_hex_under_mouse()
 	if hex_coord == INVALID_HEX:
@@ -119,16 +136,8 @@ func _perform_raycast() -> void:
 		
 		_selected_unit = unit
 		
-		var available_mp: int = unit.stats.movement_points
-		if unit.action_economy:
-			available_mp = unit.action_economy.get_current_mp()
-			
-		_reachable_hexes = GridManager.pathfinder.get_reachable_hexes(hex_coord, unit.stats, available_mp)
-		GridEvents.unit_selected.emit(unit, _reachable_hexes)
+		GridEvents.unit_selected.emit(unit)
 	else:
-		if is_instance_valid(_selected_unit):
-			if _reachable_hexes.has(hex_coord):
-				GridEvents.hex_clicked.emit(hex_coord)
 		_clear_selection()
 
 func _clear_selection() -> void:
@@ -141,7 +150,26 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 	if not is_instance_valid(_selected_unit) or not _selected_unit.skill_caster:
 		return
 		
+	if _state != State.DEFAULT:
+		cancel_targeting()
+		
 	_targeted_skill = skill
-	_state = State.TARGETING
+	_state = State.SKILL_TARGETING
 	_hovered_hex = INVALID_HEX # Force l'actualisation de la zone même si la souris n'a pas bougé
 	_process_hover() # Force un premier dessin de l'AoE immédiatement
+
+func _on_move_button_clicked() -> void:
+	if not is_instance_valid(_selected_unit) or not _selected_unit.stats:
+		return
+		
+	if _state != State.DEFAULT:
+		cancel_targeting()
+		
+	var available_mp: int = _selected_unit.stats.movement_points
+	if _selected_unit.action_economy:
+		available_mp = _selected_unit.action_economy.get_current_mp()
+		
+	_reachable_hexes = GridManager.pathfinder.get_reachable_hexes(_selected_unit.current_hex, _selected_unit.stats, available_mp)
+	
+	_state = State.MOVE_TARGETING
+	GridEvents.movement_targeted.emit(_reachable_hexes)

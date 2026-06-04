@@ -97,7 +97,7 @@ func _move_along_path(path: Array[Vector3i]) -> void:
 		_move_tween.tween_callback(update_hex.bind(step_hex))
 
 # SIGNAL HANDLERS
-func _on_unit_selected(unit: Unit, _reachable: Array[Vector3i]) -> void:
+func _on_unit_selected(unit: Unit) -> void:
 	_is_selected = (unit == self)
 
 func _on_unit_deselected() -> void:

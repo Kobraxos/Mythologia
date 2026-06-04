@@ -18,5 +18,9 @@ signal healing_done(target: Node3D, amount: int)
 signal skill_button_clicked(skill: SkillData)
 
 @warning_ignore("unused_signal")
+## Émis par l'UI lorsqu'un joueur clique sur le bouton de déplacement. Intercepté par le GridController.
+signal move_button_clicked()
+
+@warning_ignore("unused_signal")
 ## Émis lorsqu'une unité meurt sur le champ de bataille.
 signal unit_died(unit: Unit)

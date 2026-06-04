@@ -18,9 +18,13 @@ var _attack_pool: Array[Node3D] = []
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
-	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
 	
+	if GridEvents.has_signal("movement_targeted"):
+		GridEvents.movement_targeted.connect(_on_movement_targeted)
+	if GridEvents.has_signal("movement_cleared"):
+		GridEvents.movement_cleared.connect(_on_movement_cleared)
+		
 	# AAA Fix : has_user_signal ne détecte que les signaux dynamiques. has_signal détecte les signaux déclarés.
 	if GridEvents.has_signal("aoe_targeted"):
 		GridEvents.aoe_targeted.connect(_on_aoe_targeted)
@@ -28,17 +32,20 @@ func _ready() -> void:
 		GridEvents.aoe_cleared.connect(_on_aoe_cleared)
 
 # SIGNAL HANDLERS
-func _on_unit_selected(_unit: Unit, reachable_hexes: Array[Vector3i]) -> void:
-	_on_unit_deselected() # Réinitialise l'affichage précédent
-	
+func _on_movement_targeted(reachable_hexes: Array[Vector3i]) -> void:
+	_on_movement_cleared()
 	if not move_highlight_prefab:
 		push_error("HighlightManager: 'move_highlight_prefab' manquant.")
 		return
 		
 	_display_hexes(reachable_hexes, _move_pool, move_highlight_prefab)
 
-func _on_unit_deselected() -> void:
+func _on_movement_cleared() -> void:
 	_hide_pool(_move_pool)
+
+func _on_unit_deselected() -> void:
+	_on_movement_cleared()
+	_on_aoe_cleared()
 
 func _on_aoe_targeted(hexes: Array[Vector3i]) -> void:
 	_on_aoe_cleared()

@@ -14,6 +14,9 @@ extends Control
 ## Le widget gérant la barre d'action et les raccourcis.
 @export var action_bar: ActionBar
 
+## Bouton permanent dédié à l'activation du mode déplacement.
+@export var move_button: Button
+
 @export_category("UI Elements")
 ## Label affichant les Points d'Action.
 @export var ap_label: Label
@@ -31,9 +34,12 @@ func _ready() -> void:
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
 	if action_bar:
 		action_bar.clear()
+	if move_button:
+		move_button.visible = false
+		move_button.pressed.connect(_on_move_button_pressed)
 
 # SIGNAL HANDLERS
-func _on_unit_selected(unit: Unit, _reachable_hexes: Array[Vector3i]) -> void:
+func _on_unit_selected(unit: Unit) -> void:
 	if action_bar:
 		action_bar.clear()
 	_untrack_action_economy()
@@ -64,12 +70,17 @@ func _on_unit_selected(unit: Unit, _reachable_hexes: Array[Vector3i]) -> void:
 	if action_bar:
 		action_bar.setup(skills)
 		_update_action_bar_usability()
+		
+	if move_button:
+		move_button.visible = true
 
 func _on_unit_deselected() -> void:
 	if action_bar:
 		action_bar.clear()
 	_untrack_action_economy()
 	_untrack_skill_caster()
+	if move_button:
+		move_button.visible = false
 
 func _track_action_economy(unit: Unit) -> void:
 	if "action_economy" in unit and unit.action_economy is ActionEconomyComponent:
@@ -127,3 +138,11 @@ func _on_ap_changed(current: int, max_val: int) -> void:
 func _on_mp_changed(current: int, max_val: int) -> void:
 	if mp_label:
 		mp_label.text = "PM: %d / %d" % [current, max_val]
+	_update_move_button_usability()
+
+func _update_move_button_usability() -> void:
+	if move_button and is_instance_valid(_tracked_economy):
+		move_button.disabled = _tracked_economy.get_current_mp() <= 0
+
+func _on_move_button_pressed() -> void:
+	CombatEvents.move_button_clicked.emit()

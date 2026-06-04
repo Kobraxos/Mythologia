@@ -5,7 +5,13 @@
 [ext_resource type="Theme" uid="uid://cakumsalkyi8a" path="res://ui/themes/theme_greek.tres" id="4_greek"]
 [ext_resource type="PackedScene" uid="uid://act1onbar0001" path="res://ui/combat_hud/action_bar.tscn" id="5_bar"]
 
-[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar")]
+[sub_resource type="InputEventAction" id="InputEventAction_move"]
+action = &"tactical_move"
+
+[sub_resource type="Shortcut" id="Shortcut_move"]
+events = [SubResource("InputEventAction_move")]
+
+[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar", "move_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +25,8 @@ default_theme = ExtResource("2_theme")
 faction_themes = {
 1: ExtResource("4_greek")
 }
-action_bar = NodePath("MarginContainer/ActionBar")
+action_bar = NodePath("MarginContainer/ActionLayout/ActionBar")
+move_button = NodePath("MarginContainer/ActionLayout/MoveButton")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -34,5 +41,17 @@ grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/margin_bottom = 20
 
-[node name="ActionBar" parent="MarginContainer" instance=ExtResource("5_bar")]
+[node name="ActionLayout" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="MoveButton" type="Button" parent="MarginContainer/ActionLayout"]
+custom_minimum_size = Vector2(180, 50)
+layout_mode = 2
+text = "Déplacement [M]"
+shortcut = SubResource("Shortcut_move")
+
+[node name="ActionBar" parent="MarginContainer/ActionLayout" instance=ExtResource("5_bar")]
 layout_mode = 2
