@@ -3,7 +3,6 @@ extends Node
 
 # SIGNALS
 signal health_changed(current: int, max_health: int)
-signal died(unit: Unit)
 
 # PRIVATE VARIABLES
 var _stats: UnitStats
@@ -28,8 +27,8 @@ func take_damage(amount: int) -> void:
 	health_changed.emit(_current_health, _stats.max_health)
 	
 	if _is_dead:
-		# On renvoie le parent (l'entité physique) pour que le CombatManager sache qui est mort
-		died.emit(get_parent() as Unit)
+		# AAA : Annonce globale de la mort pour la Grille et le TurnManager
+		CombatEvents.unit_died.emit(get_parent() as Unit)
 
 func heal(amount: int) -> void:
 	if _is_dead or amount <= 0:
@@ -43,3 +42,8 @@ func heal(amount: int) -> void:
 
 func get_current_health() -> int:
 	return _current_health
+
+func get_max_health() -> int:
+	if _stats:
+		return _stats.max_health
+	return 1

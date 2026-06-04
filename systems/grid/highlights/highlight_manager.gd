@@ -21,11 +21,11 @@ func _ready() -> void:
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
 	
-	# Lazy connect pour éviter les crashs si GridEvents n'a pas encore les signaux
-	if GridEvents.has_user_signal("aoe_targeted"):
-		GridEvents.connect("aoe_targeted", _on_aoe_targeted)
-	if GridEvents.has_user_signal("aoe_cleared"):
-		GridEvents.connect("aoe_cleared", _on_aoe_cleared)
+	# AAA Fix : has_user_signal ne détecte que les signaux dynamiques. has_signal détecte les signaux déclarés.
+	if GridEvents.has_signal("aoe_targeted"):
+		GridEvents.aoe_targeted.connect(_on_aoe_targeted)
+	if GridEvents.has_signal("aoe_cleared"):
+		GridEvents.aoe_cleared.connect(_on_aoe_cleared)
 
 # SIGNAL HANDLERS
 func _on_unit_selected(_unit: Unit, reachable_hexes: Array[Vector3i]) -> void:

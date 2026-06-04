@@ -143,4 +143,5 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 		
 	_targeted_skill = skill
 	_state = State.TARGETING
+	_hovered_hex = INVALID_HEX # Force l'actualisation de la zone même si la souris n'a pas bougé
 	_process_hover() # Force un premier dessin de l'AoE immédiatement

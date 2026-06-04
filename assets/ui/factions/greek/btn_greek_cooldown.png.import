@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cerga5rmuwfv7"
-valid=false
+uid="uid://c7gmukfdmv3yq"
+path="res://.godot/imported/btn_greek_cooldown.png-a2ff942353afa811c3e201c22da49cdc.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/ui/factions/greek/btn_greek_cooldown.png"
+dest_files=["res://.godot/imported/btn_greek_cooldown.png-a2ff942353afa811c3e201c22da49cdc.ctex"]
 
 [params]
 

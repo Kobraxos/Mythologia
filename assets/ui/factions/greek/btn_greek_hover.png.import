@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b6272ovy6rj12"
-valid=false
+uid="uid://3r7e2e0xj8ew"
+path="res://.godot/imported/btn_greek_hover.png-3338d214a00845d5f1b91c588a3907ce.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/ui/factions/greek/btn_greek_hover.png"
+dest_files=["res://.godot/imported/btn_greek_hover.png-3338d214a00845d5f1b91c588a3907ce.ctex"]
 
 [params]
 

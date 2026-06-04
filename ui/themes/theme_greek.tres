@@ -5,33 +5,69 @@
 [ext_resource type="FontFile" uid="uid://b26np3pynxwkp" path="res://assets/fonts/Lato-Italic.ttf" id="3_hk6hp"]
 [ext_resource type="FontFile" uid="uid://dwbrayj0cdacv" path="res://assets/fonts/Lato-Regular.ttf" id="4_2ipdv"]
 [ext_resource type="FontFile" uid="uid://bwiojiiwl7eif" path="res://assets/fonts/Cinzel-Bold.ttf" id="5_1y1ih"]
+[ext_resource type="Texture2D" uid="uid://3r7e2e0xj8ew" path="res://assets/ui/factions/greek/btn_greek_hover.png" id="6_btn_h"]
+[ext_resource type="Texture2D" uid="uid://b15tgu4480w2t" path="res://assets/ui/factions/greek/btn_greek_normal.png" id="7_btn_n"]
+[ext_resource type="Texture2D" uid="uid://elo7s7sk0ugj" path="res://assets/ui/factions/greek/btn_greek_pressed.png" id="8_btn_p"]
+[ext_resource type="Texture2D" uid="uid://c7gmukfdmv3yq" path="res://assets/ui/factions/greek/btn_greek_cooldown.png" id="9_btn_d"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_disabled"]
+texture = ExtResource("9_btn_d")
+texture_margin_left = 60.0
+texture_margin_top = 20.0
+texture_margin_right = 60.0
+texture_margin_bottom = 20.0
+content_margin_left = 60.0
+content_margin_right = 60.0
+content_margin_top = 10.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_hover"]
-texture_margin_left = 20.0
+texture = ExtResource("6_btn_h")
+texture_margin_left = 60.0
 texture_margin_top = 20.0
-texture_margin_right = 20.0
+texture_margin_right = 60.0
 texture_margin_bottom = 20.0
+content_margin_left = 60.0
+content_margin_right = 60.0
+content_margin_top = 10.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_normal"]
-texture_margin_left = 20.0
+texture = ExtResource("7_btn_n")
+texture_margin_left = 60.0
 texture_margin_top = 20.0
-texture_margin_right = 20.0
+texture_margin_right = 60.0
 texture_margin_bottom = 20.0
+content_margin_left = 60.0
+content_margin_right = 60.0
+content_margin_top = 10.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_pressed"]
-texture_margin_left = 20.0
+texture = ExtResource("8_btn_p")
+texture_margin_left = 60.0
 texture_margin_top = 20.0
-texture_margin_right = 20.0
+texture_margin_right = 60.0
 texture_margin_bottom = 20.0
+content_margin_left = 60.0
+content_margin_right = 60.0
+content_margin_top = 10.0
+content_margin_bottom = 10.0
 
 [resource]
 default_font = ExtResource("4_2ipdv")
 default_font_size = 18
 BoldLabel/base_type = &"Label"
 BoldLabel/fonts/font = ExtResource("1_d8jm6")
-Button/colors/font_color = Color(0.875, 0.875, 0.875, 1)
-Button/colors/font_hover_color = Color(1, 0.9, 0.6, 1)
-Button/colors/font_pressed_color = Color(0.6, 0.6, 0.6, 1)
+Button/colors/font_color = Color(0.15, 0.12, 0.1, 1)
+Button/colors/font_disabled_color = Color(0.4, 0.4, 0.4, 1)
+Button/colors/font_hover_color = Color(0, 0, 0, 1)
+Button/colors/font_outline_color = Color(1, 1, 1, 0.6)
+Button/colors/font_pressed_color = Color(0.3, 0.25, 0.2, 1)
+Button/constants/outline_size = 2
+Button/font_sizes/font_size = 20
+Button/fonts/font = ExtResource("1_d8jm6")
+Button/styles/disabled = SubResource("StyleBoxTexture_greek_disabled")
 Button/styles/hover = SubResource("StyleBoxTexture_greek_hover")
 Button/styles/normal = SubResource("StyleBoxTexture_greek_normal")
 Button/styles/pressed = SubResource("StyleBoxTexture_greek_pressed")

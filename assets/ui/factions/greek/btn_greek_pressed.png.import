@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ceq6aoitgmytu"
-valid=false
+uid="uid://elo7s7sk0ugj"
+path="res://.godot/imported/btn_greek_pressed.png-f8c6765054517f7cd4b5f55e75029078.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/ui/factions/greek/btn_greek_pressed.png"
+dest_files=["res://.godot/imported/btn_greek_pressed.png-f8c6765054517f7cd4b5f55e75029078.ctex"]
 
 [params]
 

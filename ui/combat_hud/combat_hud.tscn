@@ -2,9 +2,10 @@
 
 [ext_resource type="Script" path="res://ui/combat_hud/combat_hud.gd" id="1_hud"]
 [ext_resource type="Theme" uid="uid://bvqqs8v7umed0" path="res://ui/themes/master_theme.tres" id="2_theme"]
-[ext_resource type="PackedScene" uid="uid://d3x7y8z9w1v2u" path="res://ui/combat_hud/skill_button.tscn" id="3_btn"]
+[ext_resource type="Theme" uid="uid://cakumsalkyi8a" path="res://ui/themes/theme_greek.tres" id="4_greek"]
+[ext_resource type="PackedScene" uid="uid://act1onbar0001" path="res://ui/combat_hud/action_bar.tscn" id="5_bar"]
 
-[node name="CombatHUD" type="Control" node_paths=PackedStringArray("skills_container")]
+[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,8 +15,11 @@ grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_hud")
-skill_button_prefab = ExtResource("3_btn")
-skills_container = NodePath("MarginContainer/SkillsContainer")
+default_theme = ExtResource("2_theme")
+faction_themes = {
+1: ExtResource("4_greek")
+}
+action_bar = NodePath("MarginContainer/ActionBar")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -23,12 +27,12 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -120.0
+offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/margin_bottom = 20
 
-[node name="SkillsContainer" type="HBoxContainer" parent="MarginContainer"]
+[node name="ActionBar" parent="MarginContainer" instance=ExtResource("5_bar")]
 layout_mode = 2
-mouse_filter = 2
-alignment = 1

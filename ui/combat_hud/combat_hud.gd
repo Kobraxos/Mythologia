@@ -4,29 +4,40 @@ extends Control
 ## Interface utilisateur de combat. Data-Driven et Event-Driven.
 
 # EXPORTS
-@export_category("Prefabs")
-## Le modèle de bouton instancié pour chaque compétence.
-@export var skill_button_prefab: PackedScene
-
 @export_category("Themes")
 ## Le thème par défaut si l'unité n'a pas de mythologie définie.
 @export var default_theme: Theme
 ## Dictionnaire liant une faction (UnitStats.Mythology) à son Thème UI. (Clé: Int, Valeur: Theme)
 @export var faction_themes: Dictionary = {}
 
-@export_category("References")
-## Le conteneur (HBoxContainer) qui va recevoir les boutons générés.
-@export var skills_container: Control
+@export_category("UI Widgets")
+## Le widget gérant la barre d'action et les raccourcis.
+@export var action_bar: ActionBar
+
+@export_category("UI Elements")
+## Label affichant les Points d'Action.
+@export var ap_label: Label
+## Label affichant les Points de Mouvement.
+@export var mp_label: Label
+
+# PRIVATE VARIABLES
+var _tracked_economy: ActionEconomyComponent
+var _tracked_caster: SkillCasterComponent
+var _current_cooldowns: Dictionary = {}
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
-	_clear_skills() # Cache l'UI de compétences au démarrage
+	if action_bar:
+		action_bar.clear()
 
 # SIGNAL HANDLERS
 func _on_unit_selected(unit: Unit, _reachable_hexes: Array[Vector3i]) -> void:
-	_clear_skills()
+	if action_bar:
+		action_bar.clear()
+	_untrack_action_economy()
+	_untrack_skill_caster()
 	
 	if not is_instance_valid(unit):
 		return
@@ -38,7 +49,10 @@ func _on_unit_selected(unit: Unit, _reachable_hexes: Array[Vector3i]) -> void:
 		var myth_id: int = unit.stats.mythology
 		if faction_themes.has(myth_id) and faction_themes[myth_id] is Theme:
 			self.theme = faction_themes[myth_id]
-		
+
+	_track_action_economy(unit)
+	_track_skill_caster(unit)
+			
 	# Duck-typing sécurisé pour récupérer le composant lanceur de sort et sa liste
 	if not unit.get("skill_caster"):
 		return
@@ -47,30 +61,69 @@ func _on_unit_selected(unit: Unit, _reachable_hexes: Array[Vector3i]) -> void:
 	if skills.is_empty():
 		return
 		
-	_populate_skills(skills)
+	if action_bar:
+		action_bar.setup(skills)
+		_update_action_bar_usability()
 
 func _on_unit_deselected() -> void:
-	_clear_skills()
+	if action_bar:
+		action_bar.clear()
+	_untrack_action_economy()
+	_untrack_skill_caster()
 
-# PRIVATE FUNCTIONS
-func _populate_skills(skills: Array) -> void:
-	if not skill_button_prefab or not skills_container:
-		push_error("CombatHUD: Dépendances UI manquantes (Prefab ou Container).")
-		return
+func _track_action_economy(unit: Unit) -> void:
+	if "action_economy" in unit and unit.action_economy is ActionEconomyComponent:
+		_tracked_economy = unit.action_economy
+		_tracked_economy.ap_changed.connect(_on_ap_changed)
+		_tracked_economy.mp_changed.connect(_on_mp_changed)
 		
-	for skill in skills:
-		var skill_res := skill as SkillData
-		if not skill_res:
-			continue
-			
-		var skill_button: SkillButton = skill_button_prefab.instantiate() as SkillButton
-		skills_container.add_child(skill_button)
-		skill_button.setup(skill_res)
-			
-	skills_container.visible = true
+		# Initialisation immédiate de l'affichage
+		if ap_label:
+			ap_label.visible = true
+			_on_ap_changed(_tracked_economy.get_current_ap(), _tracked_economy.get_max_ap())
+		if mp_label:
+			mp_label.visible = true
+			_on_mp_changed(_tracked_economy.get_current_mp(), _tracked_economy.get_max_mp())
 
-func _clear_skills() -> void:
-	if is_instance_valid(skills_container):
-		for child: Node in skills_container.get_children():
-			child.queue_free()
-		skills_container.visible = false
+func _untrack_action_economy() -> void:
+	if is_instance_valid(_tracked_economy):
+		if _tracked_economy.ap_changed.is_connected(_on_ap_changed):
+			_tracked_economy.ap_changed.disconnect(_on_ap_changed)
+		if _tracked_economy.mp_changed.is_connected(_on_mp_changed):
+			_tracked_economy.mp_changed.disconnect(_on_mp_changed)
+	_tracked_economy = null
+	
+	if ap_label:
+		ap_label.visible = false
+	if mp_label:
+		mp_label.visible = false
+
+func _track_skill_caster(unit: Unit) -> void:
+	if "skill_caster" in unit and unit.skill_caster is SkillCasterComponent:
+		_tracked_caster = unit.skill_caster
+		_tracked_caster.cooldowns_updated.connect(_on_cooldowns_updated)
+		_current_cooldowns = _tracked_caster.get_cooldowns()
+
+func _untrack_skill_caster() -> void:
+	if is_instance_valid(_tracked_caster):
+		if _tracked_caster.cooldowns_updated.is_connected(_on_cooldowns_updated):
+			_tracked_caster.cooldowns_updated.disconnect(_on_cooldowns_updated)
+	_tracked_caster = null
+	_current_cooldowns.clear()
+
+func _on_cooldowns_updated(cooldowns: Dictionary) -> void:
+	_current_cooldowns = cooldowns
+	_update_action_bar_usability()
+
+func _update_action_bar_usability() -> void:
+	if action_bar and is_instance_valid(_tracked_economy):
+		action_bar.update_usable_skills(_tracked_economy.get_current_ap(), _current_cooldowns)
+
+func _on_ap_changed(current: int, max_val: int) -> void:
+	if ap_label:
+		ap_label.text = "PA: %d / %d" % [current, max_val]
+	_update_action_bar_usability()
+
+func _on_mp_changed(current: int, max_val: int) -> void:
+	if mp_label:
+		mp_label.text = "PM: %d / %d" % [current, max_val]

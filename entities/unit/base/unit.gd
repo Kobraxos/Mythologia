@@ -32,6 +32,7 @@ func _ready() -> void:
 	current_hex = HexMath.world_to_hex(position, GridManager.hex_size, GridManager.elevation_step)
 	position = HexMath.hex_to_world(current_hex, GridManager.hex_size, GridManager.elevation_step) # Snap visuel strict
 	GridManager.unit_positions[current_hex] = self
+	GridEvents.unit_spawned.emit(self)
 
 ## Appelé par le BattleManager lors du Spawn pour injecter l'âme (les données) dans la coquille.
 func initialize(new_stats: UnitStats) -> void:
@@ -42,6 +43,13 @@ func initialize(new_stats: UnitStats) -> void:
 		action_economy.initialize()
 	if health_component:
 		health_component.initialize(stats)
+		
+	if skill_caster and "active_skills" in stats:
+		var skills: Array[SkillData] = []
+		for res: Resource in stats.get("active_skills"):
+			if res is SkillData:
+				skills.append(res as SkillData)
+		skill_caster.initialize(skills)
 
 ## Appelé par le TurnManager. L'unité délègue la gestion temporelle à ses organes (SRP).
 func start_turn() -> void:

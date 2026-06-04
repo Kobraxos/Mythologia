@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://ftm4nag3r001"]
+
+[ext_resource type="Script" path="res://ui/floating_text/floating_text_manager.gd" id="1_ftm"]
+[ext_resource type="PackedScene" uid="uid://fl0at1ngt3xt01" path="res://ui/floating_text/floating_text.tscn" id="2_prefab"]
+[ext_resource type="Theme" uid="uid://bvqqs8v7umed0" path="res://ui/themes/master_theme.tres" id="3_theme"]
+
+[node name="FloatingTextManager" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_ftm")
+text_prefab = ExtResource("2_prefab")

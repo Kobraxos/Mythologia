@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://ct1onbar0001"]
+
+[ext_resource type="Script" path="res://ui/combat_hud/action_bar.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://d3x7y81aw1v2u" path="res://ui/combat_hud/skill_button.tscn" id="2_btn"]
+
+[node name="ActionBar" type="HBoxContainer"]
+mouse_filter = 2
+alignment = 1
+script = ExtResource("1_script")
+skill_button_prefab = ExtResource("2_btn")

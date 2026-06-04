@@ -17,3 +17,7 @@ signal aoe_targeted(hexes: Array[Vector3i])
 @warning_ignore("unused_signal")
 ## Émis pour effacer l'affichage de la zone d'effet (ex: annulation de la visée).
 signal aoe_cleared()
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une unité apparaît sur le plateau (utile pour initialiser les UI).
+signal unit_spawned(unit: Node3D)

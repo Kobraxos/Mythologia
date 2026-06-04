@@ -16,3 +16,7 @@ signal healing_done(target: Node3D, amount: int)
 @warning_ignore("unused_signal")
 ## Émis par l'UI lorsqu'un joueur clique sur un bouton de sort. Intercepté par le GridController.
 signal skill_button_clicked(skill: SkillData)
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une unité meurt sur le champ de bataille.
+signal unit_died(unit: Unit)
