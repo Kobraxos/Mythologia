@@ -71,7 +71,9 @@ func _on_movement_path_targeted(path_hexes: Array[Vector3i]) -> void:
 	if not path_line_prefab or path_hexes.size() < 2:
 		return
 		
-	while _path_line_pool.size() < path_hexes.size() - 1:
+	# AAA : Segment Splitting - 2 segments par déplacement pour éviter de traverser le sol
+	var needed_lines: int = (path_hexes.size() - 1) * 2
+	while _path_line_pool.size() < needed_lines:
 		var mesh: Node3D = path_line_prefab.instantiate() as Node3D
 		add_child(mesh)
 		mesh.visible = false
@@ -83,11 +85,24 @@ func _on_movement_path_targeted(path_hexes: Array[Vector3i]) -> void:
 		p1.y += Z_FIGHTING_OFFSET + 0.05
 		p2.y += Z_FIGHTING_OFFSET + 0.05
 		
-		var line: Node3D = _path_line_pool[i]
-		line.position = (p1 + p2) / 2.0 # Place la ligne au milieu des deux cases
-		line.look_at(p2, Vector3.UP)    # Pointeur vers la case cible
-		line.scale = Vector3(1, 1, p1.distance_to(p2)) # Étire la ligne pour relier parfaitement
-		line.visible = true
+		# AAA : Calcul du point d'articulation (sur l'arête mitoyenne)
+		var mid_p: Vector3 = (p1 + p2) / 2.0
+		# Le secret : L'arête prend l'élévation de la case la plus haute pour faire un "pont"
+		mid_p.y = maxf(p1.y, p2.y)
+		
+		# Segment 1 : Case de départ -> Arête mitoyenne
+		var line1: Node3D = _path_line_pool[i * 2]
+		line1.position = (p1 + mid_p) / 2.0 
+		line1.look_at(mid_p, Vector3.UP)    
+		line1.scale = Vector3(1, 1, p1.distance_to(mid_p)) 
+		line1.visible = true
+		
+		# Segment 2 : Arête mitoyenne -> Case d'arrivée
+		var line2: Node3D = _path_line_pool[i * 2 + 1]
+		line2.position = (mid_p + p2) / 2.0 
+		line2.look_at(p2, Vector3.UP)    
+		line2.scale = Vector3(1, 1, mid_p.distance_to(p2)) 
+		line2.visible = true
 
 func _on_movement_path_cleared() -> void:
 	_hide_pool(_path_pool)
