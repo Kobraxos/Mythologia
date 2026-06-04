@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://872f7lqg2uh6"]
+
+[ext_resource type="PackedScene" uid="uid://c8k1x2y304w5v" path="res://systems/grid/highlights/hex_highlight_base.tscn" id="1_g8m2p"]
+[ext_resource type="Material" uid="uid://b1mrange0001" path="res://systems/grid/highlights/mat_highlight_range.tres" id="2_t161p"]
+
+[node name="HexHighlight" unique_id=1257766928 instance=ExtResource("1_g8m2p")]
+
+[node name="MeshInstance3D" parent="." index="0"]
+material_override = ExtResource("2_t161p")

@@ -5,6 +5,39 @@ extends RefCounted
 ## Ne gère aucune logique de combat, uniquement des mathématiques vectorielles.
 
 # PUBLIC FUNCTIONS
+## Calcule la portée valide d'une compétence (anneau entre min_range et max_range).
+static func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData) -> Array[Vector3i]:
+	var valid_hexes: Array[Vector3i] = []
+	var center_2d := Vector2i(caster_hex.x, caster_hex.y)
+	
+	# Si la portée est 0, on cible uniquement le lanceur
+	if skill.max_range == 0:
+		if _is_hex_traversable(caster_hex):
+			return [caster_hex]
+		return []
+
+	for q: int in range(-skill.max_range, skill.max_range + 1):
+		for r: int in range(max(-skill.max_range, -q - skill.max_range), min(skill.max_range, -q + skill.max_range) + 1):
+			var dist: int = (abs(q) + abs(q + r) + abs(r)) / 2
+			
+			if dist >= skill.min_range and dist <= skill.max_range:
+				var current_2d := Vector2i(center_2d.x + q, center_2d.y + r)
+				var actual_hex := _get_surface_hex(current_2d)
+				
+				if actual_hex.z != -999:
+					# Vérification des contraintes d'élévation
+					var elevation_diff: int = actual_hex.z - caster_hex.z
+					if elevation_diff > skill.max_elevation_up or elevation_diff < -skill.max_elevation_down:
+						continue
+						
+					# Vérification de la Ligne de Vue si exigé
+					if skill.requires_line_of_sight and not has_line_of_sight(caster_hex, actual_hex):
+						continue
+						
+					valid_hexes.append(actual_hex)
+					
+	return valid_hexes
+
 ## Calcule et retourne toutes les cases affectées par une compétence (Wrapper Principal).
 static func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: SkillData) -> Array[Vector3i]:
 	var shape: SkillData.AreaShape = skill.aoe_shape

@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://nmtvw20rchy3"]
+
+[ext_resource type="Material" uid="uid://matpath0001" path="res://systems/grid/highlights/mat_highlight_path.tres" id="1_mat"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_path"]
+radius = 0.15
+height = 0.3
+radial_segments = 16
+rings = 8
+
+[node name="PathHighlight" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_path")
+surface_material_override/0 = ExtResource("1_mat")

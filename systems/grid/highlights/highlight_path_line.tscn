@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://pathline0001"]
+
+[ext_resource type="Material" uid="uid://matpath0001" path="res://systems/grid/highlights/mat_highlight_path.tres" id="1_mat"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_line"]
+size = Vector3(0.05, 0.05, 1.0)
+
+[node name="PathLine" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_line")
+surface_material_override/0 = ExtResource("1_mat")

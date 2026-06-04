@@ -11,48 +11,48 @@
 [ext_resource type="Texture2D" uid="uid://c7gmukfdmv3yq" path="res://assets/ui/factions/greek/btn_greek_cooldown.png" id="9_btn_d"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_disabled"]
+content_margin_left = 60.0
+content_margin_top = 10.0
+content_margin_right = 60.0
+content_margin_bottom = 10.0
 texture = ExtResource("9_btn_d")
 texture_margin_left = 60.0
 texture_margin_top = 20.0
 texture_margin_right = 60.0
 texture_margin_bottom = 20.0
-content_margin_left = 60.0
-content_margin_right = 60.0
-content_margin_top = 10.0
-content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_hover"]
+content_margin_left = 60.0
+content_margin_top = 10.0
+content_margin_right = 60.0
+content_margin_bottom = 10.0
 texture = ExtResource("6_btn_h")
 texture_margin_left = 60.0
 texture_margin_top = 20.0
 texture_margin_right = 60.0
 texture_margin_bottom = 20.0
-content_margin_left = 60.0
-content_margin_right = 60.0
-content_margin_top = 10.0
-content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_normal"]
+content_margin_left = 60.0
+content_margin_top = 10.0
+content_margin_right = 60.0
+content_margin_bottom = 10.0
 texture = ExtResource("7_btn_n")
 texture_margin_left = 60.0
 texture_margin_top = 20.0
 texture_margin_right = 60.0
 texture_margin_bottom = 20.0
-content_margin_left = 60.0
-content_margin_right = 60.0
-content_margin_top = 10.0
-content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_greek_pressed"]
+content_margin_left = 60.0
+content_margin_top = 10.0
+content_margin_right = 60.0
+content_margin_bottom = 10.0
 texture = ExtResource("8_btn_p")
 texture_margin_left = 60.0
 texture_margin_top = 20.0
 texture_margin_right = 60.0
 texture_margin_bottom = 20.0
-content_margin_left = 60.0
-content_margin_right = 60.0
-content_margin_top = 10.0
-content_margin_bottom = 10.0
 
 [resource]
 default_font = ExtResource("4_2ipdv")

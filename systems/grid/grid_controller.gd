@@ -20,6 +20,7 @@ var _targeted_skill: SkillData
 var _hovered_hex: Vector3i = INVALID_HEX
 var _selected_unit: Unit = null
 var _reachable_hexes: Array[Vector3i] = []
+var _valid_casting_hexes: Array[Vector3i] = []
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
@@ -28,7 +29,8 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		if _state == State.SKILL_TARGETING:
+		# AAA : Traite le survol (Hover) pour les compétences ET le mouvement
+		if _state == State.SKILL_TARGETING or _state == State.MOVE_TARGETING:
 			_process_hover()
 	elif event.is_action_pressed("interact_select"):
 		if _state == State.SKILL_TARGETING:
@@ -44,15 +46,20 @@ func _unhandled_input(event: InputEvent) -> void:
 			_clear_selection()
 	elif event.is_action_pressed("tactical_end_turn"):
 		TurnEvents.turn_end_requested.emit()
+	elif event.is_action_pressed("tactical_move"):
+		_on_move_button_clicked()
 
 # PUBLIC FUNCTIONS
 ## Annule la préparation (Sort ou Mouvement) et nettoie l'écran.
 func cancel_targeting() -> void:
 	if _state == State.SKILL_TARGETING:
 		_targeted_skill = null
+		_valid_casting_hexes.clear()
+		GridEvents.skill_range_cleared.emit()
 		GridEvents.aoe_cleared.emit()
 	elif _state == State.MOVE_TARGETING:
 		_reachable_hexes.clear()
+		GridEvents.movement_path_cleared.emit()
 		GridEvents.movement_cleared.emit()
 		
 	_state = State.DEFAULT
@@ -96,16 +103,29 @@ func _process_hover() -> void:
 		
 	_hovered_hex = hex_coord
 	
-	if _hovered_hex == INVALID_HEX:
-		GridEvents.aoe_cleared.emit()
-		return
-		
-	if is_instance_valid(_selected_unit) and _targeted_skill:
-		var affected: Array[Vector3i] = HexAoE.get_affected_hexes(_selected_unit.current_hex, _hovered_hex, _targeted_skill)
-		GridEvents.aoe_targeted.emit(affected)
+	if _state == State.SKILL_TARGETING:
+		# AAA : Guard Clause UX - Cache l'AoE si on cible en dehors de la portée valide
+		if _hovered_hex == INVALID_HEX or not _valid_casting_hexes.has(_hovered_hex):
+			GridEvents.aoe_cleared.emit()
+			return
+			
+		if is_instance_valid(_selected_unit) and _targeted_skill:
+			var affected: Array[Vector3i] = HexAoE.get_affected_hexes(_selected_unit.current_hex, _hovered_hex, _targeted_skill)
+			GridEvents.aoe_targeted.emit(affected)
+			
+	elif _state == State.MOVE_TARGETING:
+		# AAA : Guard Clause UX - Cache le chemin si la case survolée n'est pas atteignable
+		if _hovered_hex == INVALID_HEX or not _reachable_hexes.has(_hovered_hex):
+			GridEvents.movement_path_cleared.emit()
+			return
+			
+		if is_instance_valid(_selected_unit) and GridManager.pathfinder:
+			var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(_selected_unit.current_hex, _hovered_hex, _selected_unit.stats)
+			GridEvents.movement_path_targeted.emit(path)
 
 func _confirm_targeting() -> void:
-	if _hovered_hex == INVALID_HEX:
+	# AAA : Bloque l'exécution si la cible n'est pas dans la portée
+	if _hovered_hex == INVALID_HEX or not _valid_casting_hexes.has(_hovered_hex):
 		return
 		
 	if is_instance_valid(_selected_unit) and _targeted_skill:
@@ -156,6 +176,11 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 	_targeted_skill = skill
 	_state = State.SKILL_TARGETING
 	_hovered_hex = INVALID_HEX # Force l'actualisation de la zone même si la souris n'a pas bougé
+	
+	# AAA : Calcul Just-In-Time de la portée de la compétence
+	_valid_casting_hexes = HexAoE.get_valid_casting_range(_selected_unit.current_hex, _targeted_skill)
+	GridEvents.skill_range_targeted.emit(_valid_casting_hexes)
+	
 	_process_hover() # Force un premier dessin de l'AoE immédiatement
 
 func _on_move_button_clicked() -> void:
@@ -168,6 +193,10 @@ func _on_move_button_clicked() -> void:
 	var available_mp: int = _selected_unit.stats.movement_points
 	if _selected_unit.action_economy:
 		available_mp = _selected_unit.action_economy.get_current_mp()
+		
+	# AAA : Guard clause pour empêcher le mouvement si la touche 'M' est pressée sans PM
+	if available_mp <= 0:
+		return
 		
 	_reachable_hexes = GridManager.pathfinder.get_reachable_hexes(_selected_unit.current_hex, _selected_unit.stats, available_mp)
 	

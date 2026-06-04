@@ -27,5 +27,21 @@ signal movement_targeted(hexes: Array[Vector3i])
 signal movement_cleared()
 
 @warning_ignore("unused_signal")
+## Émis au survol d'une case valide pour prévisualiser le chemin de déplacement.
+signal movement_path_targeted(path_hexes: Array[Vector3i])
+
+@warning_ignore("unused_signal")
+## Émis pour effacer la prévisualisation du chemin.
+signal movement_path_cleared()
+
+@warning_ignore("unused_signal")
+## Émis lors de la visée d'une compétence pour afficher les cases valides depuis lesquelles on peut cibler.
+signal skill_range_targeted(hexes: Array[Vector3i])
+
+@warning_ignore("unused_signal")
+## Émis pour effacer l'affichage de la portée d'une compétence.
+signal skill_range_cleared()
+
+@warning_ignore("unused_signal")
 ## Émis lorsqu'une unité apparaît sur le plateau (utile pour initialiser les UI).
 signal unit_spawned(unit: Node3D)

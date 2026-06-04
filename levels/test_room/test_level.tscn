@@ -9,12 +9,15 @@
 [ext_resource type="PackedScene" uid="uid://bfohpuopwfs7j" path="res://systems/grid/highlights/highlight_move.tscn" id="6_hw3ya"]
 [ext_resource type="PackedScene" uid="uid://bvnnrvkf264q4" path="res://systems/grid/highlights/highlight_attack.tscn" id="7_dajra"]
 [ext_resource type="Script" uid="uid://8c6b1lvvng1k" path="res://systems/combat/battle_manager.gd" id="7_felx7"]
+[ext_resource type="PackedScene" uid="uid://872f7lqg2uh6" path="res://systems/grid/highlights/highlight_range.tscn" id="8_ay6kr"]
 [ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/units/heroes/base_unit_stats.tres" id="9_4py08"]
+[ext_resource type="PackedScene" path="res://systems/grid/highlights/highlight_path.tscn" id="9_ubm0v"]
+[ext_resource type="PackedScene" path="res://systems/grid/highlights/highlight_path_line.tscn" id="10_ki72p"]
 [ext_resource type="Script" uid="uid://cwh1s6wn21flg" path="res://systems/turn_logic/turn_manager.gd" id="10_ly45u"]
 [ext_resource type="PackedScene" uid="uid://b2a1c4d5e6f7g" path="res://ui/combat_hud/combat_hud.tscn" id="11_cblbi"]
-[ext_resource type="PackedScene" uid="uid://ftm4nag3r001" path="res://ui/floating_text/floating_text_manager.tscn" id="12_ftm"]
-[ext_resource type="PackedScene" uid="uid://u0ver1ayman4g" path="res://ui/unit_overlay/unit_overlay_manager.tscn" id="13_uom"]
 [ext_resource type="Script" uid="uid://c02cnmijv1gxt" path="res://systems/combat/combat_manager.gd" id="11_yqcj1"]
+[ext_resource type="PackedScene" uid="uid://ftm4nag3r001" path="res://ui/floating_text/floating_text_manager.tscn" id="12_ftm"]
+[ext_resource type="PackedScene" uid="uid://bot1tqopsabcm" path="res://ui/unit_overlay/unit_overlay_manager.tscn" id="13_uom"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.05
@@ -37,6 +40,9 @@ script = ExtResource("4_controller")
 script = ExtResource("5_highlight")
 move_highlight_prefab = ExtResource("6_hw3ya")
 attack_highlight_prefab = ExtResource("7_dajra")
+range_highlight_prefab = ExtResource("8_ay6kr")
+path_highlight_prefab = ExtResource("9_ubm0v")
+path_line_prefab = ExtResource("10_ki72p")
 
 [node name="BattleManager" type="Node" parent="." unique_id=1224661345 node_paths=PackedStringArray("grid_generator", "turn_manager")]
 script = ExtResource("7_felx7")
@@ -56,6 +62,6 @@ script = ExtResource("11_yqcj1")
 
 [node name="CombatHUD" parent="HUD" unique_id=1463811692 instance=ExtResource("11_cblbi")]
 
-[node name="FloatingTextManager" parent="HUD" instance=ExtResource("12_ftm")]
+[node name="FloatingTextManager" parent="HUD" unique_id=2064226378 instance=ExtResource("12_ftm")]
 
-[node name="UnitOverlayManager" parent="HUD" instance=ExtResource("13_uom")]
+[node name="UnitOverlayManager" parent="HUD" unique_id=1281811015 instance=ExtResource("13_uom")]
