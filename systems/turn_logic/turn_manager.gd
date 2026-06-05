@@ -45,26 +45,40 @@ func next_turn() -> void:
 	if _units.is_empty():
 		return
 		
+	var any_alive := false
+	for u in _units:
+		if _is_unit_alive(u):
+			any_alive = true
+			break
+			
+	if not any_alive:
+		return
+		
 	if _active_unit_index >= 0 and _active_unit_index < _units.size():
 		var previous: Unit = _units[_active_unit_index]
-		if is_instance_valid(previous):
+		if _is_unit_alive(previous):
 			previous.end_turn()
 			TurnEvents.turn_ended.emit(previous)
 			
-	_active_unit_index += 1
-	if _active_unit_index >= _units.size():
-		_active_unit_index = 0
-		_current_round += 1
-		TurnEvents.round_changed.emit(_current_round)
-		
-	var active: Unit = _units[_active_unit_index]
-	if is_instance_valid(active):
-		active.start_turn()
-		TurnEvents.active_unit_changed.emit(active)
+	while true:
+		_active_unit_index += 1
+		if _active_unit_index >= _units.size():
+			_active_unit_index = 0
+			_current_round += 1
+			TurnEvents.round_changed.emit(_current_round)
+			
+		var active: Unit = _units[_active_unit_index]
+		if _is_unit_alive(active):
+			active.start_turn()
+			TurnEvents.active_unit_changed.emit(active)
+			break
 
 	_generate_and_emit_timeline()
 
 # PRIVATE FUNCTIONS
+func _is_unit_alive(unit: Unit) -> bool:
+	return is_instance_valid(unit) and unit.health_component and unit.health_component.get_current_health() > 0
+
 func _generate_and_emit_timeline() -> void:
 	var queue: Array[Unit] = []
 	var round_breaks: Array[int] = []

@@ -59,7 +59,8 @@ func _process(_delta: float) -> void:
 	# Calcul de la projection AAA avec offset ajustable pour les sprites 2D
 	var world_pos: Vector3 = _target.global_position + Vector3(0, height_offset, 0)
 	
-	if _camera.is_position_behind(world_pos):
+	# AAA : Si l'unité est cachée (ex: elle est morte), on cache l'overlay
+	if not _target.visible or _camera.is_position_behind(world_pos):
 		visible = false
 	else:
 		visible = true

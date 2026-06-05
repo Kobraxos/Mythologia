@@ -36,6 +36,7 @@ func _ready() -> void:
 	GridEvents.hex_clicked.connect(_on_hex_clicked)
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
+	CombatEvents.unit_died.connect(_on_unit_died_event)
 	
 	# Enregistrement spatial initial au lancement
 	current_hex = HexMath.world_to_hex(position, GridManager.hex_size, GridManager.elevation_step)
@@ -161,3 +162,14 @@ func _on_hex_clicked(target_hex: Vector3i) -> void:
 		action_economy.consume_mp(path_cost)
 
 	execute_path(path)
+
+func _on_unit_died_event(dead_unit: Unit) -> void:
+	if dead_unit == self:
+		# Pratique AAA : On ne détruit pas le noeud (pas de queue_free).
+		# On le cache et on le retire du registre spatial, le gardant en mémoire pour une résurrection possible.
+		visible = false
+		if GridManager.unit_positions.get(current_hex) == self:
+			GridManager.unit_positions.erase(current_hex)
+		
+		# Remarque: Si on devait jouer une animation de mort (AnimationPlayer),
+		# on la lancerait ici au lieu de juste faire 'visible = false'.
