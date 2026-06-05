@@ -3,7 +3,6 @@ extends Node3D
 
 # EXPORTS
 @export var map_radius: int = 5
-@export var hex_prefab: PackedScene = preload("res://systems/grid/grid_generator/hex_tile.tscn")
 ## La donnée de terrain (ex: Plaine) à injecter dans la grille logique lors de la génération.
 @export var default_terrain: TerrainData
 @export var obstacles: Array[Vector3i] = []
@@ -37,9 +36,6 @@ func generate_grid() -> void:
 	GridManager.clear_terrain()
 
 	# Validation des dépendances requise par les standards
-	if not hex_prefab:
-		push_error("GridGenerator: La ressource 'hex_prefab' est manquante.")
-		return
 	if not default_terrain:
 		push_error("GridGenerator: La ressource 'default_terrain' est manquante. Le DDD exige une donnée.")
 		return
@@ -66,9 +62,13 @@ func generate_grid() -> void:
 		if obstacles.has(hex_coord):
 			continue
 			
-		var tile: Node3D = hex_prefab.instantiate() as Node3D
+		if not default_terrain.visual_prefab:
+			push_error("GridGenerator: 'visual_prefab' manquant dans la donnée default_terrain.")
+			continue
+			
+		var tile: Node3D = default_terrain.visual_prefab.instantiate() as Node3D
 		if not tile:
-			push_error("GridGenerator: Impossible d'instancier 'hex_prefab' en tant que Node3D.")
+			push_error("GridGenerator: Impossible d'instancier le visuel en tant que Node3D.")
 			continue
 
 		# Utilisation de notre utilitaire mathématique pour le placement spatial

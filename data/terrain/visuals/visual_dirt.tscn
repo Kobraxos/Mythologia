@@ -1,27 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://cq2w3e4r5t6y7"]
+[gd_scene format=3 uid="uid://cq2w3e4r5t6y7"]
 
-[ext_resource type="PackedScene" uid="uid://c6evutwiae4s1" path="res://assets/3d/Hex_Flat.glb" id="1_hex"]
-[ext_resource type="Material" uid="uid://dp1e2y3f4h5j6" path="res://data/terrain/visuals/mat_dirt.tres" id="2_mat"]
+[ext_resource type="Material" uid="uid://dp1e2y3f4h5j6" path="res://data/terrain/visuals/mat_dirt.tres" id="1_mat"]
+[ext_resource type="ArrayMesh" uid="uid://bhkn5v2swm7hy" path="res://assets/3d/hex_base_mesh.res" id="2_mesh"]
 
-[sub_resource type="GDScript" id="GDScript_material_override"]
-script/source = "extends Node
-@export var material: Material
-
-func _ready() -> void:
-	if material:
-		_apply_material(get_parent())
-
-func _apply_material(node: Node) -> void:
-	if node is MeshInstance3D:
-		node.set_surface_override_material(0, material)
-	for child in node.get_children():
-		_apply_material(child)
-"
-
-[node name="VisualDirt" type="Node3D"]
-
-[node name="Hex_Flat" parent="." instance=ExtResource("1_hex")]
-
-[node name="MaterialOverride" type="Node" parent="Hex_Flat"]
-script = SubResource("GDScript_material_override")
-material = ExtResource("2_mat")
+[node name="VisualDirt" type="MeshInstance3D" unique_id=1944771020]
+material_override = ExtResource("1_mat")
+mesh = ExtResource("2_mesh")
