@@ -30,9 +30,8 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		# AAA : Traite le survol (Hover) pour les compétences ET le mouvement
-		if _state == State.SKILL_TARGETING or _state == State.MOVE_TARGETING:
-			_process_hover()
+		# AAA : Traite le survol (Hover) en permanence pour le curseur visuel global
+		_process_hover()
 	elif event.is_action_pressed("interact_select"):
 		if _state == State.SKILL_TARGETING:
 			_confirm_targeting()
@@ -111,6 +110,9 @@ func _process_hover() -> void:
 		return
 		
 	_hovered_hex = hex_coord
+	
+	# AAA : Émission de l'événement pur "Fire & Forget" (Découplage visuel)
+	GridEvents.hex_hovered.emit(_hovered_hex)
 	
 	if _state == State.SKILL_TARGETING:
 		# AAA : Guard Clause UX - Cache l'AoE si on cible en dehors de la portée valide

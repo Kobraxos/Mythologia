@@ -4,6 +4,12 @@ extends Node3D
 # CONSTANTS
 ## Décalage vertical pour empêcher le Z-Fighting (clignotement) avec la tuile de sol.
 const Z_FIGHTING_OFFSET: float = 0.05
+## Décalage supplémentaire pour placer la bordure de portée sous l'AoE d'attaque.
+const RANGE_Y_OFFSET: float = -0.01
+## Décalage supplémentaire pour que les points de chemin flottent au-dessus du survol de mouvement.
+const PATH_Y_OFFSET: float = 0.05
+## Décalage pour le tracé (spline) du chemin.
+const LINE_Y_OFFSET: float = 0.05
 
 # EXPORTS
 @export_category("Prefabs")
@@ -19,6 +25,8 @@ const Z_FIGHTING_OFFSET: float = 0.05
 @export var path_line_prefab: PackedScene
 ## Le modèle 3D affiché pour représenter l'origine simulée (Ghost Stance).
 @export var ghost_highlight_prefab: PackedScene
+## Le modèle 3D autonome pour le curseur de survol de la souris.
+@export var hover_cursor_prefab: PackedScene
 
 # PRIVATE VARIABLES
 var _move_pool: Array[Node3D] = []
@@ -57,6 +65,13 @@ func _ready() -> void:
 		GridEvents.aoe_targeted.connect(_on_aoe_targeted)
 	if GridEvents.has_signal("aoe_cleared"):
 		GridEvents.aoe_cleared.connect(_on_aoe_cleared)
+		
+	# AAA : Instanciation du Flyweight Cursor géré par le Manager (Composition)
+	if hover_cursor_prefab:
+		var cursor: Node3D = hover_cursor_prefab.instantiate() as Node3D
+		add_child(cursor)
+	else:
+		push_error("HighlightManager: 'hover_cursor_prefab' manquant.")
 
 # SIGNAL HANDLERS
 func _on_movement_targeted(reachable_hexes: Array[Vector3i]) -> void:
@@ -90,8 +105,8 @@ func _on_movement_path_targeted(path_hexes: Array[Vector3i]) -> void:
 	for i in range(path_hexes.size() - 1):
 		var p1: Vector3 = HexMath.hex_to_world(path_hexes[i], GridManager.hex_size, GridManager.elevation_step)
 		var p2: Vector3 = HexMath.hex_to_world(path_hexes[i+1], GridManager.hex_size, GridManager.elevation_step)
-		p1.y += Z_FIGHTING_OFFSET + 0.05
-		p2.y += Z_FIGHTING_OFFSET + 0.05
+		p1.y += Z_FIGHTING_OFFSET + LINE_Y_OFFSET
+		p2.y += Z_FIGHTING_OFFSET + LINE_Y_OFFSET
 		
 		# AAA : Calcul du point d'articulation (sur l'arête mitoyenne)
 		var mid_p: Vector3 = (p1 + p2) / 2.0
@@ -177,9 +192,9 @@ func _display_hexes(hexes: Array[Vector3i], pool: Array[Node3D], prefab: PackedS
 		world_pos.y += Z_FIGHTING_OFFSET 
 		
 		if is_range:
-			world_pos.y -= 0.01 # Place la portée très légèrement sous la zone d'effet
+			world_pos.y += RANGE_Y_OFFSET # Place la portée très légèrement sous la zone d'effet
 		elif is_path:
-			world_pos.y += 0.05 # Place le point de chemin légèrement au-dessus de la zone verte
+			world_pos.y += PATH_Y_OFFSET # Place le point de chemin légèrement au-dessus de la zone verte
 			
 		mesh.position = world_pos
 		mesh.visible = true

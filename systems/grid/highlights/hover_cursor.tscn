@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://c5w53b5wqmtcv"]
+
+[ext_resource type="PackedScene" uid="uid://c8k1x2y304w5v" path="res://systems/grid/highlights/hex_highlight_base.tscn" id="1_fbcbd"]
+[ext_resource type="Script" uid="uid://bww3rapjuhflh" path="res://systems/grid/highlights/hover_cursor.gd" id="2_vt3ch"]
+[ext_resource type="Material" path="res://systems/grid/highlights/mat_highlight_hover.tres" id="3_bqgkg"]
+
+[sub_resource type="TorusMesh" id="TorusMesh_hex_border"]
+inner_radius = 0.9
+outer_radius = 0.96
+rings = 6
+ring_segments = 4
+
+[node name="HoverCursor" unique_id=796217896 instance=ExtResource("1_fbcbd")]
+script = ExtResource("2_vt3ch")
+
+[node name="MeshInstance3D" parent="." index="0"]
+mesh = SubResource("TorusMesh_hex_border")
+surface_material_override/0 = ExtResource("3_bqgkg")

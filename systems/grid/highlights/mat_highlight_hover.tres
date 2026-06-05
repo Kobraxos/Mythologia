@@ -1,0 +1,24 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://d1h5o6v7e8sa"]
+
+[sub_resource type="Shader" id="Shader_hover_pulse"]
+code = "shader_type spatial;
+render_mode unshaded, blend_mix;
+
+uniform vec4 albedo : source_color = vec4(1.0, 0.843, 0.0, 0.8);
+uniform float pulse_speed = 4.0;
+uniform float pulse_min = 0.4;
+
+void fragment() {
+	ALBEDO = albedo.rgb;
+	// Oscillation mathématique douce basée sur l'horloge interne de la carte graphique
+	float pulse = mix(pulse_min, 1.0, (sin(TIME * pulse_speed) + 1.0) / 2.0);
+	ALPHA = albedo.a * pulse;
+}
+"
+
+[resource]
+render_priority = 0
+shader = SubResource("Shader_hover_pulse")
+shader_parameter/albedo = Color(1, 0.843, 0, 0.8)
+shader_parameter/pulse_speed = 4.0
+shader_parameter/pulse_min = 0.4

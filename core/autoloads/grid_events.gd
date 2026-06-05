@@ -57,3 +57,7 @@ signal unit_spawned(unit: Node3D)
 @warning_ignore("unused_signal")
 ## Émis par l'UI de la timeline pour mettre l'unité en surbrillance sur la grille 3D.
 signal timeline_portrait_hovered(unit: Unit, is_hovered: bool)
+
+@warning_ignore("unused_signal")
+## Émis à chaque fois que la souris entre dans un nouvel hexagone mathématique.
+signal hex_hovered(hex_coord: Vector3i)
