@@ -1,6 +1,9 @@
 class_name Unit
 extends Node3D
 
+# SIGNALS
+signal movement_finished()
+
 # EXPORTS
 @export var move_duration: float = 0.3
 @export var stats: UnitStats
@@ -73,6 +76,10 @@ func end_turn() -> void:
 # PUBLIC FUNCTIONS
 ## Exécute un chemin de déplacement donné. (Appelé par les Contrôleurs : Joueur ou IA)
 func execute_path(path: Array[Vector3i]) -> void:
+	if path.size() <= 1:
+		movement_finished.emit()
+		return
+		
 	if _move_tween and _move_tween.is_valid():
 		_move_tween.kill()
 		
@@ -96,6 +103,8 @@ func execute_path(path: Array[Vector3i]) -> void:
 			current_hex = h
 			
 		_move_tween.tween_callback(update_hex.bind(step_hex))
+		
+	_move_tween.tween_callback(func() -> void: movement_finished.emit())
 
 # SIGNAL HANDLERS
 func _on_unit_selected(unit: Unit) -> void:
