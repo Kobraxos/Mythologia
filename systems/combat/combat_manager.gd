@@ -27,20 +27,37 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 
 # PRIVATE FUNCTIONS
 func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData) -> void:
-	# 1. Résolution des Dégâts AAA (Connecté aux statistiques dynamiques)
-	if skill.physical_damage_multiplier > 0.0:
-		var base_damage: float = float(caster.stats.base_physical_damage)
-		var final_damage: int = roundi(base_damage * skill.physical_damage_multiplier * caster.stats.damage_dealt_multiplier)
+	# 1. Résolution des Dégâts via la Pipeline AAA
+	if skill.physical_damage_multiplier > 0.0 or skill.mythic_damage_multiplier > 0.0:
+		var dmg_data := DamageData.new(caster, target, skill)
 		
-		if target.health_component:
-			target.health_component.take_damage(final_damage)
-			CombatEvents.damage_dealt.emit(target, final_damage, false)
+		# Choix du type de dégâts principal (peut être étendu pour faire les deux en même temps)
+		if skill.physical_damage_multiplier > 0.0:
+			dmg_data.base_amount = float(caster.stats.base_physical_damage) * skill.physical_damage_multiplier
+			dmg_data.is_mythic = false
+		elif skill.mythic_damage_multiplier > 0.0:
+			dmg_data.base_amount = float(caster.stats.base_mythic_damage) * skill.mythic_damage_multiplier
+			dmg_data.is_mythic = true
 			
-	# 2. Résolution des Soins
+		dmg_data.element = skill.skill_element
+		
+		# Jet de Critique
+		var crit_chance: float = caster.stats.base_crit_chance + skill.crit_chance_modifier
+		if randf() <= crit_chance:
+			dmg_data.is_critical = true
+			
+		DamagePipeline.calculate_and_apply(dmg_data)
+			
+	# 2. Résolution des Soins via la Pipeline AAA
 	if skill.base_healing > 0:
-		if target.health_component:
-			target.health_component.heal(skill.base_healing)
-			CombatEvents.healing_done.emit(target, skill.base_healing)
+		var heal_data := DamageData.new(caster, target, skill)
+		heal_data.is_healing = true
+		heal_data.base_amount = float(skill.base_healing)
+		
+		if skill.healing_mythic_scaling > 0.0:
+			heal_data.base_amount += float(caster.stats.base_mythic_damage) * skill.healing_mythic_scaling
+			
+		DamagePipeline.calculate_and_apply(heal_data)
 			
 	# 3. Application des Payloads (Statuts via StatusReceiverComponent)
 	for payload_res: Resource in skill.effect_payloads:
