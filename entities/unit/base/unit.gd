@@ -70,8 +70,9 @@ func end_turn() -> void:
 	if status_receiver:
 		status_receiver.tick_durations()
 
-# PRIVATE FUNCTIONS
-func _move_along_path(path: Array[Vector3i]) -> void:
+# PUBLIC FUNCTIONS
+## Exécute un chemin de déplacement donné. (Appelé par les Contrôleurs : Joueur ou IA)
+func execute_path(path: Array[Vector3i]) -> void:
 	if _move_tween and _move_tween.is_valid():
 		_move_tween.kill()
 		
@@ -117,4 +118,4 @@ func _on_hex_clicked(target_hex: Vector3i) -> void:
 			return # Mouvement annulé : Fonds insuffisants.
 		action_economy.consume_mp(path_cost)
 
-	_move_along_path(path)
+	execute_path(path)
