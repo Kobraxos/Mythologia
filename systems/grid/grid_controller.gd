@@ -21,6 +21,7 @@ var _hovered_hex: Vector3i = INVALID_HEX
 var _selected_unit: Unit = null
 var _reachable_hexes: Array[Vector3i] = []
 var _valid_casting_hexes: Array[Vector3i] = []
+var _planned_move_hex: Vector3i = INVALID_HEX
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
@@ -55,8 +56,10 @@ func cancel_targeting() -> void:
 	if _state == State.SKILL_TARGETING:
 		_targeted_skill = null
 		_valid_casting_hexes.clear()
+		_planned_move_hex = INVALID_HEX
 		GridEvents.skill_range_cleared.emit()
 		GridEvents.aoe_cleared.emit()
+		GridEvents.ghost_stance_cleared.emit()
 	elif _state == State.MOVE_TARGETING:
 		_reachable_hexes.clear()
 		GridEvents.movement_path_cleared.emit()
@@ -110,7 +113,9 @@ func _process_hover() -> void:
 			return
 			
 		if is_instance_valid(_selected_unit) and _targeted_skill:
-			var affected: Array[Vector3i] = HexAoE.get_affected_hexes(_selected_unit.current_hex, _hovered_hex, _targeted_skill)
+			var origin: Vector3i = _planned_move_hex if _planned_move_hex != INVALID_HEX else _selected_unit.current_hex
+			var ignored: Vector3i = _selected_unit.current_hex if _planned_move_hex != INVALID_HEX else INVALID_HEX
+			var affected: Array[Vector3i] = HexAoE.get_affected_hexes(origin, _hovered_hex, _targeted_skill, ignored)
 			GridEvents.aoe_targeted.emit(affected)
 			
 	elif _state == State.MOVE_TARGETING:
@@ -129,6 +134,15 @@ func _confirm_targeting() -> void:
 		return
 		
 	if is_instance_valid(_selected_unit) and _targeted_skill:
+		# AAA : Prévention de l'exploit "Teleport Strike" (Ghost Stance)
+		if _planned_move_hex != INVALID_HEX:
+			# Le joueur tente d'attaquer depuis un hologramme.
+			# L'approche "Strict Stance" valide le déplacement d'abord et force une nouvelle visée.
+			GridEvents.hex_clicked.emit(_planned_move_hex)
+			cancel_targeting()
+			return
+			
+		# L'unité est physiquement à la bonne place, on lance le sort
 		var success: bool = _selected_unit.skill_caster.cast_skill(_targeted_skill, _hovered_hex)
 		if success:
 			cancel_targeting()
@@ -170,17 +184,37 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 	if not is_instance_valid(_selected_unit) or not _selected_unit.skill_caster:
 		return
 		
-	if _state != State.DEFAULT:
-		cancel_targeting()
+	# AAA : Transition pure vers le Ghost Stance
+	if _state == State.MOVE_TARGETING and _hovered_hex != INVALID_HEX and _reachable_hexes.has(_hovered_hex):
+		_planned_move_hex = _hovered_hex
+		GridEvents.movement_path_cleared.emit()
+		GridEvents.movement_cleared.emit()
+	else:
+		if _state != State.SKILL_TARGETING:
+			cancel_targeting()
+		_planned_move_hex = INVALID_HEX
 		
 	_targeted_skill = skill
 	_state = State.SKILL_TARGETING
+	
+	var previous_hover: Vector3i = _hovered_hex
 	_hovered_hex = INVALID_HEX # Force l'actualisation de la zone même si la souris n'a pas bougé
 	
+	var origin_hex: Vector3i = _selected_unit.current_hex
+	var ignored_hex: Vector3i = INVALID_HEX
+	
+	if _planned_move_hex != INVALID_HEX:
+		origin_hex = _planned_move_hex
+		ignored_hex = _selected_unit.current_hex
+		GridEvents.ghost_stance_activated.emit(_planned_move_hex)
+	else:
+		GridEvents.ghost_stance_cleared.emit()
+		
 	# AAA : Calcul Just-In-Time de la portée de la compétence
-	_valid_casting_hexes = HexAoE.get_valid_casting_range(_selected_unit.current_hex, _targeted_skill)
+	_valid_casting_hexes = HexAoE.get_valid_casting_range(origin_hex, _targeted_skill, ignored_hex)
 	GridEvents.skill_range_targeted.emit(_valid_casting_hexes)
 	
+	_hovered_hex = previous_hover
 	_process_hover() # Force un premier dessin de l'AoE immédiatement
 
 func _on_move_button_clicked() -> void:

@@ -17,6 +17,8 @@ const Z_FIGHTING_OFFSET: float = 0.05
 @export var path_highlight_prefab: PackedScene
 ## Le modèle 3D affiché pour relier les points du chemin (ex: Faisceau/Ligne dorée).
 @export var path_line_prefab: PackedScene
+## Le modèle 3D affiché pour représenter l'origine simulée (Ghost Stance).
+@export var ghost_highlight_prefab: PackedScene
 
 # PRIVATE VARIABLES
 var _move_pool: Array[Node3D] = []
@@ -24,6 +26,7 @@ var _attack_pool: Array[Node3D] = []
 var _range_pool: Array[Node3D] = []
 var _path_pool: Array[Node3D] = []
 var _path_line_pool: Array[Node3D] = []
+var _ghost_pool: Array[Node3D] = []
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
@@ -43,6 +46,11 @@ func _ready() -> void:
 		GridEvents.skill_range_targeted.connect(_on_skill_range_targeted)
 	if GridEvents.has_signal("skill_range_cleared"):
 		GridEvents.skill_range_cleared.connect(_on_skill_range_cleared)
+		
+	if GridEvents.has_signal("ghost_stance_activated"):
+		GridEvents.ghost_stance_activated.connect(_on_ghost_stance_activated)
+	if GridEvents.has_signal("ghost_stance_cleared"):
+		GridEvents.ghost_stance_cleared.connect(_on_ghost_stance_cleared)
 		
 	# AAA Fix : has_user_signal ne détecte que les signaux dynamiques. has_signal détecte les signaux déclarés.
 	if GridEvents.has_signal("aoe_targeted"):
@@ -116,6 +124,7 @@ func _on_unit_deselected() -> void:
 	_on_movement_cleared()
 	_on_aoe_cleared()
 	_on_skill_range_cleared()
+	_on_ghost_stance_cleared()
 
 func _on_aoe_targeted(hexes: Array[Vector3i]) -> void:
 	_on_aoe_cleared()
@@ -139,6 +148,18 @@ func _on_skill_range_targeted(hexes: Array[Vector3i]) -> void:
 
 func _on_skill_range_cleared() -> void:
 	_hide_pool(_range_pool)
+
+func _on_ghost_stance_activated(planned_hex: Vector3i) -> void:
+	_on_ghost_stance_cleared()
+	if not ghost_highlight_prefab:
+		if path_highlight_prefab: # Fallback élégant si aucun prefab de ghost n'est fourni
+			_display_hexes([planned_hex], _ghost_pool, path_highlight_prefab, false, true)
+		return
+		
+	_display_hexes([planned_hex], _ghost_pool, ghost_highlight_prefab, false, true)
+
+func _on_ghost_stance_cleared() -> void:
+	_hide_pool(_ghost_pool)
 
 # PRIVATE FUNCTIONS
 func _display_hexes(hexes: Array[Vector3i], pool: Array[Node3D], prefab: PackedScene, is_range: bool = false, is_path: bool = false) -> void:

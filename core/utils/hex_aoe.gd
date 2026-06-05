@@ -6,7 +6,7 @@ extends RefCounted
 
 # PUBLIC FUNCTIONS
 ## Calcule la portée valide d'une compétence (anneau entre min_range et max_range).
-static func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData) -> Array[Vector3i]:
+static func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData, ignored_hex: Vector3i = Vector3i(0, 0, -999)) -> Array[Vector3i]:
 	var valid_hexes: Array[Vector3i] = []
 	var center_2d := Vector2i(caster_hex.x, caster_hex.y)
 	
@@ -31,7 +31,7 @@ static func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData) -> A
 						continue
 						
 					# Vérification de la Ligne de Vue si exigé
-					if skill.requires_line_of_sight and not has_line_of_sight(caster_hex, actual_hex):
+					if skill.requires_line_of_sight and not has_line_of_sight(caster_hex, actual_hex, ignored_hex):
 						continue
 						
 					valid_hexes.append(actual_hex)
@@ -39,23 +39,23 @@ static func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData) -> A
 	return valid_hexes
 
 ## Calcule et retourne toutes les cases affectées par une compétence (Wrapper Principal).
-static func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: SkillData) -> Array[Vector3i]:
+static func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: SkillData, ignored_hex: Vector3i = Vector3i(0, 0, -999)) -> Array[Vector3i]:
 	var shape: SkillData.AreaShape = skill.aoe_shape
 	var radius: int = skill.aoe_radius
 	var pierces: bool = skill.pierces_obstacles
 
 	match shape:
 		SkillData.AreaShape.CIRCLE:
-			return _get_circle(target_hex, radius, pierces)
+			return _get_circle(target_hex, radius, pierces, ignored_hex)
 		SkillData.AreaShape.LINE:
-			return _get_line(caster_hex, target_hex, radius, pierces)
+			return _get_line(caster_hex, target_hex, radius, pierces, ignored_hex)
 		SkillData.AreaShape.CONE:
-			return _get_cone(caster_hex, target_hex, radius, pierces)
+			return _get_cone(caster_hex, target_hex, radius, pierces, ignored_hex)
 		_: # SINGLE_TARGET (ou autres non implémentés comme RING)
 			return [target_hex]
 
 ## Calcule une ligne de vue (Bresenham hexagonal) pour vérifier les obstacles mathématiques.
-static func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i) -> bool:
+static func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i, ignored_hex: Vector3i = Vector3i(0, 0, -999)) -> bool:
 	var start_2d := Vector2i(start_hex.x, start_hex.y)
 	var target_2d := Vector2i(target_hex.x, target_hex.y)
 	var dist: int = _hex_distance(start_2d, target_2d)
@@ -76,6 +76,10 @@ static func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i) -> bool
 		if not _is_hex_traversable(actual_hex):
 			return false # Bloqué par un trou ou un mur pur
 			
+		# AAA : Paradoxe de Ligne de Vue - Les unités bloquent la ligne de vue, sauf l'origine ignorée
+		if actual_hex != ignored_hex and GridManager.unit_positions.has(actual_hex):
+			return false
+			
 		# Contrainte Topologique 2.5D : Bloqué si la colline intermédiaire est plus haute 
 		# que la position du lanceur ET de la cible.
 		var max_z: int = max(start_hex.z, target_hex.z)
@@ -85,7 +89,7 @@ static func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i) -> bool
 	return true
 
 # PRIVATE FUNCTIONS (SHAPES)
-static func _get_line(start_hex: Vector3i, target_hex: Vector3i, length: int, pierces_obstacles: bool) -> Array[Vector3i]:
+static func _get_line(start_hex: Vector3i, target_hex: Vector3i, length: int, pierces_obstacles: bool, ignored_hex: Vector3i) -> Array[Vector3i]:
 	var line: Array[Vector3i] = []
 	var start_2d := Vector2i(start_hex.x, start_hex.y)
 	var target_2d := Vector2i(target_hex.x, target_hex.y)
@@ -104,7 +108,8 @@ static func _get_line(start_hex: Vector3i, target_hex: Vector3i, length: int, pi
 		var current_2d := _cubic_to_axial(current_cube)
 		var actual_hex := _get_surface_hex(current_2d)
 
-		if not pierces_obstacles and not _is_hex_traversable(actual_hex):
+		var is_blocked: bool = not _is_hex_traversable(actual_hex) or (actual_hex != ignored_hex and GridManager.unit_positions.has(actual_hex))
+		if not pierces_obstacles and is_blocked:
 			break # Arrête net la ligne de dégâts
 			
 		if actual_hex.z != -999 and not line.has(actual_hex):
@@ -112,7 +117,7 @@ static func _get_line(start_hex: Vector3i, target_hex: Vector3i, length: int, pi
 
 	return line
 
-static func _get_circle(center_hex: Vector3i, radius: int, pierces_obstacles: bool) -> Array[Vector3i]:
+static func _get_circle(center_hex: Vector3i, radius: int, pierces_obstacles: bool, ignored_hex: Vector3i) -> Array[Vector3i]:
 	var circle: Array[Vector3i] = []
 	var center_2d := Vector2i(center_hex.x, center_hex.y)
 
@@ -122,13 +127,13 @@ static func _get_circle(center_hex: Vector3i, radius: int, pierces_obstacles: bo
 			var actual_hex := _get_surface_hex(current_2d)
 			
 			if actual_hex.z != -999:
-				if not pierces_obstacles and not has_line_of_sight(center_hex, actual_hex):
+				if not pierces_obstacles and not has_line_of_sight(center_hex, actual_hex, ignored_hex):
 					continue
 				circle.append(actual_hex)
 				
 	return circle
 
-static func _get_cone(start_hex: Vector3i, target_hex: Vector3i, length: int, pierces_obstacles: bool) -> Array[Vector3i]:
+static func _get_cone(start_hex: Vector3i, target_hex: Vector3i, length: int, pierces_obstacles: bool, ignored_hex: Vector3i) -> Array[Vector3i]:
 	var cone: Array[Vector3i] = []
 	var start_2d := Vector2i(start_hex.x, start_hex.y)
 	var target_2d := Vector2i(target_hex.x, target_hex.y)
@@ -152,7 +157,7 @@ static func _get_cone(start_hex: Vector3i, target_hex: Vector3i, length: int, pi
 			if dir_cube.dot(current_dir) >= 0.5:
 				var actual_hex := _get_surface_hex(current_2d)
 				if actual_hex.z != -999:
-					if not pierces_obstacles and not has_line_of_sight(start_hex, actual_hex):
+					if not pierces_obstacles and not has_line_of_sight(start_hex, actual_hex, ignored_hex):
 						continue
 					cone.append(actual_hex)
 	return cone

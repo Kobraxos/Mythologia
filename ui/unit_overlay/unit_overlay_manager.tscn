@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://u0ver1ayman4g"]
+[gd_scene format=3 uid="uid://bot1tqopsabcm"]
 
-[ext_resource type="Script" path="res://ui/unit_overlay/unit_overlay_manager.gd" id="1_uom"]
-[ext_resource type="PackedScene" uid="uid://u1overlay0001" path="res://ui/unit_overlay/unit_overlay.tscn" id="2_prefab"]
+[ext_resource type="Script" uid="uid://5lxksmm67a1v" path="res://ui/unit_overlay/unit_overlay_manager.gd" id="1_uom"]
+[ext_resource type="PackedScene" uid="uid://bpnjghy050m77" path="res://ui/unit_overlay/unit_overlay.tscn" id="2_prefab"]
 
-[node name="UnitOverlayManager" type="Control"]
+[node name="UnitOverlayManager" type="Control" unique_id=855583826]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

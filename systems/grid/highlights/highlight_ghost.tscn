@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://ghostprefab0001"]
+
+[ext_resource type="Material" uid="uid://matghost0001" path="res://systems/grid/highlights/mat_highlight_ghost.tres" id="1_mat"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_ghost"]
+radius = 0.35
+height = 1.8
+
+[node name="GhostHighlight" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_ghost")
+surface_material_override/0 = ExtResource("1_mat")

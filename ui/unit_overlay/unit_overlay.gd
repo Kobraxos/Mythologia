@@ -18,7 +18,7 @@ extends Control
 var _target: Unit
 var _camera: Camera3D
 
-func setup(unit: Unit, faction_color: Color = Color(0.3, 0.3, 0.3)) -> void:
+func setup(unit: Unit) -> void:
 	_target = unit
 	_camera = get_viewport().get_camera_3d()
 	
@@ -45,7 +45,7 @@ func setup(unit: Unit, faction_color: Color = Color(0.3, 0.3, 0.3)) -> void:
 		bg_style.border_width_top = 2
 		bg_style.border_width_right = 2
 		bg_style.border_width_bottom = 2
-		bg_style.border_color = faction_color
+		bg_style.border_color = Color(0.1, 0.1, 0.1) # Bordure noire/neutre
 		hp_bar.add_theme_stylebox_override("background", bg_style)
 			
 	# AAA : Le pivot au centre garantit que le zoom s'applique uniformément depuis le milieu de la barre

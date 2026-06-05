@@ -39,6 +39,14 @@ signal movement_path_cleared()
 signal skill_range_targeted(hexes: Array[Vector3i])
 
 @warning_ignore("unused_signal")
+## Émis lorsqu'une compétence est ciblée depuis une position planifiée (Ghost Stance).
+signal ghost_stance_activated(planned_hex: Vector3i)
+
+@warning_ignore("unused_signal")
+## Émis pour effacer l'affichage du Ghost Stance.
+signal ghost_stance_cleared()
+
+@warning_ignore("unused_signal")
 ## Émis pour effacer l'affichage de la portée d'une compétence.
 signal skill_range_cleared()
 
