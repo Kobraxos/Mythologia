@@ -69,9 +69,10 @@ static func _process_damage(data: DamageData) -> void:
 			var effective_def: float = maxf(0.0, data.target.stats.physical_defense * (1.0 - pen))
 			amount = maxf(0.0, amount - effective_def)
 
-	# 4. Final Clamp (Arrondi et minimum à 1 si l'attaque a touché et n'a pas été 100% absorbée, 
-	# ou on peut laisser à 0 si l'armure a tout bloqué. Choix de design : min 1 si dmg > 0)
+	# 4. Variance et Final Clamp
 	if amount > 0.0:
+		# Variance AAA de +/- 10%
+		amount *= randf_range(0.9, 1.1)
 		amount = maxf(1.0, amount)
 		
 	data.final_amount = roundi(amount)
@@ -93,6 +94,9 @@ static func _process_healing(data: DamageData) -> void:
 	# Modificateurs de Soin Entrant
 	if data.target and data.target.stats:
 		amount *= data.target.stats.incoming_healing_multiplier
+		
+	# Variance AAA de +/- 10%
+	amount *= randf_range(0.9, 1.1)
 		
 	data.final_amount = maxi(0, roundi(amount))
 	
