@@ -6,7 +6,8 @@ extends RefCounted
 var _grid_graph: Dictionary[Vector3i, Dictionary] = {}
 
 const MAX_PATH_CACHE_SIZE: int = 3
-var _path_cache: Array[Dictionary] = []
+## Cache LRU O(1). Clé: Array, Valeur: Array[Vector3i] (Chemin copié)
+var _path_cache: Dictionary = {}
 
 # PUBLIC FUNCTIONS
 ## Ajoute une case franchissable au graphe de navigation.
@@ -42,14 +43,15 @@ func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats) -> Array[Vec
 	if not _grid_graph.has(start) or not _grid_graph.has(end):
 		return []
 		
+	# L'Array sert directement de clé de hachage au Dictionnaire
 	var cache_key: Array = [start, end, stats.movement_type, stats.max_elevation_jump]
-	for i in range(_path_cache.size()):
-		if _path_cache[i].key == cache_key:
-			var cached_entry: Dictionary = _path_cache[i]
-			if i > 0:
-				_path_cache.remove_at(i)
-				_path_cache.push_front(cached_entry)
-			return cached_entry.path.duplicate()
+	
+	if _path_cache.has(cache_key):
+		var cached_path: Array[Vector3i] = _path_cache[cache_key]
+		# Maintien du LRU : Godot 4 conserve l'ordre d'insertion des Dictionnaires
+		_path_cache.erase(cache_key)
+		_path_cache[cache_key] = cached_path
+		return cached_path.duplicate()
 			
 	if stats.movement_type == UnitStats.MovementType.TELEPORTING:
 		var path: Array[Vector3i] = [start, end]
@@ -142,9 +144,10 @@ func get_reachable_hexes(start: Vector3i, stats: UnitStats, available_mp: int) -
 
 # PRIVATE FUNCTIONS
 func _add_to_cache(key: Array, path: Array[Vector3i]) -> void:
-	_path_cache.push_front({ "key": key, "path": path.duplicate() })
+	_path_cache[key] = path.duplicate()
 	if _path_cache.size() > MAX_PATH_CACHE_SIZE:
-		_path_cache.pop_back()
+		# Supprime la clé la plus ancienne (Least Recently Used)
+		_path_cache.erase(_path_cache.keys()[0])
 
 func _heuristic(a: Vector3i, b: Vector3i) -> float:
 	return _grid_graph[a].world_pos.distance_to(_grid_graph[b].world_pos)

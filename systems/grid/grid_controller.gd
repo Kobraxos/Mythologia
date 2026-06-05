@@ -2,9 +2,6 @@ class_name GridController
 extends Node
 
 # CONSTANTS
-## Masque de collision AAA : Uniquement le Terrain (Layer 1). Les unités sont ignorées par le raycast.
-const TERRAIN_MASK: int = 1
-const RAY_LENGTH: float = 1000.0
 ## Valeur mathématique représentant l'absence de tuile (le vide absolu).
 const INVALID_HEX: Vector3i = Vector3i(0, 0, -999)
 
@@ -83,24 +80,26 @@ func _get_hex_under_mouse() -> Vector3i:
 	if not camera:
 		return INVALID_HEX
 
-	var space_state: PhysicsDirectSpaceState3D = camera.get_world_3d().direct_space_state
 	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
 
 	var origin: Vector3 = camera.project_ray_origin(mouse_pos)
 	var normal: Vector3 = camera.project_ray_normal(mouse_pos)
-	var end: Vector3 = origin + normal * RAY_LENGTH
 
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(origin, end)
-	query.collision_mask = TERRAIN_MASK
-
-	var result: Dictionary = space_state.intersect_ray(query)
-
-	if result and result.has("position"):
-		var world_pos: Vector3 = result["position"] as Vector3
-		var hex_coord: Vector3i = HexMath.world_to_hex(world_pos, GridManager.hex_size, GridManager.elevation_step)
-
-		if GridManager.terrain_tiles.has(hex_coord):
-			return hex_coord
+	# AAA : Ray-Marching Mathématique sur les plans d'élévation (Zéro physique)
+	# On teste l'intersection du rayon avec les différents "étages" de la grille, du plus haut vers le bas.
+	var max_elevation: int = 5 # Ajustable selon la hauteur max générée par ton élévation procédurale
+	for z: int in range(max_elevation, -1, -1):
+		var plane_height: float = z * GridManager.elevation_step
+		var plane: Plane = Plane(Vector3.UP, plane_height)
+		var hit_pos = plane.intersects_ray(origin, normal)
+		
+		if hit_pos != null:
+			var hex_coord: Vector3i = HexMath.world_to_hex(hit_pos, GridManager.hex_size, GridManager.elevation_step)
+			# Si on traverse la colonne d'un hexagone, on vérifie s'il existe une tuile physique à cette hauteur ou au-dessus (clic sur la falaise)
+			for test_z: int in range(hex_coord.z, max_elevation + 1):
+				var check_hex: Vector3i = Vector3i(hex_coord.x, hex_coord.y, test_z)
+				if GridManager.terrain_tiles.has(check_hex):
+					return check_hex
 			
 	return INVALID_HEX
 
