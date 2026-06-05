@@ -8,15 +8,15 @@ func execute(context: AIContext) -> void:
 	var best_target: Unit = null
 	var min_dist: int = -1
 
-	# 1. Recherche de la cible la plus proche
+	# 1. Recherche de la cible ennemie la plus proche
 	for hex: Vector3i in GridManager.unit_positions:
 		var other_unit: Unit = GridManager.unit_positions[hex]
 		if not is_instance_valid(other_unit) or other_unit == unit:
 			continue
-			
-		# TODO AAA: Intégrer un système de Faction dans unit_stats.gd (ex: other_unit.team != unit.team). 
-		# Actuellement, faute de variable de faction, l'IA cible n'importe quelle unité autre qu'elle-même.
-		
+
+		if other_unit.faction == unit.faction:
+			continue
+
 		var dist: int = HexMath.distance_2d(start_hex, hex)
 		if best_target == null or dist < min_dist:
 			min_dist = dist
