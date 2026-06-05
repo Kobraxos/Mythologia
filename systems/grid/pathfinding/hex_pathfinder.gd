@@ -5,6 +5,9 @@ extends RefCounted
 ## Graphe topologique brut. Clé: Vector3i, Valeur: Dictionnaire { world_pos: Vector3, cost: float, neighbors: Array[Vector3i] }
 var _grid_graph: Dictionary[Vector3i, Dictionary] = {}
 
+const MAX_PATH_CACHE_SIZE: int = 3
+var _path_cache: Array[Dictionary] = []
+
 # PUBLIC FUNCTIONS
 ## Ajoute une case franchissable au graphe de navigation.
 func add_hex(hex: Vector3i, world_pos: Vector3, movement_cost: float = 1.0) -> void:
@@ -16,6 +19,7 @@ func add_hex(hex: Vector3i, world_pos: Vector3, movement_cost: float = 1.0) -> v
 		"cost": movement_cost,
 		"neighbors": [] as Array[Vector3i]
 	}
+	_path_cache.clear()
 
 func has_hex(hex: Vector3i) -> bool:
 	return _grid_graph.has(hex)
@@ -23,18 +27,34 @@ func has_hex(hex: Vector3i) -> bool:
 ## Connecte deux cases adjacentes (bidirectionnel par défaut).
 func connect_hexes(hex_a: Vector3i, hex_b: Vector3i) -> void:
 	if _grid_graph.has(hex_a) and _grid_graph.has(hex_b):
+		var changed: bool = false
 		if not _grid_graph[hex_a].neighbors.has(hex_b):
 			_grid_graph[hex_a].neighbors.append(hex_b)
+			changed = true
 		if not _grid_graph[hex_b].neighbors.has(hex_a):
 			_grid_graph[hex_b].neighbors.append(hex_a)
+			changed = true
+		if changed:
+			_path_cache.clear()
 
 ## Calcule et retourne le chemin le plus court sous forme de tableau de coordonnées.
 func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats) -> Array[Vector3i]:
 	if not _grid_graph.has(start) or not _grid_graph.has(end):
 		return []
 		
+	var cache_key: Array = [start, end, stats.movement_type, stats.max_elevation_jump]
+	for i in range(_path_cache.size()):
+		if _path_cache[i].key == cache_key:
+			var cached_entry: Dictionary = _path_cache[i]
+			if i > 0:
+				_path_cache.remove_at(i)
+				_path_cache.push_front(cached_entry)
+			return cached_entry.path.duplicate()
+			
 	if stats.movement_type == UnitStats.MovementType.TELEPORTING:
-		return [start, end] # Téléportation directe
+		var path: Array[Vector3i] = [start, end]
+		_add_to_cache(cache_key, path)
+		return path
 		
 	var frontier: Array[Vector3i] = [start]
 	var came_from: Dictionary[Vector3i, Vector3i] = {}
@@ -56,6 +76,7 @@ func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats) -> Array[Vec
 			while came_from.has(current):
 				current = came_from[current]
 				path.push_front(current)
+			_add_to_cache(cache_key, path)
 			return path
 
 		for next_hex: Vector3i in _grid_graph[current].neighbors:
@@ -71,6 +92,7 @@ func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats) -> Array[Vec
 				if not frontier.has(next_hex):
 					frontier.append(next_hex)
 
+	_add_to_cache(cache_key, [])
 	return []
 
 ## Calcule le coût total en PM d'un chemin donné pour une unité spécifique.
@@ -119,6 +141,11 @@ func get_reachable_hexes(start: Vector3i, stats: UnitStats, available_mp: int) -
 	return reachable
 
 # PRIVATE FUNCTIONS
+func _add_to_cache(key: Array, path: Array[Vector3i]) -> void:
+	_path_cache.push_front({ "key": key, "path": path.duplicate() })
+	if _path_cache.size() > MAX_PATH_CACHE_SIZE:
+		_path_cache.pop_back()
+
 func _heuristic(a: Vector3i, b: Vector3i) -> float:
 	return _grid_graph[a].world_pos.distance_to(_grid_graph[b].world_pos)
 

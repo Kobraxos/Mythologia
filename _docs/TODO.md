@@ -25,7 +25,7 @@ Pour un projet AAA digne, vous devez maintenant passer de "prototype jouable" à
 
 #### Priorité 3 - Optimisations Perf 🟡 MOYEN (EN ATTENTE)
 *Goulots identifiés (pour échelle AAA) :*
-- [ ] Cache pathfinding (LRU 2-3 derniers chemins dans `HexPathfinder`)
+- [x] Cache pathfinding (LRU 2-3 derniers chemins dans `HexPathfinder`)
 - [ ] LoS Raycaster groupé 3D au lieu de Bresenham itératif dans `HexAoE`
 
 ---
