@@ -29,14 +29,14 @@ func _initialize_battle() -> void:
 	
 	# Phase 2 : Les acteurs entrent en scène (Spawn procédural)
 	if hero_stats and enemy_stats:
-		_spawn_unit_at_axial(0, 0, hero_stats)
-		_spawn_unit_at_axial(1, -1, enemy_stats)
+		_spawn_unit_at_axial(0, 0, hero_stats, Unit.Faction.PLAYER)
+		_spawn_unit_at_axial(1, -1, enemy_stats, Unit.Faction.ENEMY)
 		
 	# Phase 3 : Le temps s'écoule
 	turn_manager.start_battle()
 
 # PRIVATE FUNCTIONS
-func _spawn_unit_at_axial(q: int, r: int, stats: UnitStats) -> void:
+func _spawn_unit_at_axial(q: int, r: int, stats: UnitStats, faction: Unit.Faction) -> void:
 	var target_hex: Vector3i = _get_surface_hex(q, r)
 	
 	var unit: Unit = player_unit_prefab.instantiate() as Unit
@@ -44,7 +44,7 @@ func _spawn_unit_at_axial(q: int, r: int, stats: UnitStats) -> void:
 	# Ainsi, quand l'unité exécutera son _ready(), elle lira sa hauteur exacte !
 	unit.position = HexMath.hex_to_world(target_hex, GridManager.hex_size, GridManager.elevation_step)
 	add_child(unit)
-	unit.initialize(stats)
+	unit.initialize(stats, faction)
 	turn_manager.register_unit(unit)
 
 ## Scanne la grille pour trouver la case (et surtout sa hauteur Z) correspondant à une coordonnée 2D.

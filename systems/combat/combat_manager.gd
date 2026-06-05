@@ -21,13 +21,16 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		var target_node: Node3D = GridManager.unit_positions.get(hex)
 		if target_node and target_node is Unit:
 			_resolve_single_target(caster_unit, target_node as Unit, skill)
+			
+	# 3. Libération asynchrone : Informe l'IA ou l'UI que le sort a terminé son exécution
+	CombatEvents.skill_resolved.emit(caster, skill, target_hex)
 
 # PRIVATE FUNCTIONS
 func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData) -> void:
-	# 1. Résolution des Dégâts (MVP)
+	# 1. Résolution des Dégâts AAA (Connecté aux statistiques dynamiques)
 	if skill.physical_damage_multiplier > 0.0:
-		var base_damage: int = 10 # Placeholder MVP (Sera bientôt lié au StatManager du lanceur)
-		var final_damage: int = roundi(base_damage * skill.physical_damage_multiplier)
+		var base_damage: float = float(caster.stats.base_physical_damage)
+		var final_damage: int = roundi(base_damage * skill.physical_damage_multiplier * caster.stats.damage_dealt_multiplier)
 		
 		if target.health_component:
 			target.health_component.take_damage(final_damage)

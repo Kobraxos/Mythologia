@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AIHeuristicHasAP" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/ai/heuristics/ai_heuristic_has_ap.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+minimum_ap = 1

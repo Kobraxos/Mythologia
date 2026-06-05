@@ -1,0 +1,89 @@
+[gd_scene load_steps=4 format=3 uid="uid://timeline_ui_uid"]
+
+[ext_resource type="Script" path="res://ui/timeline/timeline_ui.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://ui/timeline/timeline_portrait.tscn" id="2_portrait"]
+[ext_resource type="PackedScene" uid="uid://timeline_separator_uid" path="res://ui/timeline/timeline_separator.tscn" id="3_separator"]
+[ext_resource type="Shader" path="res://assets/shaders/timeline_bg.gdshader" id="4_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+shader = ExtResource("4_shader")
+shader_parameter/base_color = Color(0.06, 0.04, 0.05, 0.95)
+shader_parameter/mist_color = Color(0.55, 0.35, 0.15, 0.6)
+shader_parameter/dust_color = Color(1, 0.8, 0.3, 0.8)
+shader_parameter/speed = 0.03
+
+[sub_resource type="Gradient" id="Gradient_line"]
+colors = PackedColorArray(0.85, 0.65, 0.2, 1, 0.85, 0.65, 0.2, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_line"]
+gradient = SubResource("Gradient_line")
+width = 256
+height = 8
+fill = 1
+fill_from = Vector2(1, 0.5)
+fill_to = Vector2(0, 0.5)
+
+[node name="TimelineUI" type="Control" node_paths=PackedStringArray("container")]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -960.0
+offset_bottom = 128.0
+grow_horizontal = 0
+mouse_filter = 2
+script = ExtResource("1_script")
+portrait_scene = ExtResource("2_portrait")
+separator_scene = ExtResource("3_separator")
+container = NodePath("MarginContainer/TimelineContainer")
+
+[node name="Background" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_bg")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopLine" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 2.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_line")
+expand_mode = 1
+
+[node name="BottomLine" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_line")
+expand_mode = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 16
+
+[node name="TimelineContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+alignment = 2

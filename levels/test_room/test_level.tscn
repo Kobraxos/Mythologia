@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://c02cnmijv1gxt" path="res://systems/combat/combat_manager.gd" id="11_yqcj1"]
 [ext_resource type="PackedScene" uid="uid://ftm4nag3r001" path="res://ui/floating_text/floating_text_manager.tscn" id="12_ftm"]
 [ext_resource type="PackedScene" uid="uid://bot1tqopsabcm" path="res://ui/unit_overlay/unit_overlay_manager.tscn" id="13_uom"]
+[ext_resource type="PackedScene" path="res://ui/timeline/timeline_ui.tscn" id="14_timeline"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.05
@@ -67,3 +68,5 @@ script = ExtResource("11_yqcj1")
 [node name="FloatingTextManager" parent="HUD" unique_id=2064226378 instance=ExtResource("12_ftm")]
 
 [node name="UnitOverlayManager" parent="HUD" unique_id=1281811015 instance=ExtResource("13_uom")]
+
+[node name="TimelineUI" parent="HUD" unique_id=1812768785 instance=ExtResource("14_timeline")]

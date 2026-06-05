@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AIActionAttack" format=3 uid="uid://d0rpre70hrmde"]
+
+[ext_resource type="Script" uid="uid://cy6bl4pjwvxxl" path="res://systems/ai/heuristics/ai_heuristic.gd" id="1_0vw2h"]
+[ext_resource type="Script" uid="uid://uwp5hi4cxyyj" path="res://systems/ai/actions/ai_action_attack.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://cyd2aljxwrxdw" path="res://data/skills/attacks/frappe_basique.tres" id="2_skill"]
+[ext_resource type="Resource" path="res://data/ai/heuristics/attack_has_ap.tres" id="3_ap"]
+[ext_resource type="Resource" path="res://data/ai/heuristics/attack_in_range.tres" id="4_range"]
+
+[resource]
+script = ExtResource("1_script")
+skill_to_use = ExtResource("2_skill")
+heuristics = Array[ExtResource("1_0vw2h")]([ExtResource("3_ap"), ExtResource("4_range")])

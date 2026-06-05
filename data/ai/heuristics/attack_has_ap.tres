@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AIHeuristicHasAP" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://systems/ai/heuristics/ai_heuristic_has_ap.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/skills/attacks/frappe_basique.tres" id="2_skill"]
+
+[resource]
+script = ExtResource("1_script")
+skill_to_check = ExtResource("2_skill")
+minimum_ap = 1

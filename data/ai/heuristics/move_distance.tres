@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="AIHeuristicDistanceToTarget" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/ai/heuristics/ai_heuristic_distance_to_target.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+max_expected_distance = 15.0
+higher_score_when_far = true

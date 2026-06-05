@@ -22,11 +22,14 @@ var _selected_unit: Unit = null
 var _reachable_hexes: Array[Vector3i] = []
 var _valid_casting_hexes: Array[Vector3i] = []
 var _planned_move_hex: Vector3i = INVALID_HEX
+## L'unité qui possède l'autorité temporelle (dont c'est le tour).
+var _active_turn_unit: Unit = null
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
 	CombatEvents.skill_button_clicked.connect(_on_skill_button_clicked)
 	CombatEvents.move_button_clicked.connect(_on_move_button_clicked)
+	TurnEvents.active_unit_changed.connect(_on_active_unit_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -46,7 +49,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			_clear_selection()
 	elif event.is_action_pressed("tactical_end_turn"):
-		TurnEvents.turn_end_requested.emit()
+		# AAA : Guard Clause Temporelle - Seul le Joueur peut passer son tour manuellement.
+		if is_instance_valid(_active_turn_unit) and _active_turn_unit.faction == Unit.Faction.PLAYER:
+			TurnEvents.turn_end_requested.emit()
 	elif event.is_action_pressed("tactical_move"):
 		_on_move_button_clicked()
 
@@ -184,6 +189,10 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 	if not is_instance_valid(_selected_unit) or not _selected_unit.skill_caster:
 		return
 		
+	# AAA : Guard Clause d'Autorité Spatiale - Empêche l'exploitation via les raccourcis clavier
+	if _selected_unit.faction != Unit.Faction.PLAYER or _selected_unit != _active_turn_unit:
+		return
+		
 	# AAA : Transition pure vers le Ghost Stance
 	if _state == State.MOVE_TARGETING and _hovered_hex != INVALID_HEX and _reachable_hexes.has(_hovered_hex):
 		_planned_move_hex = _hovered_hex
@@ -221,6 +230,10 @@ func _on_move_button_clicked() -> void:
 	if not is_instance_valid(_selected_unit) or not _selected_unit.stats:
 		return
 		
+	# AAA : Guard Clause d'Autorité Spatiale
+	if _selected_unit.faction != Unit.Faction.PLAYER or _selected_unit != _active_turn_unit:
+		return
+		
 	if _state != State.DEFAULT:
 		cancel_targeting()
 		
@@ -236,3 +249,7 @@ func _on_move_button_clicked() -> void:
 	
 	_state = State.MOVE_TARGETING
 	GridEvents.movement_targeted.emit(_reachable_hexes)
+
+# SIGNAL HANDLERS (Events Globaux)
+func _on_active_unit_changed(unit: Unit) -> void:
+	_active_turn_unit = unit

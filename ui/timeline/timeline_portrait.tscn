@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://timeline_portrait_uid"]
+
+[ext_resource type="Script" path="res://ui/timeline/timeline_portrait.gd" id="1_script"]
+[ext_resource type="Shader" path="res://assets/shaders/pantheon_portrait.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pantheon"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/is_active = 0.0
+shader_parameter/border_color = Color(0.85, 0.7, 0.25, 1)
+shader_parameter/ray_color = Color(1, 0.9, 0.5, 0.8)
+
+[node name="TimelinePortrait" type="Control" node_paths=PackedStringArray("portrait_rect")]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 3
+anchors_preset = 0
+size_flags_vertical = 4
+pivot_offset = Vector2(32, 32)
+script = ExtResource("1_script")
+portrait_rect = NodePath("PortraitRect")
+
+[node name="PortraitRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_pantheon")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

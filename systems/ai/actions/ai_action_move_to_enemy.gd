@@ -68,4 +68,4 @@ func execute(context: AIContext) -> void:
 
 # PRIVATE FUNCTIONS
 func _end_action() -> void:
-	TurnEvents.turn_end_requested.emit()
+	finished.emit()

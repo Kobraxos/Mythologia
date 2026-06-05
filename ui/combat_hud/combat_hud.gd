@@ -40,15 +40,19 @@ func _ready() -> void:
 
 # SIGNAL HANDLERS
 func _on_unit_selected(unit: Unit) -> void:
+	# 0. Réinitialisation systématique de l'état interactif (Reset AAA)
 	if action_bar:
 		action_bar.clear()
+	if move_button:
+		move_button.visible = false
+		
 	_untrack_action_economy()
 	_untrack_skill_caster()
 	
 	if not is_instance_valid(unit):
 		return
 		
-	# 1. Swapping de Thème Dynamique (Data-Driven Faction UI)
+	# 1. Habillage Dynamique (Data-Driven Faction UI)
 	self.theme = default_theme
 	
 	if "stats" in unit and unit.stats is UnitStats:
@@ -56,23 +60,26 @@ func _on_unit_selected(unit: Unit) -> void:
 		if faction_themes.has(myth_id) and faction_themes[myth_id] is Theme:
 			self.theme = faction_themes[myth_id]
 
+	# 2. Tracking des statistiques (Visible pour alliés ET ennemis)
 	_track_action_economy(unit)
 	_track_skill_caster(unit)
 			
+	# 3. AAA : Guard Clause d'Autorité UI - On s'arrête ici si ce n'est pas le joueur
+	if unit.faction != Unit.Faction.PLAYER:
+		return
+		
+	# 4. Activation de l'Interface Interactive (Joueur uniquement)
+	if move_button:
+		move_button.visible = true
+		
 	# Duck-typing sécurisé pour récupérer le composant lanceur de sort et sa liste
 	if not unit.get("skill_caster"):
 		return
 		
 	var skills: Array = unit.skill_caster.get("_known_skills") if "_known_skills" in unit.skill_caster else []
-	if skills.is_empty():
-		return
-		
-	if action_bar:
+	if not skills.is_empty() and action_bar:
 		action_bar.setup(skills)
 		_update_action_bar_usability()
-		
-	if move_button:
-		move_button.visible = true
 
 func _on_unit_deselected() -> void:
 	if action_bar:

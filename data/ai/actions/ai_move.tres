@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AIActionMoveToEnemy" format=3 uid="uid://c8aa2t54kurtw"]
+
+[ext_resource type="Script" uid="uid://cy6bl4pjwvxxl" path="res://systems/ai/heuristics/ai_heuristic.gd" id="1_rfts8"]
+[ext_resource type="Script" uid="uid://mwk24tfi7kfp" path="res://systems/ai/actions/ai_action_move_to_enemy.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/ai/heuristics/move_has_ap.tres" id="2_ap"]
+[ext_resource type="Resource" path="res://data/ai/heuristics/move_distance.tres" id="3_dist"]
+
+[resource]
+script = ExtResource("1_script")
+heuristics = Array[ExtResource("1_rfts8")]([ExtResource("2_ap"), ExtResource("3_dist")])

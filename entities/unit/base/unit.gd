@@ -4,6 +4,9 @@ extends Node3D
 # SIGNALS
 signal movement_finished()
 
+# ENUMS
+enum Faction { PLAYER, ENEMY, ALLY, NEUTRAL }
+
 # EXPORTS
 @export var move_duration: float = 0.3
 @export var stats: UnitStats
@@ -20,6 +23,9 @@ signal movement_finished()
 
 # PUBLIC VARIABLES
 var current_hex: Vector3i = Vector3i.ZERO
+var faction: Faction = Faction.NEUTRAL
+
+@onready var faction_ring: Sprite3D = $FactionRing
 
 # PRIVATE VARIABLES
 var _move_tween: Tween
@@ -38,8 +44,21 @@ func _ready() -> void:
 	GridEvents.unit_spawned.emit(self)
 
 ## Appelé par le BattleManager lors du Spawn pour injecter l'âme (les données) dans la coquille.
-func initialize(new_stats: UnitStats) -> void:
+func initialize(new_stats: UnitStats, unit_faction: Faction = Faction.NEUTRAL) -> void:
 	stats = new_stats
+	faction = unit_faction
+	
+	if faction_ring:
+		match faction:
+			Faction.PLAYER:
+				faction_ring.modulate = Color(0.2, 0.6, 1.0, 0.8) # Bleu Divin / Olympe
+			Faction.ENEMY:
+				faction_ring.modulate = Color(0.9, 0.1, 0.1, 0.8) # Rouge Sang / Tartare
+			Faction.ALLY:
+				faction_ring.modulate = Color(0.2, 0.8, 0.4, 0.8) # Vert Nature
+			_:
+				faction_ring.modulate = Color(0.5, 0.5, 0.5, 0.8) # Gris Neutre
+				
 	if stat_manager:
 		stat_manager.initialize(stats)
 	if action_economy:
@@ -64,6 +83,13 @@ func start_turn() -> void:
 		
 	if action_economy:
 		action_economy.start_turn()
+		
+	# AAA VFX : L'anneau s'excite quand c'est le tour de l'unité
+	if faction_ring and faction_ring.material_override:
+		var mat := faction_ring.material_override as ShaderMaterial
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(mat, "shader_parameter/rotation_speed", 0.8, 0.5)
+		tw.tween_property(mat, "shader_parameter/pulse_intensity", 0.4, 0.5)
 
 ## Appelé par le TurnManager à la fin du tour.
 func end_turn() -> void:
@@ -72,6 +98,13 @@ func end_turn() -> void:
 		
 	if status_receiver:
 		status_receiver.tick_durations()
+		
+	# AAA VFX : L'anneau se calme à la fin du tour
+	if faction_ring and faction_ring.material_override:
+		var mat := faction_ring.material_override as ShaderMaterial
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(mat, "shader_parameter/rotation_speed", 0.2, 0.5)
+		tw.tween_property(mat, "shader_parameter/pulse_intensity", 0.1, 0.5)
 
 # PUBLIC FUNCTIONS
 ## Exécute un chemin de déplacement donné. (Appelé par les Contrôleurs : Joueur ou IA)
