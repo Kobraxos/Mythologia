@@ -1,8 +1,8 @@
 # 📋 RAPPORT D'ANALYSE - MYTHOLOGIA
 
-**État Actuel :** Alpha Jouable (70% complet)
+**État Actuel :** Alpha Jouable (75% complet)
 
-Votre projet est exceptionnellement bien architecturé pour cette phase. L'architecture MVC/MVVM avec Event Bus, la composition de composants, et l'organisation Feature-Based sont à la norme AAA. La qualité du code est A, mais il y a des gaps critiques entre prototype et shipping.
+Votre projet est exceptionnellement bien architecturé pour cette phase. L'architecture MVC/MVVM avec Event Bus, la composition de composants, et l'organisation Feature-Based sont à la norme AAA. La qualité du code est A.
 
 ---
 
@@ -10,65 +10,55 @@ Votre projet est exceptionnellement bien architecturé pour cette phase. L'archi
 
 Pour un projet AAA digne, vous devez maintenant passer de "prototype jouable" à "expérience shipped". Cela signifie :
 
-### Phase 1 : Fondations Solides (2-3 semaines)
+### Phase 1 : Fondations Solides (Validée ✅)
 
-#### Priorité 1 - Combat Réel 🔴 CRITIQUE
-❌ **ACTUELLEMENT :** `base_damage = 10` (arbitraire)
-✓ **À FAIRE :** 
-- [ ] Linker `CombatManager` au `caster.stats.base_physical_damage`
-- [ ] Implémenter multiplicateurs (skills, buffs, élémental)
-- [ ] Ajouter précision/critique (rolls)
-- [ ] Valider les équilibrages numériques
+#### Priorité 1 - Combat Réel 🔴 CRITIQUE (✅ FAIT)
+- [x] Linker `CombatManager` au `caster.stats.base_physical_damage` via `DamagePipeline` AAA
+- [x] Implémenter multiplicateurs (skills, buffs, armure, résistances)
+- [x] Ajouter précision/critique (rolls) et variance de dégâts (10%)
+- [x] Gestion de la mort (Désenregistrement, invisibilité, prêt pour résurrection)
+- [x] Implémentation du système de Mana (Statistiques, Consommation, UI fluide)
 
-#### Priorité 2 - IA Ennemie 🔴 CRITIQUE
-*Votre dossier `/systems/ai` est vide = jeu 1v1 humain vs statue.*
+#### Priorité 2 - IA Ennemie 🔴 CRITIQUE (✅ FAIT)
+- [x] Implémenter Utility AI (AIControllerComponent)
+- [x] Actions et Heuristiques (`déplacer vers cible`, `attaquer`)
 
-**À FAIRE (1 semaine estimée) :**
-- [ ] Implémenter Decision Tree ou Behavior Tree basique
-- [ ] Heuristiques : `déplacer vers cible` → `utiliser compétence` → `passer`
-- [ ] Tester l'équilibre (pas trop facile, pas trop dur)
-- [ ] Support pour plusieurs unités IA simultanément
-
-#### Priorité 3 - Optimisations Perf 🟡 MOYEN
+#### Priorité 3 - Optimisations Perf 🟡 MOYEN (EN ATTENTE)
 *Goulots identifiés (pour échelle AAA) :*
-1. Cache pathfinding (LRU 2-3 derniers chemins)
-2. LoS Raycaster groupé 3D au lieu de Bresenham itératif
-3. Profiler sur grille 200+ hexagones
+- [ ] Cache pathfinding (LRU 2-3 derniers chemins dans `HexPathfinder`)
+- [ ] LoS Raycaster groupé 3D au lieu de Bresenham itératif dans `HexAoE`
 
 ---
 
 ### Phase 2 : Contenu & Gameplay (3-4 semaines)
 
+#### Systèmes de Contenu (À FAIRE)
+- [ ] Implémenter Reactions Elemental (Fire→Burn, Ice→Freeze) *(DÉCLARÉ mais ABSENT)*
+- [ ] Formes AoE manquantes dans `HexAoE` : `RING`, `FLOOD_FILL`
+- [ ] Implémenter les Mouvements Forcés dans `CombatManager` : Knockback/Pull/Teleport
+
 #### Progression du joueur
 - [ ] 3-5 niveaux avec croissance de difficulté
 - [ ] Dialogue/briefing entre combats
-- [ ] Progression d'unités (XP, équipement)
 - [ ] Objectifs diversifiés (élimination, survie, puzzle tactique)
-
-#### Systèmes de Contenu
-- [ ] Implémenter Elemental (Fire→Burn, Ice→Freeze) ← *DÉCLARÉ mais ABSENT*
-- [ ] Formes AoE manquantes : `RING`, `FLOOD_FILL`
-- [ ] Mouvements : Knockback/Pull (*déclarés, non implémentés*)
 
 ---
 
 ### Phase 3 : Production AAA (2-3 semaines)
 
 #### Tests & Stabilité
-- [ ] Tests unitaires : `HexMath`, `HexPathfinder`, `HexAoE` (coverage 80%+)
+- [ ] Tests unitaires : `HexMath`, `HexPathfinder`, `HexAoE`
 - [ ] Tests d'intégration : Combat end-to-end, turn sequences
 - [ ] Build release & profiling (cible 60 FPS min)
 
 #### Polish & Audiovisuel
-- [ ] VFX pour compétences (*actuellement : placeholder*)
-- [ ] SFX pour actions (*déclaré, non trouvé*)
+- [ ] Instanciation des VFX pour compétences dans le `CombatManager` *(actuellement : placeholder)*
+- [ ] Intégration SFX pour actions
 - [ ] Caméra shake, juicy feedback
-- [ ] Tutorial/onboarding
 
 #### Système de Sauvegarde
 - [ ] Snapshot de grille (toutes unités, statuts, rounds)
 - [ ] Resume mid-battle / menu principal
-- [ ] Leaderboard/scoring
 
 ---
 
@@ -76,38 +66,27 @@ Pour un projet AAA digne, vous devez maintenant passer de "prototype jouable" à
 
 | Week | Focus | Output |
 | :--- | :--- | :--- |
-| **W1** | ✅ Fix combat (dégâts) + IA basique | Combat fonctionnel 1v1+ |
-| **W2** | ✅ Optimisations perf + cache pathfinding | Stable 200+ hexes |
-| **W3** | ✅ 3 niveaux de test + progression | Contenu jouable 30 min |
-| **W4** | ✅ Elemental, formes AoE manquantes | Compétences variées |
-| **W5** | ✅ Tests unitaires + fixes bugs | Coverage 70%+ |
-| **W6** | ✅ Polish (VFX, feedback, UI) | "Feels AAA" |
-| **W7** | ✅ Sauvegarde + menu navigation | Shippable |
+| **W1** | ✅ Combat Pipeline & AI | Combat fonctionnel 1v1+ |
+| **W2** | 🟡 Optimisations perf + cache pathfinding | Stable 200+ hexes |
+| **W3** | 🔴 Elemental, Knockback, AoE manquantes | Compétences variées |
+| **W4** | 🔴 3 niveaux de test + progression | Contenu jouable 30 min |
+| **W5** | 🔴 Tests unitaires + fixes bugs | Coverage 70%+ |
+| **W6** | 🔴 Polish (VFX, SFX, Camera) | "Feels AAA" |
+| **W7** | 🔴 Sauvegarde + menu navigation | Shippable |
 
 ---
 
 ## ⚠️ CRITIQUES À FIXER EN PRIORITÉ
 
-### 1. Dégâts Codés → Cassera l'équilibre entier
-*Fichier concerné : `CombatManager.gd:29`*
-```gdscript
-- var base_damage: int = 10
-+ var base_damage = caster.stats.base_physical_damage * skill.damage_multiplier
-```
-
-### 2. IA Absente → Unijoueur impossible
-Créer `AIController.gd` héritant de `"Unit"` avec scoring heuristique :
-```gdscript
-score_position = distance_to_nearest_enemy + health_delta
-choose_action = argmax(all_possible_actions)
-```
-
-### 3. Pas de Cache Pathfinding → Lag à 30 FPS hover sur grilles 100+
-Ajouter dans `GridController` :
+### 1. Pas de Cache Pathfinding → Lag à 30 FPS hover sur grilles 100+
+Ajouter dans `HexPathfinder` :
 ```gdscript
 var _path_cache := {}  # {(start, end): path}
 var _cache_max_size := 3
 ```
+
+### 2. Logique de Compétences Incomplète (Knockback / AoE)
+Les data de sorts définissent du repoussement (`knockback_distance`), du pull, et des formes comme `RING`. Le `CombatManager` et `HexAoE` doivent être mis à jour pour lire et appliquer ces données concrètement sur la grille.
 
 ---
 
@@ -120,5 +99,14 @@ var _cache_max_size := 3
 
 ---
 
+## 🎉 COMPLETED MILESTONES (RECENT)
+- **Damage Pipeline AAA** : Dégâts et Soins calculés via filtres complets avec 10% de variance.
+- **Système de Mort Persistante** : Gestion de la visibilité et du désenregistrement spatial.
+- **Économie de Mana** : Intégration complète de la consommation et de la régénération.
+- **UI & Polish** : Animations de jauges fluides (Tweens AAA, Décélération Cubique) compatibles décimaux.
+- **AI Utility System** : Découverte d'un système d'IA basé sur l'utilité déjà en place et fonctionnel.
+
+---
+
 ## 🚀 VERDICT : PROCHAINE ÉTAPE
-**Commencer par W1 = Faire fonctionner le combat + IA basique**
+**Commencer W2 = Implémenter les optimisations de Pathfinding (Cache) pour sécuriser les performances.**
