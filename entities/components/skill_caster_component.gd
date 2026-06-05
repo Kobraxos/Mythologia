@@ -27,11 +27,16 @@ func cast_skill(skill: SkillData, target_hex: Vector3i) -> bool:
 	if _cooldowns.get(skill, 0) > 0:
 		return false # Sort en récupération
 		
-	if action_economy and not action_economy.has_enough_ap(skill.ap_cost):
-		return false # PA insuffisants
-		
 	if action_economy:
+		if not action_economy.has_enough_ap(skill.ap_cost):
+			return false # PA insuffisants
+		if skill.mana_cost > 0 and not action_economy.has_enough_mana(skill.mana_cost):
+			return false # Mana insuffisant
+			
+		# Consommation des ressources
 		action_economy.consume_ap(skill.ap_cost)
+		if skill.mana_cost > 0:
+			action_economy.consume_mana(skill.mana_cost)
 		
 	_cooldowns[skill] = skill.cooldown
 	CombatEvents.skill_cast_requested.emit(get_parent(), skill, target_hex)

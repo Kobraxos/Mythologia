@@ -13,6 +13,7 @@ var _is_dead: bool = false
 func initialize(stats: UnitStats) -> void:
 	_stats = stats
 	_current_health = _stats.max_health
+	health_changed.emit(_current_health, _stats.max_health)
 
 # PUBLIC FUNCTIONS
 func take_damage(amount: int) -> void:

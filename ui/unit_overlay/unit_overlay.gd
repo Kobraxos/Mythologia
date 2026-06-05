@@ -2,6 +2,7 @@ class_name UnitOverlay
 extends Control
 
 @export var hp_bar: ProgressBar
+@export var mana_bar: ProgressBar
 
 @export_category("Depth Scaling")
 ## La distance (ou taille de caméra) où l'échelle est exactement à 100%.
@@ -17,22 +18,18 @@ extends Control
 
 var _target: Unit
 var _camera: Camera3D
+var _hp_tween: Tween
+var _mana_tween: Tween
+var _is_initialized: bool = false
 
 func setup(unit: Unit) -> void:
 	_target = unit
 	_camera = get_viewport().get_camera_3d()
 	
-	# Branchement dynamique au composant de vie
-	if _target.health_component:
-		# Duck-typing sécurisé pour éviter un crash si le signal s'appelle autrement chez toi
-		if _target.health_component.has_signal("health_changed"):
-			_target.health_component.connect("health_changed", _on_health_changed)
-		
-		# Initialisation immédiate (Requiert des getters dans ton HealthComponent)
-		if _target.health_component.has_method("get_current_health") and _target.health_component.has_method("get_max_health"):
-			_on_health_changed(_target.health_component.get_current_health(), _target.health_component.get_max_health())
-			
 	if hp_bar:
+		# AAA : Permet aux tweens d'animer les valeurs intermédiaires au lieu de "sauter" d'entier en entier
+		hp_bar.step = 0.0
+		
 		var fill_style := StyleBoxFlat.new()
 		# AAA UX : La barre de vie reste universellement rouge pour la clarté cognitive
 		fill_style.bg_color = Color(0.8, 0.15, 0.15)
@@ -47,9 +44,48 @@ func setup(unit: Unit) -> void:
 		bg_style.border_width_bottom = 2
 		bg_style.border_color = Color(0.1, 0.1, 0.1) # Bordure noire/neutre
 		hp_bar.add_theme_stylebox_override("background", bg_style)
+		
+	if mana_bar:
+		mana_bar.step = 0.0
+		var fill_style := StyleBoxFlat.new()
+		# AAA UX : La barre de mana est bleue
+		fill_style.bg_color = Color(0.15, 0.45, 0.85)
+		mana_bar.add_theme_stylebox_override("fill", fill_style)
+		
+		var bg_style := StyleBoxFlat.new()
+		bg_style.bg_color = Color(0.1, 0.1, 0.1, 0.8)
+		bg_style.border_width_left = 2
+		bg_style.border_width_top = 2
+		bg_style.border_width_right = 2
+		bg_style.border_width_bottom = 2
+		bg_style.border_color = Color(0.1, 0.1, 0.1)
+		mana_bar.add_theme_stylebox_override("background", bg_style)
+	
+	# Branchement dynamique au composant de vie
+	if _target.health_component:
+		if _target.health_component.has_signal("health_changed"):
+			_target.health_component.connect("health_changed", _on_health_changed)
+		
+		# Initialisation immédiate
+		if _target.health_component.has_method("get_current_health") and _target.health_component.has_method("get_max_health"):
+			_on_health_changed(_target.health_component.get_current_health(), _target.health_component.get_max_health())
+			
+	# AAA UX : Branchement dynamique au composant d'économie pour le Mana
+	if _target.action_economy:
+		if _target.action_economy.has_signal("mana_changed"):
+			_target.action_economy.connect("mana_changed", _on_mana_changed)
+			
+		if _target.action_economy.has_method("get_current_mana") and _target.action_economy.has_method("get_max_mana"):
+			_on_mana_changed(_target.action_economy.get_current_mana(), _target.action_economy.get_max_mana())
 			
 	# AAA : Le pivot au centre garantit que le zoom s'applique uniformément depuis le milieu de la barre
 	pivot_offset = size / 2.0
+	
+	# Différer l'initialisation permet aux vraies valeurs (injectées peu après le spawn) de ne pas déclencher les Tweens.
+	call_deferred("_finalize_initialization")
+
+func _finalize_initialization() -> void:
+	_is_initialized = true
 
 func _process(_delta: float) -> void:
 	if not is_instance_valid(_target) or not is_instance_valid(_camera):
@@ -81,4 +117,23 @@ func _process(_delta: float) -> void:
 func _on_health_changed(current: int, max_val: int) -> void:
 	if hp_bar:
 		hp_bar.max_value = max_val
-		hp_bar.value = current
+		if not _is_initialized:
+			hp_bar.value = current
+		else:
+			if _hp_tween and _hp_tween.is_valid():
+				_hp_tween.kill()
+			# Tween AAA : Décélération cubique pour un effet fluide et naturel
+			_hp_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			_hp_tween.tween_property(hp_bar, "value", float(current), 0.3)
+
+func _on_mana_changed(current: int, max_val: int) -> void:
+	if mana_bar:
+		mana_bar.visible = (max_val > 0)
+		mana_bar.max_value = max_val
+		if not _is_initialized:
+			mana_bar.value = current
+		else:
+			if _mana_tween and _mana_tween.is_valid():
+				_mana_tween.kill()
+			_mana_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			_mana_tween.tween_property(mana_bar, "value", float(current), 0.3)
