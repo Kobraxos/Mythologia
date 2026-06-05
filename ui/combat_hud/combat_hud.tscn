@@ -5,7 +5,7 @@
 [ext_resource type="Theme" uid="uid://cakumsalkyi8a" path="res://ui/themes/theme_greek.tres" id="4_greek"]
 [ext_resource type="PackedScene" uid="uid://act1onbar0001" path="res://ui/combat_hud/action_bar.tscn" id="5_bar"]
 
-[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar", "move_button")]
+[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar", "move_button", "end_turn_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,6 +21,7 @@ faction_themes = {
 }
 action_bar = NodePath("MarginContainer/ActionLayout/ActionBar")
 move_button = NodePath("MarginContainer/ActionLayout/MoveButton")
+end_turn_button = NodePath("MarginContainer/ActionLayout/EndTurnButton")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -48,3 +49,8 @@ text = "Déplacement [M]"
 
 [node name="ActionBar" parent="MarginContainer/ActionLayout" instance=ExtResource("5_bar")]
 layout_mode = 2
+
+[node name="EndTurnButton" type="Button" parent="MarginContainer/ActionLayout"]
+custom_minimum_size = Vector2(180, 50)
+layout_mode = 2
+text = "Fin de tour [SPACE]"

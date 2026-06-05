@@ -17,6 +17,9 @@ extends Control
 ## Bouton permanent dédié à l'activation du mode déplacement.
 @export var move_button: Button
 
+## Bouton dédié à la fin de tour.
+@export var end_turn_button: Button
+
 @export_category("UI Elements")
 ## Label affichant les Points d'Action.
 @export var ap_label: Label
@@ -37,6 +40,9 @@ func _ready() -> void:
 	if move_button:
 		move_button.visible = false
 		move_button.pressed.connect(_on_move_button_pressed)
+	if end_turn_button:
+		end_turn_button.visible = false
+		end_turn_button.pressed.connect(_on_end_turn_button_pressed)
 
 # SIGNAL HANDLERS
 func _on_unit_selected(unit: Unit) -> void:
@@ -45,16 +51,18 @@ func _on_unit_selected(unit: Unit) -> void:
 		action_bar.clear()
 	if move_button:
 		move_button.visible = false
-		
+	if end_turn_button:
+		end_turn_button.visible = false
+
 	_untrack_action_economy()
 	_untrack_skill_caster()
-	
+
 	if not is_instance_valid(unit):
 		return
-		
+
 	# 1. Habillage Dynamique (Data-Driven Faction UI)
 	self.theme = default_theme
-	
+
 	if "stats" in unit and unit.stats is UnitStats:
 		var myth_id: int = unit.stats.mythology
 		if faction_themes.has(myth_id) and faction_themes[myth_id] is Theme:
@@ -63,19 +71,21 @@ func _on_unit_selected(unit: Unit) -> void:
 	# 2. Tracking des statistiques (Visible pour alliés ET ennemis)
 	_track_action_economy(unit)
 	_track_skill_caster(unit)
-			
+
 	# 3. AAA : Guard Clause d'Autorité UI - On s'arrête ici si ce n'est pas le joueur
 	if unit.faction != Unit.Faction.PLAYER:
 		return
-		
+
 	# 4. Activation de l'Interface Interactive (Joueur uniquement)
 	if move_button:
 		move_button.visible = true
-		
+	if end_turn_button:
+		end_turn_button.visible = true
+
 	# Duck-typing sécurisé pour récupérer le composant lanceur de sort et sa liste
 	if not unit.get("skill_caster"):
 		return
-		
+
 	var skills: Array = unit.skill_caster.get("_known_skills") if "_known_skills" in unit.skill_caster else []
 	if not skills.is_empty() and action_bar:
 		action_bar.setup(skills)
@@ -88,6 +98,8 @@ func _on_unit_deselected() -> void:
 	_untrack_skill_caster()
 	if move_button:
 		move_button.visible = false
+	if end_turn_button:
+		end_turn_button.visible = false
 
 func _track_action_economy(unit: Unit) -> void:
 	if "action_economy" in unit and unit.action_economy is ActionEconomyComponent:
@@ -153,3 +165,6 @@ func _update_move_button_usability() -> void:
 
 func _on_move_button_pressed() -> void:
 	CombatEvents.move_button_clicked.emit()
+
+func _on_end_turn_button_pressed() -> void:
+	TurnEvents.turn_end_requested.emit()

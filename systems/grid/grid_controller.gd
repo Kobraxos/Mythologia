@@ -49,9 +49,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			_clear_selection()
 	elif event.is_action_pressed("tactical_end_turn"):
-		# AAA : Guard Clause Temporelle - Seul le Joueur peut passer son tour manuellement.
-		if is_instance_valid(_active_turn_unit) and _active_turn_unit.faction == Unit.Faction.PLAYER:
-			TurnEvents.turn_end_requested.emit()
+		if _state == State.DEFAULT:
+			if is_instance_valid(_active_turn_unit) and _active_turn_unit.faction == Unit.Faction.PLAYER:
+				TurnEvents.turn_end_requested.emit()
+		else:
+			cancel_targeting()
 	elif event.is_action_pressed("tactical_move"):
 		_on_move_button_clicked()
 

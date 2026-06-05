@@ -69,20 +69,17 @@ func execute(context: AIContext) -> void:
 		_end_action()
 		return
 		
-	# 4. Préparation de la résolution asynchrone (AAA Stateless Lambda)
-	var on_resolved: Callable
-	on_resolved = func(resolving_caster: Node3D, resolved_skill: SkillData, _t_hex: Vector3i) -> void:
+	# 4. Préparation de la résolution asynchrone (Auto-déconnexion avec CONNECT_ONESHOT)
+	var on_resolved: Callable = func(resolving_caster: Node3D, resolved_skill: SkillData, _t_hex: Vector3i) -> void:
 		if resolving_caster == unit and resolved_skill == skill_to_use:
-			if CombatEvents.skill_resolved.is_connected(on_resolved):
-				CombatEvents.skill_resolved.disconnect(on_resolved)
 			_end_action()
-			
-	CombatEvents.skill_resolved.connect(on_resolved)
-	
+
+	CombatEvents.skill_resolved.connect(on_resolved, CONNECT_ONE_SHOT)
+
 	# 5. Déclenchement
 	var success: bool = caster.cast_skill(skill_to_use, best_target_hex)
 	if not success:
-		# En cas de garde inattendue dans le SkillCaster
+		# En cas d'erreur, déconnecter immédiatement avant émission du signal
 		if CombatEvents.skill_resolved.is_connected(on_resolved):
 			CombatEvents.skill_resolved.disconnect(on_resolved)
 		_end_action()
