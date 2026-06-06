@@ -1,32 +1,37 @@
 class_name ResourcePipBar
 extends HBoxContainer
 
-## Widget UI générique affichant une ressource sous forme de "pips" (cases) individuelles.
+## Widget UI générique affichant une ressource sous forme de "pips" mythologiques.
+## Chaque pip représente une unité de faveur divine (PA) ou d'élan céleste (PM).
 ## AAA Pattern : Totalement découplé, piloté uniquement par les méthodes publiques.
 ## Réutilisable pour PA, PM, ou toute autre ressource discrète.
 
 # CONSTANTS
 ## Durée de l'animation pour chaque pip (en secondes).
-const PIP_TWEEN_DURATION: float = 0.12
-## Délai en cascade entre chaque pip (effet de vague).
-const PIP_STAGGER_DELAY: float = 0.04
+const PIP_TWEEN_DURATION: float = 0.15
+## Délai en cascade entre chaque pip (effet de vague divine).
+const PIP_STAGGER_DELAY: float = 0.055
+## Taille de l'aura divine sur un pip plein.
+const DIVINE_GLOW_SIZE: int = 6
+## Décalage vertical de l'aura (effet de lumière venant du dessus).
+const DIVINE_GLOW_OFFSET: Vector2 = Vector2(0, -1)
 
 # EXPORTS
-@export_group("Apparence")
-## Couleur des pips pleins (ressource disponible).
-@export var color_full: Color = Color(0.95, 0.82, 0.30, 1.0) # Or doré — PA
-## Couleur des pips vides (ressource épuisée).
-@export var color_empty: Color = Color(0.15, 0.15, 0.20, 0.85)
-## Couleur de l'icône/label du titre.
-@export var label_color: Color = Color(0.95, 0.82, 0.30, 1.0)
-## Texte du label (ex: "PA" ou "PM").
-@export var label_text: String = "PA"
-## Taille des pips en pixels.
-@export var pip_size: Vector2 = Vector2(20, 20)
+@export_group("Apparence Divine")
+## Couleur des pips pleins — Faveur des Dieux (or olympien pour PA, argent-cyan pour PM).
+@export var color_full: Color = Color(1.0, 0.80, 0.15, 1.0) # Or Divin par défaut
+## Couleur des pips vides — Pierre antique érodée.
+@export var color_empty: Color = Color(0.10, 0.09, 0.13, 0.92)
+## Couleur du label de titre.
+@export var label_color: Color = Color(0.95, 0.78, 0.25, 1.0) # Reflet doré
+## Texte du label (ex: "⚡" pour PA, "☄" pour PM).
+@export var label_text: String = "⚡"
+## Taille des pips — forme étirée verticalement (style bouclier / médaillon antique).
+@export var pip_size: Vector2 = Vector2(14, 20)
 ## Espacement entre les pips.
-@export var pip_gap: int = 3
-## Arrondi des coins des pips (0 = carré).
-@export var pip_corner_radius: int = 3
+@export var pip_gap: int = 4
+## Arrondi des coins — valeur haute = forme ovoide (médaillon), basse = losange.
+@export var pip_corner_radius: int = 5
 
 # PRIVATE VARIABLES
 var _current_value: int = 0
@@ -67,17 +72,17 @@ func set_value(current: int, max_val: int) -> void:
 
 # PRIVATE FUNCTIONS
 func _build_widget() -> void:
-	# Conteneur principal : icône label + pips côte à côte
+	# Conteneur principal : label divin + pips côte à côte
 	alignment = BoxContainer.ALIGNMENT_CENTER
-	add_theme_constant_override("separation", 6)
+	add_theme_constant_override("separation", 8)
 
-	# Label de titre (ex: "PA")
+	# Label de titre avec style mythologique
 	_label_node = Label.new()
 	_label_node.text = label_text
 	_label_node.add_theme_color_override("font_color", label_color)
-	_label_node.add_theme_font_size_override("font_size", 13)
+	_label_node.add_theme_font_size_override("font_size", 16)
 	_label_node.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label_node.custom_minimum_size = Vector2(24, 0)
+	_label_node.custom_minimum_size = Vector2(20, 0)
 	add_child(_label_node)
 
 	# Conteneur des pips
@@ -96,8 +101,8 @@ func _rebuild_pips() -> void:
 	for child in _pip_container.get_children():
 		child.queue_free()
 
-	# Création des nouveaux pips
-	for i in range(_max_value):
+	# Création des nouveaux pips (médaillons divins)
+	for i: int in range(_max_value):
 		var pip := Panel.new()
 		pip.custom_minimum_size = pip_size
 		pip.name = "Pip_%d" % i
@@ -108,12 +113,12 @@ func _rebuild_pips() -> void:
 		style.corner_radius_top_right = pip_corner_radius
 		style.corner_radius_bottom_left = pip_corner_radius
 		style.corner_radius_bottom_right = pip_corner_radius
-		# Bordure subtile pour délimiter les pips dans le vide
+		# Bordure en bronze antique pour les pips vides
 		style.border_width_left = 1
 		style.border_width_top = 1
 		style.border_width_right = 1
 		style.border_width_bottom = 1
-		style.border_color = Color(label_color.r, label_color.g, label_color.b, 0.25)
+		style.border_color = Color(label_color.r, label_color.g, label_color.b, 0.30)
 		pip.add_theme_stylebox_override("panel", style)
 
 		_pip_container.add_child(pip)
@@ -145,10 +150,11 @@ func _animate_pips(old_val: int, new_val: int) -> void:
 		_tweens[i] = create_tween()
 		_tweens[i].tween_interval(delay)
 
-		# AAA : "Flash" d'allumage/extinction avant la couleur cible
+		# Mythologia : Flash divin — éclair blanc à l'allumage, extinction dégradée au vide
+		# L'effet de flash représente la faveur des dieux qui s'allume ou s'éteint
 		var flash_is_full: bool = is_gaining
 		_tweens[i].tween_callback(_get_pip_setter(pip, flash_is_full))
-		_tweens[i].tween_interval(PIP_TWEEN_DURATION * 0.4)
+		_tweens[i].tween_interval(PIP_TWEEN_DURATION * 0.35)
 		_tweens[i].tween_callback(_get_pip_setter(pip, is_gaining))
 
 ## Closure pour capturer la référence du pip et le booléen dans le callback.
@@ -156,13 +162,21 @@ func _get_pip_setter(pip: Panel, is_full: bool) -> Callable:
 	return func(): _set_pip_color(pip, is_full)
 
 func _set_pip_color(pip: Panel, is_full: bool) -> void:
-	var style := pip.get_theme_stylebox("panel") as StyleBoxFlat
-	if style:
-		style.bg_color = color_full if is_full else color_empty
-		# AAA : Glow subtil sur les pips pleins
-		if is_full:
-			style.shadow_color = Color(color_full.r, color_full.g, color_full.b, 0.5)
-			style.shadow_size = 4
-			style.shadow_offset = Vector2(0, 1)
-		else:
-			style.shadow_size = 0
+	var style: StyleBoxFlat = pip.get_theme_stylebox("panel") as StyleBoxFlat
+	if not style:
+		return
+
+	style.bg_color = color_full if is_full else color_empty
+
+	if is_full:
+		# Aura divine : le pip brille comme un éclair d'Olympe ou une étoile de mer
+		style.border_color = Color(color_full.r, color_full.g, color_full.b, 0.70)
+		style.border_width_top = 1
+		style.border_width_bottom = 1
+		style.shadow_color = Color(color_full.r, color_full.g, color_full.b, 0.65)
+		style.shadow_size = DIVINE_GLOW_SIZE
+		style.shadow_offset = DIVINE_GLOW_OFFSET
+	else:
+		# Pierre antique érodée : le pip s'éteint et redevient une gravure morte
+		style.border_color = Color(label_color.r, label_color.g, label_color.b, 0.30)
+		style.shadow_size = 0

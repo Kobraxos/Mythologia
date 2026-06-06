@@ -58,22 +58,31 @@ func _untrack() -> void:
 	_tracked_economy = null
 
 func _apply_background_style() -> void:
-	# AAA : Fond foncé semi-transparent avec bordure subtile
+	# Mythologia : Tablette de pierre ancienne aux reflets de bronze
+	# Inspiré de la palette existante : Or Divin / Lumière Solaire du joueur
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.06, 0.10, 0.88)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
+
+	# Fond : pierre sombre comme les murs de l'Olympe dans l'ombre
+	style.bg_color = Color(0.07, 0.06, 0.09, 0.92)
+
+	# Forme : coins légèrement arrondis comme une tablette taillée à la main
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+
+	# Bordure : bronze antique gravé (épaisseur supérieure = gravure en relief)
 	style.border_width_left = 1
-	style.border_width_top = 1
+	style.border_width_top = 2
 	style.border_width_right = 1
 	style.border_width_bottom = 1
-	style.border_color = Color(0.95, 0.82, 0.30, 0.18)
-	# Légère ombre portée pour le détacher du fond de jeu
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.5)
-	style.shadow_size = 8
-	style.shadow_offset = Vector2(0, 3)
+	style.border_color = Color(0.85, 0.70, 0.25, 0.55) # Or Divin atténué
+
+	# Ombre portée : ombre divine, comme si la tablette flottait
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.65)
+	style.shadow_size = 10
+	style.shadow_offset = Vector2(0, 4)
+
 	add_theme_stylebox_override("panel", style)
 
 # SIGNAL HANDLERS
