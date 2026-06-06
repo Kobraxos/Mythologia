@@ -41,6 +41,13 @@ func _play_group(group: VisualCommandGroup) -> void:
 				if CombatEvents.has_user_signal("visual_text_requested"):
 					CombatEvents.emit_signal("visual_text_requested", cmd.target, cmd.int_payload, is_crit, is_heal, is_dodge)
 
+			VisualCommand.Type.UPDATE_HEALTH_BAR:
+				if CombatEvents.has_user_signal("visual_health_updated"):
+					var max_hp: int = 1
+					if is_instance_valid(cmd.target) and cmd.target.get("health_component") != null:
+						max_hp = cmd.target.health_component.get_max_health()
+					CombatEvents.emit_signal("visual_health_updated", cmd.target, cmd.int_payload, max_hp)
+
 			VisualCommand.Type.SPAWN_VFX:
 				if CombatEvents.has_user_signal("vfx_requested"):
 					CombatEvents.emit_signal("vfx_requested", cmd.string_payload, cmd.position_payload, cmd.direction_payload, cmd.target)

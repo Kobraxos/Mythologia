@@ -27,6 +27,13 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		cmd.string_payload = "CRIT" if is_crit else "DAMAGE"
 		captured_texts.append(cmd)
 		
+		# AAA UI : Capture de la santé post-impact pour le Séquenceur
+		var hp_cmd := VisualCommand.new()
+		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
+		hp_cmd.target = t
+		if t.get("health_component") != null: hp_cmd.int_payload = t.health_component.get_current_health()
+		captured_texts.append(hp_cmd)
+		
 		# AAA VFX : Injection d'une Commande VFX directionnelle (Statique au point d'impact)
 		var vfx_cmd := VisualCommand.new()
 		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
@@ -44,6 +51,13 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		cmd.int_payload = amount
 		cmd.string_payload = "HEAL"
 		captured_texts.append(cmd)
+		
+		# AAA UI : Capture de la santé post-soin pour le Séquenceur
+		var hp_cmd := VisualCommand.new()
+		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
+		hp_cmd.target = t
+		if t.get("health_component") != null: hp_cmd.int_payload = t.health_component.get_current_health()
+		captured_texts.append(hp_cmd)
 		
 		# AAA VFX : Injection d'une Commande VFX avec Attachement Dynamique
 		var vfx_cmd := VisualCommand.new()

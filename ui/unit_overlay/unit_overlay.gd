@@ -21,6 +21,7 @@ var _camera: Camera3D
 var _hp_tween: Tween
 var _mana_tween: Tween
 var _is_initialized: bool = false
+var _health_initialized: bool = false
 
 func setup(unit: Unit) -> void:
 	_target = unit
@@ -61,12 +62,20 @@ func setup(unit: Unit) -> void:
 		bg_style.border_color = Color(0.1, 0.1, 0.1)
 		mana_bar.add_theme_stylebox_override("background", bg_style)
 	
-	# Branchement dynamique au composant de vie
+	# Connexion AAA au Séquenceur Visuel (Découplage Logique/UI)
+	if not CombatEvents.has_user_signal("visual_health_updated"):
+		CombatEvents.add_user_signal("visual_health_updated", [
+			{"name": "target", "type": TYPE_OBJECT},
+			{"name": "current", "type": TYPE_INT},
+			{"name": "max_hp", "type": TYPE_INT}
+		])
+	CombatEvents.connect("visual_health_updated", _on_visual_health_updated)
+
 	if _target.health_component:
 		if _target.health_component.has_signal("health_changed"):
 			_target.health_component.connect("health_changed", _on_health_changed)
-		
-		# Initialisation immédiate
+			
+		# Initialisation immédiate (État de base)
 		if _target.health_component.has_method("get_current_health") and _target.health_component.has_method("get_max_health"):
 			_on_health_changed(_target.health_component.get_current_health(), _target.health_component.get_max_health())
 			
@@ -116,15 +125,23 @@ func _process(_delta: float) -> void:
 
 func _on_health_changed(current: int, max_val: int) -> void:
 	if hp_bar:
-		hp_bar.max_value = max_val
-		if not _is_initialized:
+		# AAA : Filtre intelligent. On SNAP instantanément UNIQUEMENT lors de l'initialisation ou d'un buff de Max HP.
+		# Les dégâts purs (même max_val) sont silencieusement ignorés pour laisser le Séquenceur faire son Tween.
+		if not _health_initialized or hp_bar.max_value != max_val:
+			hp_bar.max_value = max_val
 			hp_bar.value = current
-		else:
-			if _hp_tween and _hp_tween.is_valid():
-				_hp_tween.kill()
-			# Tween AAA : Décélération cubique pour un effet fluide et naturel
-			_hp_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			_hp_tween.tween_property(hp_bar, "value", float(current), 0.3)
+			_health_initialized = true
+
+func _on_visual_health_updated(target: Node3D, current: int, max_val: int) -> void:
+	if target != _target: return
+	
+	if hp_bar:
+		hp_bar.max_value = max_val
+		if _hp_tween and _hp_tween.is_valid():
+			_hp_tween.kill()
+		# Tween AAA : Décélération cubique strictement ordonnée par le Séquenceur
+		_hp_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_hp_tween.tween_property(hp_bar, "value", float(current), 0.3)
 
 func _on_mana_changed(current: int, max_val: int) -> void:
 	if mana_bar:
