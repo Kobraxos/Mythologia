@@ -27,6 +27,13 @@ func cast_skill(skill: SkillData, target_hex: Vector3i) -> bool:
 	if _cooldowns.get(skill, 0) > 0:
 		return false # Sort en récupération
 		
+	# CC Guard : Un stun ou un silence bloque le lancement de sorts.
+	var parent: Node = get_parent()
+	if parent and parent.get("status_receiver") != null:
+		var sr: StatusReceiverComponent = parent.status_receiver
+		if sr.is_stunned() or sr.is_silenced():
+			return false
+		
 	if action_economy:
 		if not action_economy.has_enough_ap(skill.ap_cost):
 			return false # PA insuffisants

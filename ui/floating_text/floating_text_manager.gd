@@ -13,6 +13,8 @@ extends Control
 @export var crit_color: Color = Color(1.0, 0.8, 0.0)
 @export var heal_color: Color = Color(0.2, 1.0, 0.4)
 @export var dodge_color: Color = Color(0.8, 0.8, 0.8) # Gris/Blanc neutre
+## Couleur du texte d'étourdissement — Vert acide (distinctif, alerte immédiate).
+@export var stun_color: Color = Color(0.9, 1.0, 0.1) # Jaune-vert électrique
 @export var height_offset: float = 2.0
 
 # PRIVATE VARIABLES
@@ -30,6 +32,7 @@ func _ready() -> void:
 			{"name": "is_dodge", "type": TYPE_BOOL}
 		])
 	CombatEvents.connect("visual_text_requested", _on_visual_text_requested)
+	TurnEvents.turn_skipped_stun.connect(_on_turn_skipped_stun)
 	
 	_initialize_pool()
 
@@ -71,3 +74,12 @@ func _on_visual_text_requested(target: Node3D, amount: int, is_crit: bool, is_he
 		return
 		
 	ft.animate(target, camera, text_val, color, height_offset, is_crit, is_dodge)
+
+# SIGNAL HANDLERS (Stun)
+func _on_turn_skipped_stun(unit: Unit) -> void:
+	var ft: FloatingText = _get_available_text()
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if not ft or not camera or not is_instance_valid(unit):
+		return
+	# AAA : "ÉTOURDI" en grand, non-crité (pas de montant numérique)
+	ft.animate(unit, camera, "ÉTOURDI", stun_color, height_offset + 0.5, false, false)

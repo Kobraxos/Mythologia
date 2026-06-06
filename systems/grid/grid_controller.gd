@@ -166,7 +166,12 @@ func _confirm_movement() -> void:
 func _move_selected_unit_to(target_hex: Vector3i) -> void:
 	if not is_instance_valid(_selected_unit) or not GridManager.pathfinder:
 		return
-		
+
+	# CC Guard : Un enracinement ou un étourdissement bloque tout déplacement.
+	if _selected_unit.status_receiver:
+		if _selected_unit.status_receiver.is_rooted() or _selected_unit.status_receiver.is_stunned():
+			return
+
 	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(_selected_unit.current_hex, target_hex, _selected_unit.stats, _selected_unit.faction, GridManager.unit_positions)
 	if path.is_empty():
 		return
@@ -206,11 +211,16 @@ func _clear_selection() -> void:
 func _on_skill_button_clicked(skill: SkillData) -> void:
 	if not is_instance_valid(_selected_unit) or not _selected_unit.skill_caster:
 		return
-		
-	# AAA : Guard Clause d'Autorité Spatiale - Empêche l'exploitation via les raccourcis clavier
+
+	# AAA : Guard Clause d'Autorité Spatiale
 	if _selected_unit.faction != Unit.Faction.PLAYER or _selected_unit != _active_turn_unit:
 		return
-		
+
+	# CC Guard : Un étourdissement ou un silence bloque le lancement de sorts.
+	if _selected_unit.status_receiver:
+		if _selected_unit.status_receiver.is_stunned() or _selected_unit.status_receiver.is_silenced():
+			return
+
 	# AAA : Transition pure vers le Ghost Stance
 	if _state == State.MOVE_TARGETING and _hovered_hex != INVALID_HEX and _reachable_hexes.has(_hovered_hex):
 		_planned_move_hex = _hovered_hex
@@ -247,14 +257,19 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 func _on_move_button_clicked() -> void:
 	if not is_instance_valid(_selected_unit) or not _selected_unit.stats:
 		return
-		
+
 	# AAA : Guard Clause d'Autorité Spatiale
 	if _selected_unit.faction != Unit.Faction.PLAYER or _selected_unit != _active_turn_unit:
 		return
-		
+
+	# CC Guard : Un étourdissement ou un enracinement bloque le déplacement.
+	if _selected_unit.status_receiver:
+		if _selected_unit.status_receiver.is_stunned() or _selected_unit.status_receiver.is_rooted():
+			return
+
 	if _state != State.DEFAULT:
 		cancel_targeting()
-		
+
 	var available_mp: int = _selected_unit.stats.movement_points
 	if _selected_unit.action_economy:
 		available_mp = _selected_unit.action_economy.get_current_mp()

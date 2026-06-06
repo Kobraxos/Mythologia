@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="StatusEffectData" format=3 uid="uid://cqwertyuiop12"]
+
+[ext_resource type="Script" path="res://data/statuses/status_effect_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"test_stun"
+effect_name = "Éblouissement Divin"
+description = "Étourdi par le rayon. Ne peut pas agir au prochain tour."
+type = 1
+duration_in_turns = 1
+merge_strategy = 2
+is_dispellable = true
+is_untargetable = false
+activation_condition = 0
+stat_scaling = 0
+modifiers = []
+is_stunned = true
+is_rooted = false
+is_silenced = false
+is_disarmed = false
+damage_per_turn = 0
+healing_per_turn = 0
+dot_element = 0
+triggers = []
+prevents_death = false
+set_health_on_prevent = 1

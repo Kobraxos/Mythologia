@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SkillEffectPayload" format=3 uid="uid://sdfghjkl345"]
+
+[ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://cqwertyuiop12" path="res://data/statuses/test_stun_status.tres" id="2_status"]
+
+[resource]
+script = ExtResource("1_script")
+target = 0
+application_chance = 1.0
+condition = 0
+required_status_id = &""
+status_effect = ExtResource("2_status")

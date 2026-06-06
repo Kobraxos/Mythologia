@@ -23,6 +23,10 @@ var _mana_tween: Tween
 var _is_initialized: bool = false
 var _health_initialized: bool = false
 
+# Status icons
+var _status_container: HBoxContainer = null
+var _status_icons: Dictionary = {} # StatusEffectData -> StatusIcon
+
 func setup(unit: Unit) -> void:
 	_target = unit
 	_camera = get_viewport().get_camera_3d()
@@ -89,7 +93,10 @@ func setup(unit: Unit) -> void:
 			
 	# AAA : Le pivot au centre garantit que le zoom s'applique uniformément depuis le milieu de la barre
 	pivot_offset = size / 2.0
-	
+
+	# Statuts actifs : construction du conteneur d'icônes
+	_build_status_container()
+
 	# Différer l'initialisation permet aux vraies valeurs (injectées peu après le spawn) de ne pas déclencher les Tweens.
 	call_deferred("_finalize_initialization")
 
@@ -154,3 +161,70 @@ func _on_mana_changed(current: int, max_val: int) -> void:
 				_mana_tween.kill()
 			_mana_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 			_mana_tween.tween_property(mana_bar, "value", float(current), 0.3)
+
+# ─────────────────────────────────────────────
+# STATUS ICONS
+# ─────────────────────────────────────────────
+
+func _build_status_container() -> void:
+	_status_container = HBoxContainer.new()
+	_status_container.add_theme_constant_override("separation", 2)
+	_status_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	var vbox: Node = get_node_or_null("VBoxContainer")
+	if vbox:
+		vbox.add_child(_status_container)
+	else:
+		add_child(_status_container)
+
+	if not is_instance_valid(_target) or not _target.status_receiver:
+		return
+
+	# Connexion aux signaux d'application et de suppression
+	_target.status_receiver.status_applied.connect(_on_status_applied)
+	_target.status_receiver.status_removed.connect(_on_status_removed)
+
+	# Connexion pour rafraîchir les compteurs de tour en fin de tour
+	TurnEvents.turn_ended.connect(_on_turn_ended)
+
+	# Affichage des statuts déjà actifs au moment du spawn de l'overlay
+	for active_s: Object in _target.status_receiver.get_active_statuses():
+		_add_status_icon(active_s)
+
+func _add_status_icon(active_status: Object) -> void:
+	if not active_status or not active_status.get("data"):
+		return
+
+	# Évite les doublons (cas STACK_DURATION)
+	var data: StatusEffectData = active_status.data
+	if _status_icons.has(data):
+		_status_icons[data].refresh_turns(active_status.remaining_turns)
+		return
+
+	var icon := StatusIcon.new()
+	_status_container.add_child(icon)
+	icon.setup(active_status)
+	_status_icons[data] = icon
+
+func _on_status_applied(status: StatusEffectData) -> void:
+	if not is_instance_valid(_target) or not _target.status_receiver:
+		return
+	# Retrouve l'ActiveStatus correspondant
+	for active_s: Object in _target.status_receiver.get_active_statuses():
+		if active_s.data == status:
+			_add_status_icon(active_s)
+			return
+
+func _on_status_removed(status: StatusEffectData) -> void:
+	if _status_icons.has(status):
+		_status_icons[status].queue_free()
+		_status_icons.erase(status)
+
+func _on_turn_ended(_unit: Unit) -> void:
+	# Rafraîchit le compteur de tous les statuts actifs
+	if not is_instance_valid(_target) or not _target.status_receiver:
+		return
+	for active_s: Object in _target.status_receiver.get_active_statuses():
+		var data: StatusEffectData = active_s.data
+		if _status_icons.has(data):
+			_status_icons[data].refresh_turns(active_s.remaining_turns)

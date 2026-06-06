@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_0acep"]
 [ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+[ext_resource type="Resource" uid="uid://asdfghjkl345" path="res://data/skills/payloads/rayon_solaire_stun_payload.tres" id="2_payload"]
 
 [resource]
 script = ExtResource("1_skdata")
@@ -22,3 +23,4 @@ aoe_radius = 5
 skill_element = 7
 mythic_damage_multiplier = 1.5
 knockback_distance = 4
+effect_payloads = Array[ExtResource("1_0acep")]([ExtResource("2_payload")])

@@ -66,12 +66,29 @@ func next_turn() -> void:
 			_active_unit_index = 0
 			_current_round += 1
 			TurnEvents.round_changed.emit(_current_round)
-			
+
 		var active: Unit = _units[_active_unit_index]
-		if _is_unit_alive(active):
-			active.start_turn()
+		if not _is_unit_alive(active):
+			continue
+
+		active.start_turn()
+
+		# ─── AAA : Gestion du Stun (Étourdissement) ───────────────────────────────
+		# L'unité prend brièvement possession de son tour (active_unit_changed émis),
+		# le signal turn_skipped_stun déclenche le feedback visuel (texte flottant, UI),
+		# puis après un délai, le tour passe automatiquement.
+		if active.status_receiver and active.status_receiver.is_stunned():
 			TurnEvents.active_unit_changed.emit(active)
-			break
+			TurnEvents.turn_skipped_stun.emit(active)
+			_generate_and_emit_timeline()
+			await get_tree().create_timer(1.0).timeout
+			active.end_turn()
+			TurnEvents.turn_ended.emit(active)
+			next_turn()
+			return
+
+		TurnEvents.active_unit_changed.emit(active)
+		break
 
 	_generate_and_emit_timeline()
 

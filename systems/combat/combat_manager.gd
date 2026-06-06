@@ -216,8 +216,12 @@ func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData, is_fin
 				
 			# Vérification de la probabilité d'application
 			if randf() <= payload.application_chance:
+				var actual_target: Unit = target
+				if payload.target == SkillEffectPayload.PayloadTarget.CASTER:
+					actual_target = caster
+					
 				# Duck typing de sécurité pour s'assurer que la cible gère bien les statuts
-				if target.get("status_receiver") != null:
-					target.status_receiver.apply_status(payload.status_effect)
+				if actual_target and actual_target.get("status_receiver") != null:
+					actual_target.status_receiver.apply_status(payload.status_effect)
 				
 	return true

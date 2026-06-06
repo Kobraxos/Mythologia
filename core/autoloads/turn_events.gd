@@ -26,3 +26,8 @@ signal turn_end_requested()
 ## queue: La liste des unités.
 ## round_breaks: Une liste d'indices indiquant APRES quel portrait un nouveau round commence.
 signal timeline_updated(queue: Array[Unit], round_breaks: Array[int])
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une unité perd son tour à cause d'un étourdissement (Stun).
+## Permet à l'UI d'afficher un feedback visuel avant le passage automatique au tour suivant.
+signal turn_skipped_stun(unit: Unit)
