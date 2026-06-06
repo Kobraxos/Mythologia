@@ -1,26 +1,24 @@
-[gd_resource type="Resource" script_class="SkillData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://un6eqfxtq56o"]
 
-[ext_resource type="Script" path="res://data/skills/skill_data.gd" id="1_skdata"]
+[ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_0acep"]
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
 
 [resource]
 script = ExtResource("1_skdata")
 id = &"rayon_solaire"
 skill_name = "Rayon Solaire"
 description = "Projette un faisceau de lumière concentré. Test strict de Ligne de Vue : le ciblage et la zone d'effet s'arrêtent net au premier obstacle."
-animation_trigger = &"attack"
 ap_cost = 2
 mana_cost = 10
 cooldown = 1
 target_mode = 2
 allowed_alignments = 2
-min_range = 1
 max_range = 5
 max_elevation_up = 2
 max_elevation_down = 2
-requires_line_of_sight = true
 is_linear_only = true
 aoe_shape = 2
 aoe_radius = 5
-pierces_obstacles = false
 skill_element = 7
 mythic_damage_multiplier = 1.5
+knockback_distance = 4

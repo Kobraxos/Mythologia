@@ -142,6 +142,23 @@ func execute_path(path: Array[Vector3i]) -> void:
 		
 	_move_tween.tween_callback(func() -> void: movement_finished.emit())
 
+## Exécute un mouvement forcé (Knockback/Pull) instantané en logique, mais lissé visuellement.
+func execute_forced_movement(final_hex: Vector3i) -> void:
+	if _move_tween and _move_tween.is_valid():
+		_move_tween.kill()
+		
+	var prev_hex: Vector3i = current_hex
+	current_hex = final_hex
+	
+	# Cerveau : Notification immédiate pour les systèmes DOD (LoS, Pathfinding)
+	GridEvents.unit_moved.emit(self, prev_hex, current_hex)
+	
+	# Yeux : Rattrapage visuel avec inertie (QUAD OUT simule une friction)
+	var target_pos: Vector3 = HexMath.hex_to_world(final_hex, GridManager.hex_size, GridManager.elevation_step)
+	_move_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_move_tween.tween_property(self, "position", target_pos, 0.25)
+	_move_tween.tween_callback(func() -> void: movement_finished.emit())
+
 # SIGNAL HANDLERS
 func _on_unit_selected(unit: Unit) -> void:
 	_is_selected = (unit == self)

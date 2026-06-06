@@ -25,7 +25,9 @@ static func _process_damage(data: DamageData) -> void:
 		if randf() > hit_chance:
 			data.is_dodged = true
 			data.final_amount = 0
-			# AAA : Gérer un événement d'esquive spécifique ici (ex: CombatEvents.attack_dodged.emit(data.target))
+			if not CombatEvents.has_user_signal("attack_dodged"):
+				CombatEvents.add_user_signal("attack_dodged", [{"name": "target", "type": TYPE_OBJECT}])
+			CombatEvents.emit_signal("attack_dodged", data.target)
 			return
 			
 	var amount: float = data.base_amount

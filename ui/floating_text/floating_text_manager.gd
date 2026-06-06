@@ -12,6 +12,7 @@ extends Control
 @export var damage_color: Color = Color(1.0, 0.2, 0.2)
 @export var crit_color: Color = Color(1.0, 0.8, 0.0)
 @export var heal_color: Color = Color(0.2, 1.0, 0.4)
+@export var dodge_color: Color = Color(0.8, 0.8, 0.8) # Gris/Blanc neutre
 @export var height_offset: float = 2.0
 
 # PRIVATE VARIABLES
@@ -19,8 +20,17 @@ var _pool: Array[FloatingText] = []
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
-	CombatEvents.damage_dealt.connect(_on_damage_dealt)
-	CombatEvents.healing_done.connect(_on_healing_done)
+	# Création dynamique du signal AAA exclusif au Séquenceur Visuel
+	if not CombatEvents.has_user_signal("visual_text_requested"):
+		CombatEvents.add_user_signal("visual_text_requested", [
+			{"name": "target", "type": TYPE_OBJECT}, 
+			{"name": "amount", "type": TYPE_INT},
+			{"name": "is_crit", "type": TYPE_BOOL},
+			{"name": "is_heal", "type": TYPE_BOOL},
+			{"name": "is_dodge", "type": TYPE_BOOL}
+		])
+	CombatEvents.connect("visual_text_requested", _on_visual_text_requested)
+	
 	_initialize_pool()
 
 # PRIVATE FUNCTIONS
@@ -41,26 +51,23 @@ func _get_available_text() -> FloatingText:
 			return ft
 	return null # Object Pool plein (Optionnel : Agrandir le pool dynamiquement)
 
-func _spawn_text(target: Node3D, text_val: String, color: Color) -> void:
+# SIGNAL HANDLERS
+func _on_visual_text_requested(target: Node3D, amount: int, is_crit: bool, is_heal: bool, is_dodge: bool) -> void:
+	var color: Color = dodge_color if is_dodge else (heal_color if is_heal else (crit_color if is_crit else damage_color))
+	var prefix: String = ""
+	var text_val: String = ""
+	
+	if is_dodge:
+		text_val = "Esquive"
+	else:
+		if is_heal: prefix = "+"
+		elif is_crit: prefix = "Crit! "
+		text_val = prefix + str(amount)
+	
 	var ft: FloatingText = _get_available_text()
 	var camera: Camera3D = get_viewport().get_camera_3d()
 	
 	if not ft or not camera:
 		return
 		
-	# Projection 3D vers 2D
-	var world_pos: Vector3 = target.global_position + Vector3(0, height_offset, 0)
-	if camera.is_position_behind(world_pos):
-		return
-		
-	var screen_pos: Vector2 = camera.unproject_position(world_pos)
-	ft.animate(screen_pos, text_val, color)
-
-# SIGNAL HANDLERS
-func _on_damage_dealt(target: Node3D, amount: int, is_crit: bool) -> void:
-	var color: Color = crit_color if is_crit else damage_color
-	var prefix: String = "Crit! " if is_crit else ""
-	_spawn_text(target, prefix + str(amount), color)
-
-func _on_healing_done(target: Node3D, amount: int) -> void:
-	_spawn_text(target, "+" + str(amount), heal_color)
+	ft.animate(target, camera, text_val, color, height_offset, is_crit, is_dodge)

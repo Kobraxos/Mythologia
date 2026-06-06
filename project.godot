@@ -21,6 +21,8 @@ GridManager="*uid://dvydv8ux37s2x"
 TurnEvents="*res://core/autoloads/turn_events.gd"
 CombatEvents="*res://core/autoloads/combat_events.gd"
 GridTargeting="*uid://b05pqoo2ju852"
+GridDisplacement="*uid://twq6gtbrc0b7"
+VfxManager="*uid://cltc22ajwh2fb"
 
 [display]
 

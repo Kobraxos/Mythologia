@@ -58,7 +58,7 @@ func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: Skill
 				# 3. Si cette case est elle-même un obstacle, elle encaisse mais bloque la suite
 				if current_3d != ignored_hex and _has_dynamic_blocker(current_3d):
 					break
-                    
+					
 				# AAA : Le blocage topologique doit respecter les contraintes verticales du sort
 				var elevation_diff: int = current_3d.z - caster_hex.z
 				if elevation_diff > skill.max_elevation_up or elevation_diff < -skill.max_elevation_down:
