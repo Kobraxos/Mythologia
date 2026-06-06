@@ -151,7 +151,7 @@ func _on_hex_clicked(target_hex: Vector3i) -> void:
 	if not _is_selected or not GridManager.pathfinder:
 		return
 		
-	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(current_hex, target_hex, stats)
+	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(current_hex, target_hex, stats, faction, GridManager.unit_positions)
 	if path.is_empty():
 		return
 

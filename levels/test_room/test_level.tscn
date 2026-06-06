@@ -12,8 +12,8 @@
 [ext_resource type="PackedScene" uid="uid://872f7lqg2uh6" path="res://systems/grid/highlights/highlight_range.tscn" id="8_ay6kr"]
 [ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/units/heroes/base_unit_stats.tres" id="9_4py08"]
 [ext_resource type="PackedScene" uid="uid://nmtvw20rchy3" path="res://systems/grid/highlights/highlight_path.tscn" id="9_ubm0v"]
+[ext_resource type="PackedScene" uid="uid://c5w53b5wqmtcv" path="res://systems/grid/highlights/hover_cursor.tscn" id="10_hover_cursor"]
 [ext_resource type="PackedScene" uid="uid://pathline0001" path="res://systems/grid/highlights/highlight_path_line.tscn" id="10_ki72p"]
-[ext_resource type="PackedScene" path="res://systems/grid/highlights/hover_cursor.tscn" id="10_hover_cursor"]
 [ext_resource type="Script" uid="uid://cwh1s6wn21flg" path="res://systems/turn_logic/turn_manager.gd" id="10_ly45u"]
 [ext_resource type="PackedScene" uid="uid://dvgt5gnye3ybg" path="res://systems/grid/highlights/highlight_ghost.tscn" id="11_ahodj"]
 [ext_resource type="PackedScene" uid="uid://b2a1c4d5e6f7g" path="res://ui/combat_hud/combat_hud.tscn" id="11_cblbi"]
@@ -29,6 +29,7 @@ frequency = 0.05
 script = ExtResource("1_hw46n")
 default_terrain = ExtResource("2_kt0r7")
 elevation_noise = SubResource("FastNoiseLite_kt0r7")
+max_elevation = 5
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=131529003]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)

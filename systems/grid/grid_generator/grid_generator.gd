@@ -91,5 +91,7 @@ func generate_grid() -> void:
 			if flat_to_3d.has(flat_neighbor):
 				local_pathfinder.connect_hexes(hex_coord, flat_to_3d[flat_neighbor])
 
+	# Enregistrement de la hauteur max pour le ray-marching mathématique
+	GridManager.max_elevation = max_elevation
 	# Le graphe est terminé, on le rend disponible publiquement (Data-Driven Design)
 	GridManager.pathfinder = local_pathfinder

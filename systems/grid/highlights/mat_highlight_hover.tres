@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://d1h5o6v7e8sa"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://d1h5o6v7e8sa"]
 
 [sub_resource type="Shader" id="Shader_hover_pulse"]
 code = "shader_type spatial;

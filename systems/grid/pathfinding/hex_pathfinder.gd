@@ -38,8 +38,12 @@ func connect_hexes(hex_a: Vector3i, hex_b: Vector3i) -> void:
 		if changed:
 			_path_cache.clear()
 
+## Vide le cache des chemins (à appeler lors d'un mouvement ou de la mort d'une unité)
+func clear_dynamic_cache() -> void:
+	_path_cache.clear()
+
 ## Calcule et retourne le chemin le plus court sous forme de tableau de coordonnées.
-func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats) -> Array[Vector3i]:
+func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats, unit_faction: int, occupied_hexes: Dictionary) -> Array[Vector3i]:
 	if not _grid_graph.has(start) or not _grid_graph.has(end):
 		return []
 		
@@ -52,6 +56,10 @@ func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats) -> Array[Vec
 		_path_cache.erase(cache_key)
 		_path_cache[cache_key] = cached_path
 		return cached_path.duplicate()
+
+	# Règle d'arrêt : On ne peut pas terminer son mouvement sur une case occupée
+	if end != start and occupied_hexes.has(end):
+		return []
 			
 	if stats.movement_type == UnitStats.MovementType.TELEPORTING:
 		var path: Array[Vector3i] = [start, end]
@@ -82,7 +90,7 @@ func get_hex_path(start: Vector3i, end: Vector3i, stats: UnitStats) -> Array[Vec
 			return path
 
 		for next_hex: Vector3i in _grid_graph[current].neighbors:
-			if not _is_traversable(current, next_hex, stats):
+			if not _is_traversable(current, next_hex, stats, unit_faction, occupied_hexes):
 				continue
 				
 			var tentative_g: float = g_score[current] + _get_cost(next_hex, stats)
@@ -105,7 +113,7 @@ func get_path_cost(path: Array[Vector3i], stats: UnitStats) -> int:
 	return ceili(total_cost)
 
 ## Retourne toutes les cases accessibles depuis une position avec un coût maximum (Dijkstra/BFS)
-func get_reachable_hexes(start: Vector3i, stats: UnitStats, available_mp: int) -> Array[Vector3i]:
+func get_reachable_hexes(start: Vector3i, stats: UnitStats, available_mp: int, unit_faction: int, occupied_hexes: Dictionary) -> Array[Vector3i]:
 	if not _grid_graph.has(start):
 		return []
 
@@ -114,7 +122,7 @@ func get_reachable_hexes(start: Vector3i, stats: UnitStats, available_mp: int) -
 	if stats.movement_type == UnitStats.MovementType.TELEPORTING:
 		var radius_hexes: Array[Vector3i] = HexMath.get_hexes_in_radius(start, available_mp)
 		for h: Vector3i in radius_hexes:
-			if _grid_graph.has(h):
+			if _grid_graph.has(h) and not occupied_hexes.has(h):
 				reachable.append(h)
 		return reachable
 
@@ -126,10 +134,13 @@ func get_reachable_hexes(start: Vector3i, stats: UnitStats, available_mp: int) -
 	while frontier_index < frontier.size():
 		var current: Vector3i = frontier[frontier_index]
 		frontier_index += 1
-		reachable.append(current)
+		
+		# Règle d'arrêt : Ne pas exposer une case occupée comme atteignable (sauf la sienne)
+		if current == start or not occupied_hexes.has(current):
+			reachable.append(current)
 
 		for next_hex: Vector3i in _grid_graph[current].neighbors:
-			if not _is_traversable(current, next_hex, stats):
+			if not _is_traversable(current, next_hex, stats, unit_faction, occupied_hexes):
 				continue
 			
 			var new_cost: float = cost_so_far[current] + _get_cost(next_hex, stats)
@@ -152,7 +163,16 @@ func _add_to_cache(key: Array, path: Array[Vector3i]) -> void:
 func _heuristic(a: Vector3i, b: Vector3i) -> float:
 	return _grid_graph[a].world_pos.distance_to(_grid_graph[b].world_pos)
 
-func _is_traversable(current: Vector3i, next_hex: Vector3i, stats: UnitStats) -> bool:
+func _is_traversable(current: Vector3i, next_hex: Vector3i, stats: UnitStats, unit_faction: int, occupied_hexes: Dictionary) -> bool:
+	# 1. Résolution dynamique : Les unités bloquent-elles le passage ?
+	if occupied_hexes.has(next_hex):
+		var occupant: Variant = occupied_hexes[next_hex]
+		# Abstraction pure (Duck Typing) : On ne caste pas en Unit
+		var occupant_faction: int = occupant.get("faction") if occupant.get("faction") != null else -1
+		if occupant_faction != unit_faction:
+			return false # Les ennemis bloquent toujours
+
+	# 2. Résolution topologique mathématique
 	if stats.movement_type == UnitStats.MovementType.FLYING:
 		return true
 	return abs(next_hex.z - current.z) <= stats.max_elevation_jump

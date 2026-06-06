@@ -27,7 +27,11 @@ func execute(context: AIContext) -> void:
 		return
 		
 	# 2. Pathfinding complet vers la cible
-	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(start_hex, best_target.current_hex, unit.stats)
+	# AAA FIX : Le pathfinder est désormais strict et refuse les chemins finissant sur une case occupée.
+	# On lui fournit donc une copie de l'état de la grille où la case de l'ennemi est virtuellement libre.
+	var sim_occupied: Dictionary = GridManager.unit_positions.duplicate()
+	sim_occupied.erase(best_target.current_hex)
+	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(start_hex, best_target.current_hex, unit.stats, unit.faction, sim_occupied)
 	
 	# Si aucun chemin ou déjà au contact
 	if path.is_empty() or path.size() <= 1:

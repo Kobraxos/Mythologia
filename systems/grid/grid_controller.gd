@@ -86,8 +86,7 @@ func _get_hex_under_mouse() -> Vector3i:
 
 	# AAA : Ray-Marching Mathématique sur les plans d'élévation (Zéro physique)
 	# On teste l'intersection du rayon avec les différents "étages" de la grille, du plus haut vers le bas.
-	var max_elevation: int = 5 # Ajustable selon la hauteur max générée par ton élévation procédurale
-	for z: int in range(max_elevation, -1, -1):
+	for z: int in range(GridManager.max_elevation, -1, -1):
 		var plane_height: float = z * GridManager.elevation_step
 		var plane: Plane = Plane(Vector3.UP, plane_height)
 		var hit_pos = plane.intersects_ray(origin, normal)
@@ -95,7 +94,7 @@ func _get_hex_under_mouse() -> Vector3i:
 		if hit_pos != null:
 			var hex_coord: Vector3i = HexMath.world_to_hex(hit_pos, GridManager.hex_size, GridManager.elevation_step)
 			# Si on traverse la colonne d'un hexagone, on vérifie s'il existe une tuile physique à cette hauteur ou au-dessus (clic sur la falaise)
-			for test_z: int in range(hex_coord.z, max_elevation + 1):
+			for test_z: int in range(hex_coord.z, GridManager.max_elevation + 1):
 				var check_hex: Vector3i = Vector3i(hex_coord.x, hex_coord.y, test_z)
 				if GridManager.terrain_tiles.has(check_hex):
 					return check_hex
@@ -133,7 +132,7 @@ func _process_hover() -> void:
 			return
 			
 		if is_instance_valid(_selected_unit) and GridManager.pathfinder:
-			var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(_selected_unit.current_hex, _hovered_hex, _selected_unit.stats)
+			var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(_selected_unit.current_hex, _hovered_hex, _selected_unit.stats, _selected_unit.faction, GridManager.unit_positions)
 			GridEvents.movement_path_targeted.emit(path)
 
 func _confirm_targeting() -> void:
@@ -248,7 +247,7 @@ func _on_move_button_clicked() -> void:
 	if available_mp <= 0:
 		return
 		
-	_reachable_hexes = GridManager.pathfinder.get_reachable_hexes(_selected_unit.current_hex, _selected_unit.stats, available_mp)
+	_reachable_hexes = GridManager.pathfinder.get_reachable_hexes(_selected_unit.current_hex, _selected_unit.stats, available_mp, _selected_unit.faction, GridManager.unit_positions)
 	
 	_state = State.MOVE_TARGETING
 	GridEvents.movement_targeted.emit(_reachable_hexes)
