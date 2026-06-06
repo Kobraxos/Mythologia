@@ -33,7 +33,6 @@ var _is_selected: bool = false
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
-	GridEvents.hex_clicked.connect(_on_hex_clicked)
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
 	CombatEvents.unit_died.connect(_on_unit_died_event)
@@ -166,21 +165,6 @@ func _on_unit_selected(unit: Unit) -> void:
 func _on_unit_deselected() -> void:
 	_is_selected = false
 
-func _on_hex_clicked(target_hex: Vector3i) -> void:
-	if not _is_selected or not GridManager.pathfinder:
-		return
-		
-	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(current_hex, target_hex, stats, faction, GridManager.unit_positions)
-	if path.is_empty():
-		return
-
-	if action_economy:
-		var path_cost: int = GridManager.pathfinder.get_path_cost(path, stats)
-		if not action_economy.has_enough_mp(path_cost):
-			return # Mouvement annulé : Fonds insuffisants.
-		action_economy.consume_mp(path_cost)
-
-	execute_path(path)
 
 func _on_unit_died_event(dead_unit: Unit) -> void:
 	if dead_unit == self:

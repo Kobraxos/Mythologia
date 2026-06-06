@@ -145,7 +145,7 @@ func _confirm_targeting() -> void:
 		if _planned_move_hex != INVALID_HEX:
 			# Le joueur tente d'attaquer depuis un hologramme.
 			# L'approche "Strict Stance" valide le déplacement d'abord et force une nouvelle visée.
-			GridEvents.hex_clicked.emit(_planned_move_hex)
+			_move_selected_unit_to(_planned_move_hex)
 			cancel_targeting()
 			return
 			
@@ -160,8 +160,24 @@ func _confirm_movement() -> void:
 		return
 		
 	if is_instance_valid(_selected_unit) and _reachable_hexes.has(hex_coord):
-		GridEvents.hex_clicked.emit(hex_coord)
+		_move_selected_unit_to(hex_coord)
 		cancel_targeting()
+
+func _move_selected_unit_to(target_hex: Vector3i) -> void:
+	if not is_instance_valid(_selected_unit) or not GridManager.pathfinder:
+		return
+		
+	var path: Array[Vector3i] = GridManager.pathfinder.get_hex_path(_selected_unit.current_hex, target_hex, _selected_unit.stats, _selected_unit.faction, GridManager.unit_positions)
+	if path.is_empty():
+		return
+		
+	if _selected_unit.action_economy:
+		var path_cost: int = GridManager.pathfinder.get_path_cost(path, _selected_unit.stats)
+		if not _selected_unit.action_economy.has_enough_mp(path_cost):
+			return # Mouvement annulé : PM insuffisants.
+		_selected_unit.action_economy.consume_mp(path_cost)
+		
+	_selected_unit.execute_path(path)
 
 func _perform_raycast() -> void:
 	var hex_coord: Vector3i = _get_hex_under_mouse()
