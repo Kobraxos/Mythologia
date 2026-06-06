@@ -13,18 +13,12 @@ extends Control
 @export_category("UI Widgets")
 ## Le widget gérant la barre d'action et les raccourcis.
 @export var action_bar: ActionBar
-
+## Panneau PA/PM à pips (ResourcePanel).
+@export var resource_panel: ResourcePanel
 ## Bouton permanent dédié à l'activation du mode déplacement.
 @export var move_button: Button
-
 ## Bouton dédié à la fin de tour.
 @export var end_turn_button: Button
-
-@export_category("UI Elements")
-## Label affichant les Points d'Action.
-@export var ap_label: Label
-## Label affichant les Points de Mouvement.
-@export var mp_label: Label
 
 # PRIVATE VARIABLES
 var _tracked_economy: ActionEconomyComponent
@@ -72,7 +66,7 @@ func _on_unit_selected(unit: Unit) -> void:
 	_track_action_economy(unit)
 	_track_skill_caster(unit)
 
-	# 3. AAA : Guard Clause d'Autorité UI - On s'arrête ici si ce n'est pas le joueur
+	# 3. AAA : Guard Clause d'Autorité UI — On s'arrête ici si ce n'est pas le joueur
 	if unit.faction != Unit.Faction.PLAYER:
 		return
 
@@ -106,14 +100,10 @@ func _track_action_economy(unit: Unit) -> void:
 		_tracked_economy = unit.action_economy
 		_tracked_economy.ap_changed.connect(_on_ap_changed)
 		_tracked_economy.mp_changed.connect(_on_mp_changed)
-		
-		# Initialisation immédiate de l'affichage
-		if ap_label:
-			ap_label.visible = true
-			_on_ap_changed(_tracked_economy.get_current_ap(), _tracked_economy.get_max_ap())
-		if mp_label:
-			mp_label.visible = true
-			_on_mp_changed(_tracked_economy.get_current_mp(), _tracked_economy.get_max_mp())
+
+		# Initialisation immédiate du ResourcePanel
+		if resource_panel:
+			resource_panel.track_unit(unit)
 
 func _untrack_action_economy() -> void:
 	if is_instance_valid(_tracked_economy):
@@ -122,11 +112,6 @@ func _untrack_action_economy() -> void:
 		if _tracked_economy.mp_changed.is_connected(_on_mp_changed):
 			_tracked_economy.mp_changed.disconnect(_on_mp_changed)
 	_tracked_economy = null
-	
-	if ap_label:
-		ap_label.visible = false
-	if mp_label:
-		mp_label.visible = false
 
 func _track_skill_caster(unit: Unit) -> void:
 	if "skill_caster" in unit and unit.skill_caster is SkillCasterComponent:
@@ -149,14 +134,14 @@ func _update_action_bar_usability() -> void:
 	if action_bar and is_instance_valid(_tracked_economy):
 		action_bar.update_usable_skills(_tracked_economy.get_current_ap(), _current_cooldowns)
 
-func _on_ap_changed(current: int, max_val: int) -> void:
-	if ap_label:
-		ap_label.text = "PA: %d / %d" % [current, max_val]
+func _on_ap_changed(_current: int, _max_val: int) -> void:
+	# Le ResourcePanel se met à jour seul via ses propres connexions.
+	# On garde ce handler uniquement pour mettre à jour l'usabilité de la barre d'actions.
 	_update_action_bar_usability()
 
-func _on_mp_changed(current: int, max_val: int) -> void:
-	if mp_label:
-		mp_label.text = "PM: %d / %d" % [current, max_val]
+func _on_mp_changed(_current: int, _max_val: int) -> void:
+	# Le ResourcePanel se met à jour seul via ses propres connexions.
+	# On garde ce handler uniquement pour mettre à jour l'usabilité du bouton de déplacement.
 	_update_move_button_usability()
 
 func _update_move_button_usability() -> void:

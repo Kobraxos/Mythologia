@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://resource_pip_bar01"]
+
+[ext_resource type="Script" path="res://ui/combat_hud/resource_pip_bar.gd" id="1_script"]
+
+[node name="ResourcePipBar" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+mouse_filter = 2
+script = ExtResource("1_script")

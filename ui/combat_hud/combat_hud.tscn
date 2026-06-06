@@ -4,8 +4,9 @@
 [ext_resource type="Theme" uid="uid://bvqqs8v7umed0" path="res://ui/themes/master_theme.tres" id="2_theme"]
 [ext_resource type="Theme" uid="uid://cakumsalkyi8a" path="res://ui/themes/theme_greek.tres" id="4_greek"]
 [ext_resource type="PackedScene" uid="uid://act1onbar0001" path="res://ui/combat_hud/action_bar.tscn" id="5_bar"]
+[ext_resource type="PackedScene" uid="uid://resource_panel001" path="res://ui/combat_hud/resource_panel.tscn" id="6_respanel"]
 
-[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar", "move_button", "end_turn_button")]
+[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar", "resource_panel", "move_button", "end_turn_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,8 +21,29 @@ faction_themes = {
 1: ExtResource("4_greek")
 }
 action_bar = NodePath("MarginContainer/ActionLayout/ActionBar")
+resource_panel = NodePath("ResourcePanelAnchor/ResourcePanel")
 move_button = NodePath("MarginContainer/ActionLayout/MoveButton")
 end_turn_button = NodePath("MarginContainer/ActionLayout/EndTurnButton")
+
+[node name="ResourcePanelAnchor" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_left = 0.0
+anchor_top = 0.5
+anchor_right = 0.0
+anchor_bottom = 0.5
+offset_left = 24.0
+offset_top = -52.0
+offset_right = 24.0
+offset_bottom = 52.0
+grow_horizontal = 1
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ResourcePanel" parent="ResourcePanelAnchor" instance=ExtResource("6_respanel")]
+layout_mode = 0
+offset_right = 0.0
+offset_bottom = 0.0
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
