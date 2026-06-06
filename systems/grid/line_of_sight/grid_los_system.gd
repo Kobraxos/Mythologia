@@ -48,9 +48,26 @@ func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: Skill
 		
 		if not pierces:
 			if shape == SkillData.AreaShape.LINE:
-				if current_3d != ignored_hex and _has_dynamic_blocker(current_3d): break
+				# 1. Vérifie si le chemin pour atteindre cette case est déjà bloqué en amont
+				if not has_line_of_sight(caster_hex, current_3d, ignored_hex):
+					break
+					
+				# 2. La case est atteinte (on l'ajoute à la zone d'effet)
+				valid_3d.append(current_3d)
+				
+				# 3. Si cette case est elle-même un obstacle, elle encaisse mais bloque la suite
+				if current_3d != ignored_hex and _has_dynamic_blocker(current_3d):
+					break
+                    
+				# AAA : Le blocage topologique doit respecter les contraintes verticales du sort
+				var elevation_diff: int = current_3d.z - caster_hex.z
+				if elevation_diff > skill.max_elevation_up or elevation_diff < -skill.max_elevation_down:
+					break
+					
+				continue # Case validée et ajoutée, on passe à la suivante
 			else:
-				if not has_line_of_sight(caster_hex, current_3d, ignored_hex): continue
+				if not has_line_of_sight(caster_hex, current_3d, ignored_hex):
+					continue
 				
 		valid_3d.append(current_3d)
 		
@@ -62,7 +79,13 @@ func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData, ignored_hex
 		return [caster_hex]
 		
 	var caster_2d := Vector2i(caster_hex.x, caster_hex.y)
-	var raw_ring: Array[Vector2i] = HexAoE.get_ring_2d(caster_2d, skill.min_range, skill.max_range)
+	var raw_ring: Array[Vector2i] = []
+	
+	if skill.is_linear_only:
+		raw_ring = HexAoE.get_linear_range_2d(caster_2d, skill.min_range, skill.max_range)
+	else:
+		raw_ring = HexAoE.get_ring_2d(caster_2d, skill.min_range, skill.max_range)
+		
 	var valid_hexes: Array[Vector3i] = []
 	
 	for hex_2d: Vector2i in raw_ring:

@@ -9,6 +9,9 @@ const AI_THINK_DELAY: float = 0.5
 
 # PRIVATE VARIABLES
 var _unit: Unit
+var _consecutive_fails: int = 0
+var _last_ap: int = -1
+var _last_mp: int = -1
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
@@ -22,6 +25,23 @@ func _ready() -> void:
 
 # PRIVATE FUNCTIONS
 func _process_turn() -> void:
+	# AAA : Garde-fou Anti-Deadlock (State Watchdog)
+	var current_ap: int = _unit.action_economy.get_current_ap() if _unit.action_economy else 0
+	var current_mp: int = _unit.action_economy.get_current_mp() if _unit.action_economy else 0
+	
+	if current_ap == _last_ap and current_mp == _last_mp:
+		_consecutive_fails += 1
+	else:
+		_consecutive_fails = 0
+		
+	_last_ap = current_ap
+	_last_mp = current_mp
+	
+	if _consecutive_fails >= 5:
+		push_warning("AI Deadlock détecté sur %s. Fin de tour forcée." % _unit.name)
+		_end_turn()
+		return
+
 	var context := AIContext.new(_unit)
 	var best_action: AIAction = null
 	var best_score: float = 0.0 # AAA : Le score DOIT être > 0 pour être exécuté.
@@ -51,6 +71,9 @@ func _on_action_finished() -> void:
 	get_tree().create_timer(AI_THINK_DELAY).timeout.connect(_process_turn)
 
 func _on_active_unit_changed(active_unit: Unit) -> void:
+	_consecutive_fails = 0
+	_last_ap = -1
+	_last_mp = -1
 	if active_unit == _unit:
 		# AAA : Sécurité. L'IA ne prend pas le contrôle des unités du Joueur.
 		if _unit.faction != Unit.Faction.ENEMY:

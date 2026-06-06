@@ -17,6 +17,25 @@ static func get_ring_2d(center: Vector2i, min_radius: int, max_radius: int) -> A
 				ring.append(Vector2i(center.x + q, center.y + r))
 	return ring
 
+static func get_linear_range_2d(center: Vector2i, min_radius: int, max_radius: int) -> Array[Vector2i]:
+	var hexes: Array[Vector2i] = []
+	if max_radius == 0:
+		return [center]
+		
+	if min_radius <= 0:
+		hexes.append(center)
+		
+	var directions: Array[Vector2i] = [
+		Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
+		Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)
+	]
+	
+	for dist: int in range(max(1, min_radius), max_radius + 1):
+		for dir: Vector2i in directions:
+			hexes.append(center + dir * dist)
+			
+	return hexes
+
 static func get_circle_2d(center: Vector2i, radius: int) -> Array[Vector2i]:
 	return get_ring_2d(center, 0, radius)
 
