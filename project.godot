@@ -20,6 +20,7 @@ GridEvents="*uid://8m3hpexdam5f"
 GridManager="*uid://dvydv8ux37s2x"
 TurnEvents="*res://core/autoloads/turn_events.gd"
 CombatEvents="*res://core/autoloads/combat_events.gd"
+GridTargeting="*uid://b05pqoo2ju852"
 
 [display]
 

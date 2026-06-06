@@ -122,7 +122,7 @@ func _process_hover() -> void:
 		if is_instance_valid(_selected_unit) and _targeted_skill:
 			var origin: Vector3i = _planned_move_hex if _planned_move_hex != INVALID_HEX else _selected_unit.current_hex
 			var ignored: Vector3i = _selected_unit.current_hex if _planned_move_hex != INVALID_HEX else INVALID_HEX
-			var affected: Array[Vector3i] = HexAoE.get_affected_hexes(origin, _hovered_hex, _targeted_skill, ignored)
+			var affected: Array[Vector3i] = GridTargeting.get_affected_hexes(origin, _hovered_hex, _targeted_skill, ignored)
 			GridEvents.aoe_targeted.emit(affected)
 			
 	elif _state == State.MOVE_TARGETING:
@@ -222,7 +222,7 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 		GridEvents.ghost_stance_cleared.emit()
 		
 	# AAA : Calcul Just-In-Time de la portée de la compétence
-	_valid_casting_hexes = HexAoE.get_valid_casting_range(origin_hex, _targeted_skill, ignored_hex)
+	_valid_casting_hexes = GridTargeting.get_valid_casting_range(origin_hex, _targeted_skill, ignored_hex)
 	GridEvents.skill_range_targeted.emit(_valid_casting_hexes)
 	
 	_hovered_hex = previous_hover

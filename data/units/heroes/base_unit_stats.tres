@@ -2,6 +2,7 @@
 
 [ext_resource type="Resource" uid="uid://cyd2aljxwrxdw" path="res://data/skills/attacks/frappe_basique.tres" id="1_2366t"]
 [ext_resource type="Script" uid="uid://didfbrl3fg4h5" path="res://data/units/unit_stats.gd" id="1_t58gu"]
+[ext_resource type="Resource" path="res://data/skills/attacks/rayon_solaire.tres" id="2_3ge3s"]
 [ext_resource type="Texture2D" uid="uid://dsqgvi8aue1da" path="res://icon.svg" id="2_gbbgr"]
 
 [resource]
@@ -14,4 +15,4 @@ mythology = 1
 max_mana = 20
 max_elevation_jump = 2
 base_attack = ExtResource("1_2366t")
-active_skills = Array[Resource]([ExtResource("1_2366t")])
+active_skills = Array[Resource]([ExtResource("1_2366t"), ExtResource("2_3ge3s")])

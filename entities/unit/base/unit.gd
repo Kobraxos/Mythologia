@@ -134,7 +134,9 @@ func execute_path(path: Array[Vector3i]) -> void:
 		
 		# Correction AAA : Il faut lier (bind) les arguments directement sur la Callable, pas sur le Tweener
 		var update_hex := func(h: Vector3i) -> void:
+			var prev_hex = current_hex
 			current_hex = h
+			GridEvents.unit_moved.emit(self, prev_hex, current_hex)
 			
 		_move_tween.tween_callback(update_hex.bind(step_hex))
 		

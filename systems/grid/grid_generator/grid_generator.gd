@@ -95,3 +95,6 @@ func generate_grid() -> void:
 	GridManager.max_elevation = max_elevation
 	# Le graphe est terminé, on le rend disponible publiquement (Data-Driven Design)
 	GridManager.pathfinder = local_pathfinder
+	
+	# AAA : Émission de la topologie pure pour l'initialisation des systèmes DOD (ex: GridLosSystem)
+	GridEvents.grid_topology_ready.emit(GridManager.terrain_tiles)

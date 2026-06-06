@@ -10,7 +10,7 @@ func evaluate(context: AIContext) -> float:
 		return 0.0
 		
 	var unit: Unit = context.unit
-	var valid_range: Array[Vector3i] = HexAoE.get_valid_casting_range(context.current_hex, skill_to_check)
+	var valid_range: Array[Vector3i] = GridTargeting.get_valid_casting_range(context.current_hex, skill_to_check)
 	
 	for hex: Vector3i in valid_range:
 		var target_node: Node3D = GridManager.unit_positions.get(hex)

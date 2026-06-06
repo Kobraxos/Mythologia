@@ -27,7 +27,7 @@ func execute(context: AIContext) -> void:
 		return
 		
 	# 2. Récupération des cases atteignables
-	var valid_range: Array[Vector3i] = HexAoE.get_valid_casting_range(context.current_hex, skill_to_use)
+	var valid_range: Array[Vector3i] = GridTargeting.get_valid_casting_range(context.current_hex, skill_to_use)
 	
 	var best_target_hex: Vector3i = Vector3i(0, 0, -999)
 	var lowest_hp: int = 999999

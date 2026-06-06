@@ -68,7 +68,7 @@ enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CAST
 @export_group("Skill Sequencing")
 ## Compétence "enfant" déclenchée automatiquement, gratuitement et instantanément après la résolution de celle-ci.
 ## Idéal pour des sorts à double effet (ex: Frappe Single Target au centre, suivie d'une AoE RING).
-@export var follow_up_skill: Resource
+@export var follow_up_skill: SkillData
 
 @export_category("Area of Effect")
 @export var aoe_shape: AreaShape = AreaShape.SINGLE_TARGET
@@ -113,11 +113,11 @@ enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CAST
 
 @export_group("Status & Effects")
 ## Liste des charges utiles. Injecter ici des "SkillEffectPayload" (qui définiront le % de proc et si l'effet cible l'ennemi ou le lanceur).
-@export var effect_payloads: Array[Resource] = []
+@export var effect_payloads: Array[SkillEffectPayload] = []
 
 @export_group("Grid Manipulation")
 ## Ressource de terrain ou de surface (ex: TerrainData de Feu/Poison) à générer sur les cases touchées.
-@export var spawned_surface: Resource
+@export var spawned_surface: TerrainData
 ## Si Vrai, détruit le terrain ciblé (le remplace par du vide/gouffre). Déclenche les chutes si des unités s'y trouvent.
 @export var destroys_terrain: bool = false
 

@@ -14,7 +14,7 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 	var caster_hex: Vector3i = caster_unit.current_hex
 		
 	# 1. Requête Mathématique (L'Arbitre interroge le Géomètre)
-	var affected_hexes: Array[Vector3i] = HexAoE.get_affected_hexes(caster_hex, target_hex, skill)
+	var affected_hexes: Array[Vector3i] = GridTargeting.get_affected_hexes(caster_hex, target_hex, skill)
 	
 	# 2. Exécution Logique
 	for hex: Vector3i in affected_hexes:

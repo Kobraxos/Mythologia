@@ -61,3 +61,11 @@ signal timeline_portrait_hovered(unit: Unit, is_hovered: bool)
 @warning_ignore("unused_signal")
 ## Émis à chaque fois que la souris entre dans un nouvel hexagone mathématique.
 signal hex_hovered(hex_coord: Vector3i)
+
+@warning_ignore("unused_signal")
+## Émis par l'orchestrateur de carte une fois la topologie mathématique figée.
+signal grid_topology_ready(topology: Dictionary)
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une unité a terminé un déplacement. Sert de déclencheur pour les systèmes Data-Oriented.
+signal unit_moved(unit: Node, from_hex: Vector3i, to_hex: Vector3i)
