@@ -79,5 +79,9 @@ func _on_active_unit_changed(active_unit: Unit) -> void:
 		if _unit.faction != Unit.Faction.ENEMY:
 			return
 			
+		# AAA : Guard clause vitale. Si l'IA est stun, on bloque sa réflexion
+		if _unit.status_receiver and _unit.status_receiver.is_stunned():
+			return
+			
 		# Léger délai pour le "Juice" (L'IA réfléchit) et éviter un call-stack instantané
 		get_tree().create_timer(AI_THINK_DELAY).timeout.connect(_process_turn)

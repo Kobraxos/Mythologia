@@ -5,8 +5,5 @@
 
 [resource]
 script = ExtResource("1_script")
-target = 0
-application_chance = 1.0
-condition = 0
-required_status_id = &""
+target = 2
 status_effect = ExtResource("2_status")
