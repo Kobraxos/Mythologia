@@ -8,6 +8,7 @@ signal stat_changed(stat: StatType, new_value: float)
 # ENUMS
 enum StatType {
 	MAX_HEALTH,
+	MAX_SHIELD,
 	MAX_MANA,
 	HP_REGEN,
 	MANA_REGEN,
@@ -85,6 +86,8 @@ func _get_base_value(stat: StatType) -> float:
 	match stat:
 		StatType.MAX_HEALTH:
 			return float(_base_stats.max_health)
+		StatType.MAX_SHIELD:
+			return float(_base_stats.max_shield)
 		StatType.MAX_MANA:
 			return float(_base_stats.max_mana)
 		StatType.HP_REGEN:

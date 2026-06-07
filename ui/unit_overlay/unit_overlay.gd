@@ -2,6 +2,7 @@ class_name UnitOverlay
 extends Control
 
 @export var hp_bar: ProgressBar
+@export var shield_rect: ColorRect
 @export var mana_bar: ProgressBar
 
 @export_category("Depth Scaling")
@@ -20,6 +21,7 @@ var _target: Unit
 var _camera: Camera3D
 var _hp_tween: Tween
 var _mana_tween: Tween
+var _shield_tween: Tween
 var _is_initialized: bool = false
 var _health_initialized: bool = false
 
@@ -75,13 +77,35 @@ func setup(unit: Unit) -> void:
 		])
 	CombatEvents.connect("visual_health_updated", _on_visual_health_updated)
 
+	# Connexion au Séquenceur Visuel du Bouclier
+	if not CombatEvents.has_user_signal("visual_shield_updated"):
+		CombatEvents.add_user_signal("visual_shield_updated", [
+			{"name": "target", "type": TYPE_OBJECT},
+			{"name": "current_shield", "type": TYPE_INT},
+			{"name": "max_shield", "type": TYPE_INT},
+			{"name": "current_hp", "type": TYPE_INT},
+			{"name": "max_hp", "type": TYPE_INT}
+		])
+	CombatEvents.connect("visual_shield_updated", _on_visual_shield_updated)
+
+	# Enregistrement de l'événement Shield Break (pour VFX futurs)
+	if not CombatEvents.has_user_signal("visual_shield_broken"):
+		CombatEvents.add_user_signal("visual_shield_broken", [
+			{"name": "target", "type": TYPE_OBJECT}
+		])
+
 	if _target.health_component:
 		if _target.health_component.has_signal("health_changed"):
 			_target.health_component.connect("health_changed", _on_health_changed)
-			
+		if _target.health_component.has_signal("shield_changed"):
+			_target.health_component.connect("shield_changed", _on_shield_changed)
+		
 		# Initialisation immédiate (État de base)
 		if _target.health_component.has_method("get_current_health") and _target.health_component.has_method("get_max_health"):
 			_on_health_changed(_target.health_component.get_current_health(), _target.health_component.get_max_health())
+		# Différer la position de ShieldRect : hp_bar.size n'est pas encore calculé à ce stade.
+		if _target.health_component.get_max_shield() > 0:
+			call_deferred("_deferred_init_shield")
 			
 	# AAA UX : Branchement dynamique au composant d'économie pour le Mana
 	if _target.action_economy:
@@ -131,22 +155,79 @@ func _process(_delta: float) -> void:
 		position = _camera.unproject_position(world_pos) - (size / 2.0)
 
 func _on_health_changed(current: int, max_val: int) -> void:
-	if hp_bar:
-		# AAA : Filtre intelligent. On SNAP instantanément UNIQUEMENT lors de l'initialisation ou d'un buff de Max HP.
-		# Les dégâts purs (même max_val) sont silencieusement ignorés pour laisser le Séquenceur faire son Tween.
-		if not _health_initialized or hp_bar.max_value != max_val:
-			hp_bar.max_value = max_val
-			hp_bar.value = current
-			_health_initialized = true
+	# Délègue à _update_shield_rect qui gère l'échelle totale HP+Shield et le snap initial.
+	if is_instance_valid(_target) and _target.health_component:
+		_update_shield_rect(
+			_target.health_component.get_current_shield(),
+			_target.health_component.get_max_shield(),
+			current, max_val
+		)
+	_health_initialized = true
+
+func _on_shield_changed(current_shield: int, max_shield: int) -> void:
+	if not is_instance_valid(_target) or not _target.health_component:
+		return
+	_update_shield_rect(
+		current_shield, max_shield,
+		_target.health_component.get_current_health(),
+		_target.health_component.get_max_health()
+	)
+
+func _on_visual_shield_updated(target: Node3D, current_shield: int, max_shield: int, current_hp: int, max_hp: int) -> void:
+	if target != _target:
+		return
+	_update_shield_rect(current_shield, max_shield, current_hp, max_hp)
+
+## Positionne la ShieldRect et met à jour l'échelle de la HPBar.
+## L'échelle totale est max_hp + max_shield : la barre représente la survie totale de l'unité.
+func _update_shield_rect(current_shield: int, max_shield: int, current_hp: int, max_hp: int) -> void:
+	if not hp_bar or max_hp <= 0:
+		return
+
+	# L'échelle totale fait de la place au bouclier, même si les HP sont pleins.
+	var total_max: int = max_hp + max_shield if max_shield > 0 else max_hp
+	hp_bar.max_value = float(total_max)
+
+	# Snap initial : avant le premier tween, on force la valeur correcte.
+	if not _health_initialized:
+		hp_bar.value = float(current_hp)
+
+	if shield_rect:
+		var bar_width: float = hp_bar.size.x
+		if bar_width <= 0.0:
+			return # Pas encore rendu — _deferred_init_shield repassera.
+
+		var hp_ratio: float = clampf(float(current_hp) / float(total_max), 0.0, 1.0)
+		var shield_ratio: float = clampf(float(current_shield) / float(total_max), 0.0, 1.0)
+
+		shield_rect.position.x = bar_width * hp_ratio
+		shield_rect.size.x = clampf(bar_width * shield_ratio, 0.0, bar_width * (1.0 - hp_ratio))
+		shield_rect.size.y = hp_bar.size.y
+		shield_rect.visible = (current_shield > 0 and shield_rect.size.x > 0.5)
+
+func _deferred_init_shield() -> void:
+	if not is_instance_valid(_target) or not _target.health_component:
+		return
+	_update_shield_rect(
+		_target.health_component.get_current_shield(),
+		_target.health_component.get_max_shield(),
+		_target.health_component.get_current_health(),
+		_target.health_component.get_max_health()
+	)
 
 func _on_visual_health_updated(target: Node3D, current: int, max_val: int) -> void:
 	if target != _target: return
-	
+
 	if hp_bar:
-		hp_bar.max_value = max_val
+		# Recalcule le total pour garder la même échelle que _update_shield_rect.
+		var max_shield: int = 0
+		if is_instance_valid(_target) and _target.health_component:
+			max_shield = _target.health_component.get_max_shield()
+		var total_max: int = max_val + max_shield if max_shield > 0 else max_val
+		hp_bar.max_value = float(total_max)
 		if _hp_tween and _hp_tween.is_valid():
 			_hp_tween.kill()
-		# Tween AAA : Décélération cubique strictement ordonnée par le Séquenceur
+		# Tween AAA : Décélération cubique strictement ordonnée par le Séquenceur.
 		_hp_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		_hp_tween.tween_property(hp_bar, "value", float(current), 0.3)
 

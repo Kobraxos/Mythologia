@@ -8,5 +8,4 @@ script = ExtResource("1_c22cm")
 id = &"frappe_basique"
 skill_name = "Frappe Héroïque"
 description = "Une attaque de mêlée basique qui inflige des dégâts physiques à un ennemi."
-hit_count = 3
 metadata/_custom_type_script = "uid://eceh4kcvv4yn"
