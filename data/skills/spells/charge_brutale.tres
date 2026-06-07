@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://cbrutale"]
+
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"charge_brutale"
+skill_name = "Charge Brutale"
+description = "Charge l'ennemi en ligne droite, infligeant des dégâts et le repoussant."
+ap_cost = 2
+mana_cost = 0
+cooldown = 2
+target_mode = 1
+allowed_alignments = 0
+max_range = 3
+max_elevation_up = 1
+max_elevation_down = 1
+is_linear_only = true
+aoe_shape = 0
+skill_element = 0
+physical_damage_multiplier = 1.5
+knockback_distance = 1
+caster_movement = 1

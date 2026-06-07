@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="UnitStats" format=3 uid="uid://mcyclops"]
+
+[ext_resource type="Script" uid="uid://didfbrl3fg4h5" path="res://data/units/unit_stats.gd" id="1_stats"]
+[ext_resource type="Resource" uid="uid://cyd2aljxwrxdw" path="res://data/skills/attacks/frappe_basique.tres" id="2_base"]
+[ext_resource type="Resource" uid="uid://oeilpetrifiant" path="res://data/skills/spells/oeil_petrifiant.tres" id="3_spell"]
+
+[resource]
+script = ExtResource("1_stats")
+id = &"mage_cyclops"
+unit_name = "Cyclope"
+description = "Un géant borgne canalisant des énergies mythiques."
+lore = ""
+mythology = 1
+rarity = 1
+initiative = 2
+max_health = 30
+hp_regen_per_turn = 0
+max_shield = 10
+shield_regen_per_turn = 5
+max_mana = 30
+mana_regen_per_turn = 5
+movement_points = 2
+max_elevation_jump = 2
+knockback_resistance = 0.5
+base_physical_damage = 5
+base_mythic_damage = 10
+physical_defense = 2
+mythic_defense = 3
+physical_penetration = 0.0
+base_evasion = 0.0
+res_fire = 0.0
+res_light = 0.0
+base_crit_chance = 0.05
+effect_focus = 0.2
+effect_resistance = 0.1
+incoming_healing_multiplier = 1.0
+base_attack = ExtResource("2_base")
+active_skills = Array[Resource]([ExtResource("2_base"), ExtResource("3_spell")])

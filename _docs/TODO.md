@@ -71,8 +71,8 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 ## 🟢 PHASE CONTENU (Prochaines semaines)
 
 ### Contenu Data (Priorité absolue)
-- [ ] **0 monstre** dans `data/units/monsters/` — créer au moins 3 archétypes (Guerrier, Mage, Archer)
-- [ ] **0 sort** dans `data/skills/spells/` — créer les compétences de base par mythologie
+- [x] **3 monstres** dans `data/units/monsters/` — créés (Minotaure, Cyclope, Satyre)
+- [x] **3 sorts** dans `data/skills/spells/` — créés (Charge, Oeil pétrifiant, Flèche)
 - [ ] **1 seul niveau** (`test_room`) — créer 3-5 niveaux avec difficulté croissante
 - [ ] **1 seul héros** (`base_unit_stats.tres`) sans nom, sans mythologie définie
 
@@ -134,7 +134,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 
 | Semaine | Focus | Livrable |
 | :--- | :--- | :--- |
-| **W1** | 🔴 Contenu Data : 3 monstres + 5 sorts de base | Combat avec diversité d'unités |
+| **W1** | ✅ Contenu Data : 3 monstres + 5 sorts de base | Combat avec diversité d'unités |
 | **W2** | 🔴 `flat_shield_granted` + `follow_up_skill` + `contextual_scaling` | Sorts à effets multiples fonctionnels |
 | **W3** | 🔴 `caster_movement` + AoE RING/FLOOD_FILL + Réactions élémentaires | Compétences tactiquement riches |
 | **W4** | 🟡 3 niveaux de test + configuration BattleManager | 30 min de contenu jouable |
@@ -147,6 +147,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 
 ## 🚀 PROCHAINE ÉTAPE IMMÉDIATE
 
-**Créer le contenu Data manquant** : Sans monstre ni sort configurés, le moteur tourne à vide. Priorité absolue avant tout nouveau système.
+**Implémenter le Support de l'Aegis via les Compétences (`flat_shield_granted`)** : 
+Actuellement, `DamagePipeline._process_healing()` ne gère pas le `flat_shield_granted`. Un sort de bouclier doit pouvoir accorder de l'Aegis à la cible.
 
-> **Commande rapide :** Duplique `base_unit_stats.tres` → crée `warrior_minotaur.tres`, `mage_cyclops.tres`, `archer_satyr.tres` dans `data/units/monsters/`. Puis crée 3 sorts dans `data/skills/spells/`.
+> **Objectif :** Modifier `DamagePipeline` et `HealthComponent` pour que les sorts ayant un `flat_shield_granted > 0` restaurent ou accordent de l'Aegis à la cible. Implémenter ensuite `follow_up_skill` dans le `CombatManager`.

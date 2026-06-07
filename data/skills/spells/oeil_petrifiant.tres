@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://oeilpetrifiant"]
+
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"oeil_petrifiant"
+skill_name = "Oeil Pétrifiant"
+description = "Un regard terrible qui blesse et inflige de gros dégâts mythiques."
+ap_cost = 3
+mana_cost = 15
+cooldown = 3
+target_mode = 1
+allowed_alignments = 0
+max_range = 4
+max_elevation_up = 2
+max_elevation_down = 3
+is_linear_only = false
+aoe_shape = 0
+skill_element = 8
+mythic_damage_multiplier = 2.0
