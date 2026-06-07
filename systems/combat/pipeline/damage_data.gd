@@ -9,7 +9,8 @@ var target: Unit
 var skill: SkillData
 
 var base_amount: float = 0.0
-var final_amount: int = 0
+var current_amount: float = 0.0
+var final_amount: int = -1
 
 var is_healing: bool = false
 var is_shielding: bool = false
@@ -27,3 +28,7 @@ func _init(p_source: Unit, p_target: Unit, p_skill: SkillData = null) -> void:
 	source = p_source
 	target = p_target
 	skill = p_skill
+	
+func initialize_amounts(base: float) -> void:
+	base_amount = base
+	current_amount = base

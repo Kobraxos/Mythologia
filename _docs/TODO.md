@@ -80,7 +80,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 ### Systèmes de Contenu critiques (par ordre d'impact gameplay)
 - [x] **`flat_shield_granted` dans le Pipeline** — connecter SkillData.flat_shield_granted à `health_component.restore_shield()` dans `_process_healing()`. Un sort de bouclier doit pouvoir accorder de l'Aegis.
 - [x] **`follow_up_skill`** — après `_resolve_single_target()`, si `skill.follow_up_skill != null`, déclencher une seconde résolution centrée sur le même hex. Permet Frappe → AoE Ring en une seule compétence.
-- [ ] **`contextual_scaling`** — lire `skill.contextual_scaling` dans `DamagePipeline._process_damage()` et appliquer le `scaling_factor` selon le cas (TARGET_MISSING_HP, ELEVATION_DIFFERENCE, etc.).
+- [x] **`contextual_scaling`** — lire `skill.contextual_scaling` dans `DamagePipeline._process_damage()` et appliquer le `scaling_factor` selon le cas (TARGET_MISSING_HP, ELEVATION_DIFFERENCE, etc.).
 - [ ] **`caster_movement`** — implémenter DASH_TO_TARGET dans CombatManager (commande FORCED_MOVEMENT sur le lanceur avant l'impact).
 - [ ] **Réactions élémentaires** (FIRE→Burn, ICE→Freeze, etc.) — `spawned_surface` et le pipeline élémentaire.
 - [ ] **Formes AoE manquantes** : `RING` et `FLOOD_FILL` dans le système de ciblage.
@@ -136,7 +136,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 | Semaine | Focus | Livrable |
 | :--- | :--- | :--- |
 | **W1** | ✅ Contenu Data : 3 monstres + 5 sorts de base | Combat avec diversité d'unités |
-| **W2** | 🟡 `flat_shield_granted` + `follow_up_skill` + `contextual_scaling` | Sorts à effets multiples fonctionnels |
+| **W2** | ✅ `flat_shield_granted` + `follow_up_skill` + `contextual_scaling` | Sorts à effets multiples fonctionnels |
 | **W3** | 🔴 `caster_movement` + AoE RING/FLOOD_FILL + Réactions élémentaires | Compétences tactiquement riches |
 | **W4** | 🟡 3 niveaux de test + configuration BattleManager | 30 min de contenu jouable |
 | **W5** | 🟡 IA Compétences actives + Comportement fuite | IA tactique crédible |
@@ -148,7 +148,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 
 ## 🚀 PROCHAINE ÉTAPE IMMÉDIATE
 
-**Implémenter le Scaling Contextuel (`contextual_scaling`)** : 
-Actuellement, les dégâts sont statiques. L'objectif est d'implémenter les multiplicateurs dynamiques (TARGET_MISSING_HP, ELEVATION_DIFFERENCE) dans `DamagePipeline._process_damage()` pour enrichir la tactique (ex: Coup de grâce si cible blessée).
+**Implémenter les Déplacements Forcés du Lanceur (`caster_movement`)** : 
+Actuellement, les sorts se lancent depuis la position fixe du lanceur. L'objectif est d'implémenter les charges et téléportations dans `CombatManager`.
 
-> **Objectif :** Ajouter une étape dans le calcul des dégâts qui lit l'enum `DamageScaling` de la compétence et applique le bonus au `base_amount`.
+> **Objectif :** Modifier la résolution pour que si un sort a un `caster_movement` (ex: DASH_TO_TARGET), le lanceur se déplace physiquement sur la grille avant de frapper la cible.
