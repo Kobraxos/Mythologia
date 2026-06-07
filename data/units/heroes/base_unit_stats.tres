@@ -3,8 +3,9 @@
 [ext_resource type="Resource" uid="uid://cyd2aljxwrxdw" path="res://data/skills/attacks/frappe_basique.tres" id="1_2366t"]
 [ext_resource type="Script" uid="uid://didfbrl3fg4h5" path="res://data/units/unit_stats.gd" id="1_t58gu"]
 [ext_resource type="Resource" uid="uid://un6eqfxtq56o" path="res://data/skills/attacks/rayon_solaire.tres" id="2_3ge3s"]
-[ext_resource type="Resource" uid="uid://shield_athena" path="res://data/skills/spells/benediction_athena.tres" id="3_spell"]
 [ext_resource type="Texture2D" uid="uid://dsqgvi8aue1da" path="res://icon.svg" id="2_gbbgr"]
+[ext_resource type="Resource" path="res://data/skills/spells/benediction_athena.tres" id="3_spell"]
+[ext_resource type="Resource" path="res://data/skills/spells/frappe_sismique.tres" id="4_spell"]
 
 [resource]
 script = ExtResource("1_t58gu")
@@ -17,14 +18,13 @@ portrait = ExtResource("2_gbbgr")
 world_sprite = ExtResource("2_gbbgr")
 mythology = 1
 rarity = 2
+action_points = 3
 initiative = 6
 max_health = 120
-hp_regen_per_turn = 0
 max_shield = 40
 shield_regen_per_turn = 15
 max_mana = 100
 mana_regen_per_turn = 10
-movement_points = 3
 max_elevation_jump = 2
 knockback_resistance = 0.2
 base_physical_damage = 20
@@ -40,4 +40,4 @@ effect_focus = 0.05
 effect_resistance = 0.1
 incoming_healing_multiplier = 1.1
 base_attack = ExtResource("1_2366t")
-active_skills = Array[Resource]([ExtResource("1_2366t"), ExtResource("2_3ge3s"), ExtResource("3_spell")])
+active_skills = Array[Resource]([ExtResource("1_2366t"), ExtResource("2_3ge3s"), ExtResource("3_spell"), ExtResource("4_spell")])

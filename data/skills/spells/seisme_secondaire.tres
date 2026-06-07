@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://seisme_secondaire"]
+
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"seisme_secondaire"
+skill_name = "Onde de Choc"
+description = "L'onde de choc secondaire d'une frappe sismique."
+ap_cost = 0
+mana_cost = 0
+cooldown = 0
+target_mode = 2
+allowed_alignments = 2
+max_range = 10
+min_range = 0
+max_elevation_up = 3
+max_elevation_down = 3
+is_linear_only = false
+aoe_shape = 4
+aoe_radius = 1
+skill_element = 0
+physical_damage_multiplier = 0.5
