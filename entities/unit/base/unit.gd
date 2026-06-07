@@ -80,6 +80,10 @@ func start_turn() -> void:
 	
 	if status_receiver:
 		status_receiver.apply_start_turn_effects()
+
+	# Régénération HP de base (après les DoT/HoT des statuts, avant le reset d'économie)
+	if health_component:
+		health_component.tick_regen()
 		
 	if action_economy:
 		action_economy.start_turn()

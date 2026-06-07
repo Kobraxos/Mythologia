@@ -4,6 +4,10 @@ extends Node
 # SIGNALS
 signal health_changed(current: int, max_health: int)
 
+# EXPORTS
+## Référence au gestionnaire de statistiques pour lire hp_regen modifié par les buffs.
+@export var stat_manager: StatManagerComponent
+
 # PRIVATE VARIABLES
 var _stats: UnitStats
 var _current_health: int = 0
@@ -53,6 +57,9 @@ func heal(amount: int) -> void:
 		_current_health = _stats.max_health
 		
 	health_changed.emit(_current_health, _stats.max_health)
+	# Notifie le Séquenceur Visuel pour déclencher le tween animé de la barre de vie.
+	if CombatEvents.has_user_signal("visual_health_updated"):
+		CombatEvents.emit_signal("visual_health_updated", get_parent(), _current_health, _stats.max_health)
 
 func get_current_health() -> int:
 	return _current_health
@@ -61,3 +68,19 @@ func get_max_health() -> int:
 	if _stats:
 		return _stats.max_health
 	return 1
+
+## TICK ORDER (DÉBUT) : Applique la régénération de HP de base au début du tour.
+## Consulte le StatManager pour prendre en compte les buffs/debuffs actifs.
+func tick_regen() -> void:
+	if _is_dead:
+		return
+	# Priorité : valeur modifiée via le StatManager (buffs, debuffs).
+	# Fallback : valeur brute de la ressource si le StatManager n'est pas assigné.
+	var regen_amount: int
+	if stat_manager:
+		regen_amount = roundi(stat_manager.get_stat(StatManagerComponent.StatType.HP_REGEN))
+	else:
+		regen_amount = _stats.hp_regen_per_turn if _stats else 0
+
+	if regen_amount > 0:
+		heal(regen_amount)
