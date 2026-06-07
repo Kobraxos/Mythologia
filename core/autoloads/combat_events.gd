@@ -18,6 +18,10 @@ signal damage_dealt(target: Node3D, amount: int, is_crit: bool)
 signal healing_done(target: Node3D, amount: int)
 
 @warning_ignore("unused_signal")
+## Émis quand de l'Aegis est accordé ou restauré.
+signal shield_granted(target: Node3D, amount: int)
+
+@warning_ignore("unused_signal")
 ## Émis par l'UI lorsqu'un joueur clique sur un bouton de sort. Intercepté par le GridController.
 signal skill_button_clicked(skill: SkillData)
 

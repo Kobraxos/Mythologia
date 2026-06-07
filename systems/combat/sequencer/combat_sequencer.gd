@@ -37,9 +37,10 @@ func _play_group(group: VisualCommandGroup) -> void:
 				var is_crit: bool = (cmd.string_payload == "CRIT")
 				var is_heal: bool = (cmd.string_payload == "HEAL")
 				var is_dodge: bool = (cmd.string_payload == "DODGE")
+				var is_shield: bool = (cmd.string_payload == "AEGIS")
 				
 				if CombatEvents.has_user_signal("visual_text_requested"):
-					CombatEvents.emit_signal("visual_text_requested", cmd.target, cmd.int_payload, is_crit, is_heal, is_dodge)
+					CombatEvents.emit_signal("visual_text_requested", cmd.target, cmd.int_payload, is_crit, is_heal, is_dodge, is_shield)
 
 			VisualCommand.Type.UPDATE_HEALTH_BAR:
 				if CombatEvents.has_user_signal("visual_health_updated"):

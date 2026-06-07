@@ -67,6 +67,27 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		vfx_cmd.direction_payload = Vector3.UP
 		captured_texts.append(vfx_cmd)
 		
+	var capture_shield := func(t: Node3D, amount: int) -> void:
+		var cmd := VisualCommand.new()
+		cmd.type = VisualCommand.Type.DAMAGE_NUMBER
+		cmd.target = t
+		cmd.int_payload = amount
+		cmd.string_payload = "AEGIS"
+		captured_texts.append(cmd)
+		
+		var hp_cmd := VisualCommand.new()
+		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
+		hp_cmd.target = t
+		if t.get("health_component") != null: hp_cmd.int_payload = t.health_component.get_current_health()
+		captured_texts.append(hp_cmd)
+		
+		var vfx_cmd := VisualCommand.new()
+		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
+		vfx_cmd.string_payload = "shield_granted"
+		vfx_cmd.target = t
+		vfx_cmd.direction_payload = Vector3.UP
+		captured_texts.append(vfx_cmd)
+		
 	var capture_dodge := func(t: Node3D) -> void:
 		var cmd := VisualCommand.new()
 		cmd.type = VisualCommand.Type.DAMAGE_NUMBER
@@ -83,6 +104,7 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		
 	CombatEvents.damage_dealt.connect(capture_dmg)
 	CombatEvents.healing_done.connect(capture_heal)
+	CombatEvents.shield_granted.connect(capture_shield)
 	if not CombatEvents.has_user_signal("attack_dodged"):
 		CombatEvents.add_user_signal("attack_dodged", [{"name": "target", "type": TYPE_OBJECT}])
 	CombatEvents.connect("attack_dodged", capture_dodge)
@@ -160,6 +182,7 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 	# 3.5 Fin de l'Interception
 	CombatEvents.damage_dealt.disconnect(capture_dmg)
 	CombatEvents.healing_done.disconnect(capture_heal)
+	CombatEvents.shield_granted.disconnect(capture_shield)
 	CombatEvents.disconnect("attack_dodged", capture_dodge)
 		
 	# Déploiement du Séquenceur Éphémère (Mort programmée)
@@ -207,6 +230,13 @@ func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData, is_fin
 			
 		DamagePipeline.calculate_and_apply(heal_data)
 			
+	# 2.5 Résolution du Bouclier via la Pipeline AAA
+	if skill.flat_shield_granted > 0:
+		var shield_data := DamageData.new(caster, target, skill)
+		shield_data.is_shielding = true
+		shield_data.base_amount = float(skill.flat_shield_granted)
+		DamagePipeline.calculate_and_apply(shield_data)
+			
 	# 3. Application des Payloads (Statuts via StatusReceiverComponent)
 	if is_final_hit:
 		for payload_res: Resource in skill.effect_payloads:
@@ -223,5 +253,9 @@ func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData, is_fin
 				# Duck typing de sécurité pour s'assurer que la cible gère bien les statuts
 				if actual_target and actual_target.get("status_receiver") != null:
 					actual_target.status_receiver.apply_status(payload.status_effect)
+					
+		# 4. Compétence de suivi (Follow-up Skill)
+		if skill.follow_up_skill:
+			CombatEvents.skill_cast_requested.emit(caster, skill.follow_up_skill, target.current_hex)
 				
 	return true

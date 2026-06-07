@@ -12,6 +12,7 @@ extends Control
 @export var damage_color: Color = Color(1.0, 0.2, 0.2)
 @export var crit_color: Color = Color(1.0, 0.8, 0.0)
 @export var heal_color: Color = Color(0.2, 1.0, 0.4)
+@export var shield_color: Color = Color(0.2, 0.6, 1.0) # Bleu ciel (Aegis)
 @export var dodge_color: Color = Color(0.8, 0.8, 0.8) # Gris/Blanc neutre
 ## Couleur du texte d'étourdissement — Vert acide (distinctif, alerte immédiate).
 @export var stun_color: Color = Color(0.9, 1.0, 0.1) # Jaune-vert électrique
@@ -29,7 +30,8 @@ func _ready() -> void:
 			{"name": "amount", "type": TYPE_INT},
 			{"name": "is_crit", "type": TYPE_BOOL},
 			{"name": "is_heal", "type": TYPE_BOOL},
-			{"name": "is_dodge", "type": TYPE_BOOL}
+			{"name": "is_dodge", "type": TYPE_BOOL},
+			{"name": "is_shield", "type": TYPE_BOOL}
 		])
 	CombatEvents.connect("visual_text_requested", _on_visual_text_requested)
 	TurnEvents.turn_skipped_stun.connect(_on_turn_skipped_stun)
@@ -55,15 +57,16 @@ func _get_available_text() -> FloatingText:
 	return null # Object Pool plein (Optionnel : Agrandir le pool dynamiquement)
 
 # SIGNAL HANDLERS
-func _on_visual_text_requested(target: Node3D, amount: int, is_crit: bool, is_heal: bool, is_dodge: bool) -> void:
-	var color: Color = dodge_color if is_dodge else (heal_color if is_heal else (crit_color if is_crit else damage_color))
+func _on_visual_text_requested(target: Node3D, amount: int, is_crit: bool, is_heal: bool, is_dodge: bool, is_shield: bool = false) -> void:
+	var color: Color = dodge_color if is_dodge else (shield_color if is_shield else (heal_color if is_heal else (crit_color if is_crit else damage_color)))
 	var prefix: String = ""
 	var text_val: String = ""
 	
 	if is_dodge:
 		text_val = "Esquive"
 	else:
-		if is_heal: prefix = "+"
+		if is_shield: prefix = "+Aegis "
+		elif is_heal: prefix = "+"
 		elif is_crit: prefix = "Crit! "
 		text_val = prefix + str(amount)
 	

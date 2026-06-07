@@ -18,4 +18,5 @@ max_elevation_down = 3
 is_linear_only = false
 aoe_shape = 0
 skill_element = 8
+physical_damage_multiplier = 0.0
 mythic_damage_multiplier = 2.0

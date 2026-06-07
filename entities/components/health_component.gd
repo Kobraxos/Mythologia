@@ -106,12 +106,14 @@ func heal(amount: int) -> void:
 	if CombatEvents.has_user_signal("visual_health_updated"):
 		CombatEvents.emit_signal("visual_health_updated", get_parent(), _current_health, _stats.max_health)
 
-## Restaure le bouclier (par une compétence ou un statut). Plafonné à _max_shield.
-func restore_shield(amount: int) -> void:
-	if _is_dead or amount <= 0 or _max_shield <= 0:
+## Restaure ou accorde du bouclier (Aegis). Peut temporairement étendre le _max_shield si dépassé.
+func grant_shield(amount: int) -> void:
+	if _is_dead or amount <= 0:
 		return
 
-	_current_shield = mini(_current_shield + amount, _max_shield)
+	_current_shield += amount
+	if _current_shield > _max_shield:
+		_max_shield = _current_shield
 
 	shield_changed.emit(_current_shield, _max_shield)
 	_emit_visual_shield_update()
@@ -170,7 +172,7 @@ func tick_regen_shield() -> void:
 		regen_amount = _stats.shield_regen_per_turn if _stats else 0
 
 	if regen_amount > 0:
-		restore_shield(regen_amount)
+		grant_shield(regen_amount)
 
 # ─────────────────────────────────────────────
 # PRIVATE FUNCTIONS

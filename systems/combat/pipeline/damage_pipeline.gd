@@ -10,6 +10,8 @@ static func calculate_and_apply(data: DamageData) -> void:
 		
 	if data.is_healing:
 		_process_healing(data)
+	elif data.is_shielding:
+		_process_shielding(data)
 	else:
 		_process_damage(data)
 
@@ -106,3 +108,24 @@ static func _process_healing(data: DamageData) -> void:
 		data.target.health_component.heal(data.final_amount)
 		
 	CombatEvents.healing_done.emit(data.target, data.final_amount)
+
+static func _process_shielding(data: DamageData) -> void:
+	var amount: float = data.base_amount
+	
+	# Modificateurs de Soin Sortant (le don de bouclier bénéficie des bonus de support)
+	if data.source and data.source.stats:
+		amount *= data.source.stats.outgoing_healing_multiplier
+		
+	# Modificateurs de Soin Entrant
+	if data.target and data.target.stats:
+		amount *= data.target.stats.incoming_healing_multiplier
+		
+	# Variance AAA de +/- 10%
+	amount *= randf_range(0.9, 1.1)
+		
+	data.final_amount = maxi(0, roundi(amount))
+	
+	if data.final_amount > 0:
+		data.target.health_component.grant_shield(data.final_amount)
+		
+	CombatEvents.shield_granted.emit(data.target, data.final_amount)

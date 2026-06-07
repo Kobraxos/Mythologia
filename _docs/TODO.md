@@ -11,6 +11,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 
 | Feature | État | Détail |
 | :--- | :--- | :--- |
+| **Aegis dans les Compétences** | ✅ COMPLET | Pipeline de bouclier, grant_shield dynamique, combos |
 | **Système d'Aegis (Bouclier)** | ✅ COMPLET | Absorption prioritaire, bypass_shield True Damage, regen + délai Protoss, UI ColorRect ambrée |
 | **Shield Regen Delay** | ✅ COMPLET | `_shield_regen_cooldown` dans HealthComponent, fenêtre tactique après chaque coup |
 | **Cache LRU Pathfinding** | ✅ COMPLET | `MAX_PATH_CACHE_SIZE = 3` dans HexPathfinder, éviction O(1) |
@@ -26,9 +27,9 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 ### SkillData — Champs orphelins
 | Champ | Déclaré dans | Jamais lu par |
 | :--- | :--- | :--- |
-| `flat_shield_granted` | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L112) | `DamagePipeline._process_healing()` — le bouclier n'est jamais accordé par les sorts |
+| ~~`flat_shield_granted`~~ | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L112) | ✅ Implémenté dans DamagePipeline |
 | `contextual_scaling` + `scaling_factor` | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L103) | `DamagePipeline._process_damage()` — scaling dynamique (HP manquants, etc.) ignoré |
-| `follow_up_skill` | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L71) | `CombatManager._resolve_single_target()` — la compétence enchaînée n'est jamais déclenchée |
+| ~~`follow_up_skill`~~ | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L71) | ✅ Implémenté dans CombatManager |
 | `caster_movement` (DASH/LEAP/TELEPORT) | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L132) | `CombatManager` — le déplacement du lanceur n'est pas exécuté |
 | `target_movement` (TELEPORT/SWAP) | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L130) | `CombatManager` — les téléportations de cible ne s'exécutent pas |
 | `spawned_surface` | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L120) | `CombatManager` — les surfaces de terrain ne sont jamais instanciées |
@@ -77,8 +78,8 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 - [ ] **1 seul héros** (`base_unit_stats.tres`) sans nom, sans mythologie définie
 
 ### Systèmes de Contenu critiques (par ordre d'impact gameplay)
-- [ ] **`flat_shield_granted` dans le Pipeline** — connecter SkillData.flat_shield_granted à `health_component.restore_shield()` dans `_process_healing()`. Un sort de bouclier doit pouvoir accorder de l'Aegis.
-- [ ] **`follow_up_skill`** — après `_resolve_single_target()`, si `skill.follow_up_skill != null`, déclencher une seconde résolution centrée sur le même hex. Permet Frappe → AoE Ring en une seule compétence.
+- [x] **`flat_shield_granted` dans le Pipeline** — connecter SkillData.flat_shield_granted à `health_component.restore_shield()` dans `_process_healing()`. Un sort de bouclier doit pouvoir accorder de l'Aegis.
+- [x] **`follow_up_skill`** — après `_resolve_single_target()`, si `skill.follow_up_skill != null`, déclencher une seconde résolution centrée sur le même hex. Permet Frappe → AoE Ring en une seule compétence.
 - [ ] **`contextual_scaling`** — lire `skill.contextual_scaling` dans `DamagePipeline._process_damage()` et appliquer le `scaling_factor` selon le cas (TARGET_MISSING_HP, ELEVATION_DIFFERENCE, etc.).
 - [ ] **`caster_movement`** — implémenter DASH_TO_TARGET dans CombatManager (commande FORCED_MOVEMENT sur le lanceur avant l'impact).
 - [ ] **Réactions élémentaires** (FIRE→Burn, ICE→Freeze, etc.) — `spawned_surface` et le pipeline élémentaire.
@@ -135,7 +136,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 | Semaine | Focus | Livrable |
 | :--- | :--- | :--- |
 | **W1** | ✅ Contenu Data : 3 monstres + 5 sorts de base | Combat avec diversité d'unités |
-| **W2** | 🔴 `flat_shield_granted` + `follow_up_skill` + `contextual_scaling` | Sorts à effets multiples fonctionnels |
+| **W2** | 🟡 `flat_shield_granted` + `follow_up_skill` + `contextual_scaling` | Sorts à effets multiples fonctionnels |
 | **W3** | 🔴 `caster_movement` + AoE RING/FLOOD_FILL + Réactions élémentaires | Compétences tactiquement riches |
 | **W4** | 🟡 3 niveaux de test + configuration BattleManager | 30 min de contenu jouable |
 | **W5** | 🟡 IA Compétences actives + Comportement fuite | IA tactique crédible |
@@ -147,7 +148,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 
 ## 🚀 PROCHAINE ÉTAPE IMMÉDIATE
 
-**Implémenter le Support de l'Aegis via les Compétences (`flat_shield_granted`)** : 
-Actuellement, `DamagePipeline._process_healing()` ne gère pas le `flat_shield_granted`. Un sort de bouclier doit pouvoir accorder de l'Aegis à la cible.
+**Implémenter le Scaling Contextuel (`contextual_scaling`)** : 
+Actuellement, les dégâts sont statiques. L'objectif est d'implémenter les multiplicateurs dynamiques (TARGET_MISSING_HP, ELEVATION_DIFFERENCE) dans `DamagePipeline._process_damage()` pour enrichir la tactique (ex: Coup de grâce si cible blessée).
 
-> **Objectif :** Modifier `DamagePipeline` et `HealthComponent` pour que les sorts ayant un `flat_shield_granted > 0` restaurent ou accordent de l'Aegis à la cible. Implémenter ensuite `follow_up_skill` dans le `CombatManager`.
+> **Objectif :** Ajouter une étape dans le calcul des dégâts qui lit l'enum `DamageScaling` de la compétence et applique le bonus au `base_amount`.

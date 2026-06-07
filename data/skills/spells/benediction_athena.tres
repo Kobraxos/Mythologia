@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://shield_athena"]
+
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"benediction_athena"
+skill_name = "Bénédiction d'Athéna"
+description = "Accorde une importante protection magique (Aegis) à un allié ou à soi-même."
+ap_cost = 2
+mana_cost = 40
+cooldown = 2
+target_mode = 1
+allowed_alignments = 1
+max_range = 4
+min_range = 0
+max_elevation_up = 3
+max_elevation_down = 3
+is_linear_only = false
+aoe_shape = 0
+physical_damage_multiplier = 0.0
+flat_shield_granted = 40

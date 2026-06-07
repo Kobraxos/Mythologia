@@ -12,6 +12,7 @@ var base_amount: float = 0.0
 var final_amount: int = 0
 
 var is_healing: bool = false
+var is_shielding: bool = false
 var is_critical: bool = false
 var is_dodged: bool = false
 
