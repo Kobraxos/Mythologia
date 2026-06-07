@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://flood001"]
+
+[ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_hqgm7"]
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"vague_guerisseuse"
+skill_name = "Vague Guérisseuse"
+description = "Une vague d'eau bénite qui se propage de manière fluide depuis la cible."
+ap_cost = 2
+mana_cost = 15
+cooldown = 2
+allowed_alignments = 1
+max_range = 3
+max_elevation_up = 0
+aoe_shape = 5
+aoe_radius = 3
+skill_element = 2
+base_healing = 30
+healing_mythic_scaling = 0.5

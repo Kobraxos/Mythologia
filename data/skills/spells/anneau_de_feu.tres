@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://ring001"]
+
+[ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_a7xs3"]
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"anneau_de_feu"
+skill_name = "Anneau de Feu"
+description = "Crée un anneau de flammes autour de la case ciblée."
+ap_cost = 2
+mana_cost = 10
+cooldown = 1
+target_mode = 2
+allowed_alignments = 2
+max_range = 4
+max_elevation_up = 2
+max_elevation_down = 2
+aoe_shape = 4
+aoe_radius = 2
+skill_element = 1
+mythic_damage_multiplier = 1.0

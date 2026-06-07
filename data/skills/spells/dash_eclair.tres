@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://dash001"]
+
+[ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_5amn7"]
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"dash_eclair"
+skill_name = "Dash Éclair"
+description = "Le lanceur fonce sur sa cible en ligne droite pour lui infliger une frappe rapide."
+cooldown = 1
+max_range = 4
+is_linear_only = true
+smart_targeting = false
+physical_damage_multiplier = 1.2
+caster_movement = 1

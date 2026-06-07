@@ -19,3 +19,5 @@ var int_payload: int
 var duration: float = 0.25
 var position_payload: Vector3
 var direction_payload: Vector3
+var is_leap: bool = false
+

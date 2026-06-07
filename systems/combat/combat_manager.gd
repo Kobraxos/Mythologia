@@ -111,8 +111,79 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 	
 	var sequence: Array[VisualCommandGroup] = []
 	
+	# AAA : Déplacement du lanceur AVANT de frapper (Dash, Leap, Teleport)
+	if skill.caster_movement != SkillData.CasterMovement.NONE:
+		var final_caster_hex: Vector3i = caster_unit.current_hex
+		
+		if skill.caster_movement == SkillData.CasterMovement.DASH_TO_TARGET:
+			final_caster_hex = GridDisplacement.get_dash_destination(caster_unit, target_hex)
+		elif skill.caster_movement == SkillData.CasterMovement.LEAP_TO_TARGET:
+			final_caster_hex = GridDisplacement.get_leap_destination(caster_unit, target_hex)
+		elif skill.caster_movement == SkillData.CasterMovement.TELEPORT_TO_TARGET:
+			final_caster_hex = GridDisplacement.get_teleport_destination(caster_unit, target_hex)
+			
+		if final_caster_hex != caster_unit.current_hex:
+			var prev_hex = caster_unit.current_hex
+			GridManager.unit_positions.erase(prev_hex)
+			GridManager.unit_positions[final_caster_hex] = caster_unit
+			caster_unit.current_hex = final_caster_hex
+			GridEvents.unit_moved.emit(caster_unit, prev_hex, final_caster_hex)
+			
+			var move_group := VisualCommandGroup.new()
+			
+			var cmd := VisualCommand.new()
+			cmd.type = VisualCommand.Type.FORCED_MOVEMENT
+			cmd.target = caster_unit
+			cmd.target_hex = final_caster_hex
+			
+			if skill.caster_movement == SkillData.CasterMovement.DASH_TO_TARGET:
+				cmd.duration = 0.3
+				
+				var vfx_cmd := VisualCommand.new()
+				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
+				vfx_cmd.string_payload = "dash_trail"
+				vfx_cmd.target = caster_unit
+				var start_pos := caster_unit.global_position
+				var end_pos := HexMath.hex_to_world(final_caster_hex, GridManager.hex_size, GridManager.elevation_step)
+				var move_dir := (end_pos - start_pos).normalized()
+				vfx_cmd.direction_payload = move_dir if move_dir.length_squared() > 0.0 else Vector3.UP
+				move_group.commands.append(vfx_cmd)
+				
+			elif skill.caster_movement == SkillData.CasterMovement.LEAP_TO_TARGET:
+				cmd.duration = 0.4
+				cmd.is_leap = true
+				
+				var vfx_cmd := VisualCommand.new()
+				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
+				vfx_cmd.string_payload = "leap_trail"
+				vfx_cmd.target = caster_unit
+				var start_pos := caster_unit.global_position
+				var end_pos := HexMath.hex_to_world(final_caster_hex, GridManager.hex_size, GridManager.elevation_step)
+				var move_dir := (end_pos - start_pos).normalized()
+				vfx_cmd.direction_payload = move_dir if move_dir.length_squared() > 0.0 else Vector3.UP
+				move_group.commands.append(vfx_cmd)
+				
+			elif skill.caster_movement == SkillData.CasterMovement.TELEPORT_TO_TARGET:
+				cmd.duration = 0.0
+				
+				var vfx_out := VisualCommand.new()
+				vfx_out.type = VisualCommand.Type.SPAWN_VFX
+				vfx_out.string_payload = "teleport_out"
+				vfx_out.position_payload = caster_unit.global_position
+				move_group.commands.append(vfx_out)
+				
+				var vfx_in := VisualCommand.new()
+				vfx_in.type = VisualCommand.Type.SPAWN_VFX
+				vfx_in.string_payload = "teleport_in"
+				vfx_in.position_payload = HexMath.hex_to_world(final_caster_hex, GridManager.hex_size, GridManager.elevation_step)
+				move_group.commands.append(vfx_in)
+				
+			move_group.commands.append(cmd)
+			sequence.append(move_group)
+	
 	# 2. Boucle du Multi-Hit AAA (Séquençage temporel)
 	var max_hits: int = max(1, skill.hit_count)
+
 	for hit_index: int in range(max_hits):
 		var is_final_hit: bool = (hit_index == max_hits - 1)
 		var current_group := VisualCommandGroup.new()
@@ -194,8 +265,21 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData, is_final_hit: bool = true) -> bool:
 	var is_dodged := false
 	
+	# AAA : Smart Targeting & Self-Damage Prevention
+	var is_offensive: bool = skill.physical_damage_multiplier > 0.0 or skill.mythic_damage_multiplier > 0.0
+	var is_support: bool = skill.base_healing > 0 or skill.flat_shield_granted > 0
+	
+	if is_offensive and target == caster and skill.target_mode != SkillData.TargetMode.SELF:
+		return false # On ne se frappe pas soi-même en atterrissant d'un Dash/Leap
+		
+	if skill.smart_targeting:
+		if is_offensive and target.faction == caster.faction and target != caster:
+			return false # Ne blesse pas les alliés
+		if is_support and target.faction != caster.faction:
+			return false # Ne soigne pas les ennemis
+	
 	# 1. Résolution des Dégâts via la Pipeline AAA
-	if skill.physical_damage_multiplier > 0.0 or skill.mythic_damage_multiplier > 0.0:
+	if is_offensive:
 		var dmg_data := DamageData.new(caster, target, skill)
 		
 		# Choix du type de dégâts principal (peut être étendu pour faire les deux en même temps)

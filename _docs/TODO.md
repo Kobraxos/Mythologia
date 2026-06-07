@@ -30,7 +30,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 | ~~`flat_shield_granted`~~ | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L112) | ✅ Implémenté dans DamagePipeline |
 | `contextual_scaling` + `scaling_factor` | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L103) | `DamagePipeline._process_damage()` — scaling dynamique (HP manquants, etc.) ignoré |
 | ~~`follow_up_skill`~~ | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L71) | ✅ Implémenté dans CombatManager |
-| `caster_movement` (DASH/LEAP/TELEPORT) | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L132) | `CombatManager` — le déplacement du lanceur n'est pas exécuté |
+| `caster_movement` (DASH/LEAP/TELEPORT) | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L132) | ✅ Implémenté dans CombatManager et GridDisplacement |
 | `target_movement` (TELEPORT/SWAP) | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L130) | `CombatManager` — les téléportations de cible ne s'exécutent pas |
 | `spawned_surface` | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L120) | `CombatManager` — les surfaces de terrain ne sont jamais instanciées |
 | `destroys_terrain` | [skill_data.gd](file:///c:/Users/jacqu/OneDrive/Documents/mythologia/data/skills/skill_data.gd#L122) | `CombatManager` — destruction de terrain non implémentée |
@@ -81,9 +81,9 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 - [x] **`flat_shield_granted` dans le Pipeline** — connecter SkillData.flat_shield_granted à `health_component.restore_shield()` dans `_process_healing()`. Un sort de bouclier doit pouvoir accorder de l'Aegis.
 - [x] **`follow_up_skill`** — après `_resolve_single_target()`, si `skill.follow_up_skill != null`, déclencher une seconde résolution centrée sur le même hex. Permet Frappe → AoE Ring en une seule compétence.
 - [x] **`contextual_scaling`** — lire `skill.contextual_scaling` dans `DamagePipeline._process_damage()` et appliquer le `scaling_factor` selon le cas (TARGET_MISSING_HP, ELEVATION_DIFFERENCE, etc.).
-- [ ] **`caster_movement`** — implémenter DASH_TO_TARGET dans CombatManager (commande FORCED_MOVEMENT sur le lanceur avant l'impact).
+- [x] **`caster_movement`** — implémenter DASH_TO_TARGET dans CombatManager (commande FORCED_MOVEMENT sur le lanceur avant l'impact).
 - [ ] **Réactions élémentaires** (FIRE→Burn, ICE→Freeze, etc.) — `spawned_surface` et le pipeline élémentaire.
-- [ ] **Formes AoE manquantes** : `RING` et `FLOOD_FILL` dans le système de ciblage.
+- [x] **Formes AoE manquantes** : `RING` et `FLOOD_FILL` dans le système de ciblage.
 
 ### IA
 - [ ] L'IA n'utilise jamais ses **compétences actives** (skills). Elle n'attaque qu'avec l'attaque de base.
@@ -137,7 +137,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 | :--- | :--- | :--- |
 | **W1** | ✅ Contenu Data : 3 monstres + 5 sorts de base | Combat avec diversité d'unités |
 | **W2** | ✅ `flat_shield_granted` + `follow_up_skill` + `contextual_scaling` | Sorts à effets multiples fonctionnels |
-| **W3** | 🔴 `caster_movement` + AoE RING/FLOOD_FILL + Réactions élémentaires | Compétences tactiquement riches |
+| **W3** | ✅ `caster_movement` ✅ AoE RING/FLOOD_FILL 🔴 Réactions élémentaires | Compétences tactiquement riches |
 | **W4** | 🟡 3 niveaux de test + configuration BattleManager | 30 min de contenu jouable |
 | **W5** | 🟡 IA Compétences actives + Comportement fuite | IA tactique crédible |
 | **W6** | 🟡 AnimationPlayer + VFX Shield Break + SFX | Ressenti AAA |
@@ -148,7 +148,7 @@ L'architecture est exceptionnellement solide pour cette phase : Event Bus, Compo
 
 ## 🚀 PROCHAINE ÉTAPE IMMÉDIATE
 
-**Implémenter les Déplacements Forcés du Lanceur (`caster_movement`)** : 
-Actuellement, les sorts se lancent depuis la position fixe du lanceur. L'objectif est d'implémenter les charges et téléportations dans `CombatManager`.
+**Réactions Élémentaires (Combos de Terrain)** : 
+Actuellement, `spawned_surface` (dans SkillData) n'est pas utilisé pour modifier la grille, et aucun système ne gère l'interaction entre les éléments.
 
-> **Objectif :** Modifier la résolution pour que si un sort a un `caster_movement` (ex: DASH_TO_TARGET), le lanceur se déplace physiquement sur la grille avant de frapper la cible.
+> **Objectif :** Implémenter la création de surfaces au sol et les réactions (ex: Feu + Poison = Explosion).

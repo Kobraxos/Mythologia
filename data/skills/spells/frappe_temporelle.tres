@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://telep003"]
+
+[ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+[ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_xmlbw"]
+
+[resource]
+script = ExtResource("1_skdata")
+id = &"frappe_temporelle"
+skill_name = "Frappe Temporelle"
+description = "Le lanceur se téléporte instantanément au contact de sa cible pour frapper."
+ap_cost = 2
+mana_cost = 20
+cooldown = 3
+max_range = 5
+max_elevation_up = 99
+max_elevation_down = 99
+mythic_damage_multiplier = 1.5
+caster_movement = 3

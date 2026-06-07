@@ -33,7 +33,7 @@ func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: Skill
 		SkillData.AreaShape.FLOOD_FILL:
 			var target_z: int = _get_elevation(target_2d)
 			if target_z != -999:
-				return _get_flood_fill(Vector3i(target_2d.x, target_2d.y, target_z), radius, pierces, ignored_hex)
+				return _get_flood_fill(Vector3i(target_2d.x, target_2d.y, target_z), radius, pierces, ignored_hex, skill)
 			return []
 		_: raw_hexes_2d = [target_2d]
 
@@ -66,7 +66,8 @@ func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: Skill
 					
 				continue # Case validée et ajoutée, on passe à la suivante
 			else:
-				if not has_line_of_sight(caster_hex, current_3d, ignored_hex):
+				var los_origin: Vector3i = target_hex if (shape == SkillData.AreaShape.CIRCLE or shape == SkillData.AreaShape.RING) else caster_hex
+				if not has_line_of_sight(los_origin, current_3d, ignored_hex):
 					continue
 				
 		valid_3d.append(current_3d)
@@ -189,7 +190,7 @@ func _invalidate_los_cache() -> void:
 	
 # UTILS DOD (Formes Topologiques)
 ## Algorithme de propagation BFS (Breadth-First Search) pour la forme FLOOD_FILL.
-func _get_flood_fill(start_3d: Vector3i, radius: int, pierces: bool, ignored_hex: Vector3i) -> Array[Vector3i]:
+func _get_flood_fill(start_3d: Vector3i, radius: int, pierces: bool, ignored_hex: Vector3i, skill: SkillData) -> Array[Vector3i]:
 	var visited: Dictionary = {}
 	var queue: Array[Vector3i] = [start_3d]
 	visited[start_3d] = 0
@@ -216,8 +217,10 @@ func _get_flood_fill(start_3d: Vector3i, radius: int, pierces: bool, ignored_hex
 			var neighbor_3d := Vector3i(neighbor_2d.x, neighbor_2d.y, z)
 			if visited.has(neighbor_3d): continue
 
-			# Propagation 2.5D : Ne traverse pas les falaises abruptes (> 1 d'élévation)
-			if abs(z - current_3d.z) > 1: continue
+			# Propagation 2.5D : Respecte les limites d'élévation définies par le sort !
+			var elevation_diff: int = z - current_3d.z
+			if elevation_diff > skill.max_elevation_up or elevation_diff < -skill.max_elevation_down: continue
+			
 			visited[neighbor_3d] = current_dist + 1
 			if not pierces and neighbor_3d != ignored_hex and _has_dynamic_blocker(neighbor_3d): continue
 			queue.append(neighbor_3d)

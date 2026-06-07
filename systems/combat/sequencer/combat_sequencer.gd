@@ -24,10 +24,24 @@ func _play_group(group: VisualCommandGroup) -> void:
 			VisualCommand.Type.FORCED_MOVEMENT:
 				var unit := cmd.target as Unit
 				if is_instance_valid(unit):
-					var tw := unit.create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 					var pos: Vector3 = HexMath.hex_to_world(cmd.target_hex, GridManager.hex_size, GridManager.elevation_step)
-					tw.tween_property(unit, "position", pos, cmd.duration)
-					max_duration = max(max_duration, cmd.duration)
+					if cmd.duration <= 0.0:
+						unit.position = pos
+					elif cmd.is_leap:
+						var tw := unit.create_tween().set_parallel(true)
+						tw.tween_property(unit, "position:x", pos.x, cmd.duration).set_trans(Tween.TRANS_LINEAR)
+						tw.tween_property(unit, "position:z", pos.z, cmd.duration).set_trans(Tween.TRANS_LINEAR)
+						
+						# Arc parabolique : monte puis descend
+						var peak_y: float = maxf(unit.position.y, pos.y) + 2.0 # +2 mètres de hauteur au-dessus du plus haut
+						var up_tw := unit.create_tween()
+						up_tw.tween_property(unit, "position:y", peak_y, cmd.duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+						up_tw.tween_property(unit, "position:y", pos.y, cmd.duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+						max_duration = max(max_duration, cmd.duration)
+					else:
+						var tw := unit.create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+						tw.tween_property(unit, "position", pos, cmd.duration)
+						max_duration = max(max_duration, cmd.duration)
 					
 			VisualCommand.Type.PLAY_ANIMATION:
 				# TODO : Branchement vers le modèle 3D / AnimationPlayer

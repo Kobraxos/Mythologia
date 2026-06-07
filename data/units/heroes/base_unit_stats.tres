@@ -2,10 +2,11 @@
 
 [ext_resource type="Resource" uid="uid://cyd2aljxwrxdw" path="res://data/skills/attacks/frappe_basique.tres" id="1_2366t"]
 [ext_resource type="Script" uid="uid://didfbrl3fg4h5" path="res://data/units/unit_stats.gd" id="1_t58gu"]
-[ext_resource type="Resource" uid="uid://un6eqfxtq56o" path="res://data/skills/attacks/rayon_solaire.tres" id="2_3ge3s"]
 [ext_resource type="Texture2D" uid="uid://dsqgvi8aue1da" path="res://icon.svg" id="2_gbbgr"]
-[ext_resource type="Resource" path="res://data/skills/spells/benediction_athena.tres" id="3_spell"]
-[ext_resource type="Resource" path="res://data/skills/spells/frappe_sismique.tres" id="4_spell"]
+[ext_resource type="Resource" uid="uid://dash001" path="res://data/skills/spells/dash_eclair.tres" id="5_spell"]
+[ext_resource type="Resource" uid="uid://ring001" path="res://data/skills/spells/anneau_de_feu.tres" id="8_spell"]
+[ext_resource type="Resource" uid="uid://flood001" path="res://data/skills/spells/vague_guerisseuse.tres" id="9_spell"]
+[ext_resource type="Texture2D" uid="uid://cawdwey71ermw" path="res://assets/2d/tezcatlipoca.png" id="12_tibrx"]
 
 [resource]
 script = ExtResource("1_t58gu")
@@ -14,8 +15,8 @@ unit_name = "Héros Grec"
 description = "Un fier guerrier de la mythologie grecque, équilibré pour le combat au corps-à-corps et la survie."
 lore = "Formé à Sparte, ce guerrier manie la lance et le bouclier avec une précision mortelle. Sa foi lui octroie des pouvoirs solaires."
 icon = ExtResource("2_gbbgr")
-portrait = ExtResource("2_gbbgr")
-world_sprite = ExtResource("2_gbbgr")
+portrait = ExtResource("12_tibrx")
+world_sprite = ExtResource("12_tibrx")
 mythology = 1
 rarity = 2
 action_points = 3
@@ -40,4 +41,4 @@ effect_focus = 0.05
 effect_resistance = 0.1
 incoming_healing_multiplier = 1.1
 base_attack = ExtResource("1_2366t")
-active_skills = Array[Resource]([ExtResource("1_2366t"), ExtResource("2_3ge3s"), ExtResource("3_spell"), ExtResource("4_spell")])
+active_skills = Array[Resource]([ExtResource("1_2366t"), ExtResource("5_spell"), ExtResource("8_spell"), ExtResource("9_spell")])
