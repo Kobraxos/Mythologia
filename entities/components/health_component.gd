@@ -46,15 +46,16 @@ func take_damage(amount: int, bypass_shield: bool = false) -> void:
 
 	var remaining: int = amount
 
+	# AAA : Prendre n'importe quel dégât "direct" réinitialise le délai de régénération du bouclier,
+	# même si le bouclier est déjà tombé à 0 et qu'on prend des dégâts sur les PV.
+	if not bypass_shield:
+		_shield_regen_cooldown = _stats.shield_regen_delay if _stats else 1
+
 	# 1. Absorption par le bouclier (sauf si bypass_shield)
 	if not bypass_shield and _current_shield > 0:
 		var absorbed: int = mini(remaining, _current_shield)
 		_current_shield -= absorbed
 		remaining -= absorbed
-
-		# Chaque coup sur le bouclier recharge le délai de régénération.
-		# Tant que l'ennemi frappe, la fenêtre reste ouverte.
-		_shield_regen_cooldown = _stats.shield_regen_delay if _stats else 1
 
 		shield_changed.emit(_current_shield, _max_shield)
 		_emit_visual_shield_update()
