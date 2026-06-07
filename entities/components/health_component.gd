@@ -15,6 +15,9 @@ var _current_health: int = 0
 var _current_shield: int = 0
 var _max_shield: int = 0
 var _is_dead: bool = false
+## Compte à rebours du délai de régénération de l'Aegis.
+## Chargé à _stats.shield_regen_delay à chaque absorption. Décrémenté chaque tick.
+var _shield_regen_cooldown: int = 0
 
 # ─────────────────────────────────────────────
 # PUBLIC API — Initialisation
@@ -48,6 +51,10 @@ func take_damage(amount: int, bypass_shield: bool = false) -> void:
 		var absorbed: int = mini(remaining, _current_shield)
 		_current_shield -= absorbed
 		remaining -= absorbed
+
+		# Chaque coup sur le bouclier recharge le délai de régénération.
+		# Tant que l'ennemi frappe, la fenêtre reste ouverte.
+		_shield_regen_cooldown = _stats.shield_regen_delay if _stats else 1
 
 		shield_changed.emit(_current_shield, _max_shield)
 		_emit_visual_shield_update()
@@ -143,6 +150,26 @@ func tick_regen() -> void:
 
 	if regen_amount > 0:
 		heal(regen_amount)
+
+## TICK ORDER (DÉBUT) : Applique la régénération de l'Aegis (bouclier) au début du tour.
+## Miroir exact de tick_regen() pour les HP — avec gestion du délai post-impact.
+func tick_regen_shield() -> void:
+	if _is_dead or _max_shield <= 0:
+		return
+
+	# Délai de régénération : si le bouclier a encaissé des dégâts récemment, on attend.
+	if _shield_regen_cooldown > 0:
+		_shield_regen_cooldown -= 1
+		return
+
+	var regen_amount: int
+	if stat_manager:
+		regen_amount = roundi(stat_manager.get_stat(StatManagerComponent.StatType.SHIELD_REGEN))
+	else:
+		regen_amount = _stats.shield_regen_per_turn if _stats else 0
+
+	if regen_amount > 0:
+		restore_shield(regen_amount)
 
 # ─────────────────────────────────────────────
 # PRIVATE FUNCTIONS

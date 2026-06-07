@@ -11,6 +11,7 @@ enum StatType {
 	MAX_SHIELD,
 	MAX_MANA,
 	HP_REGEN,
+	SHIELD_REGEN,
 	MANA_REGEN,
 	ACTION_POINTS,
 	MOVEMENT_POINTS,
@@ -92,6 +93,8 @@ func _get_base_value(stat: StatType) -> float:
 			return float(_base_stats.max_mana)
 		StatType.HP_REGEN:
 			return float(_base_stats.hp_regen_per_turn)
+		StatType.SHIELD_REGEN:
+			return float(_base_stats.shield_regen_per_turn)
 		StatType.MANA_REGEN:
 			return float(_base_stats.mana_regen_per_turn)
 		StatType.ACTION_POINTS:

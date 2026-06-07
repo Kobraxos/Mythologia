@@ -31,8 +31,12 @@ enum UnitType { HUMANOID, BEAST, UNDEAD, DEMON, CONSTRUCT, ELEMENTAL, DRAGON }
 
 @export_group("Health & Shield")
 @export var max_health: int = 10
-@export var max_shield: int = 0
 @export var hp_regen_per_turn: int = 0
+@export var max_shield: int = 0
+@export var shield_regen_per_turn: int = 0
+## Nombre de tours à attendre après avoir encaissé des dégâts sur le bouclier avant de régénérer.
+## 0 = régénération immédiate. 1 = standard (style Protoss). 2+ = très punitif.
+@export var shield_regen_delay: int = 1
 
 @export_group("Mana Pool")
 @export var max_mana: int = 10

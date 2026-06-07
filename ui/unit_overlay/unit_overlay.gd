@@ -162,7 +162,10 @@ func _on_health_changed(current: int, max_val: int) -> void:
 			_target.health_component.get_max_shield(),
 			current, max_val
 		)
-	_health_initialized = true
+	# Ne marque l'overlay comme initialisé que si la valeur est valide.
+	# Évite la race condition où l'overlay est créé avant health_component.initialize().
+	if current > 0:
+		_health_initialized = true
 
 func _on_shield_changed(current_shield: int, max_shield: int) -> void:
 	if not is_instance_valid(_target) or not _target.health_component:
@@ -189,7 +192,8 @@ func _update_shield_rect(current_shield: int, max_shield: int, current_hp: int, 
 	hp_bar.max_value = float(total_max)
 
 	# Snap initial : avant le premier tween, on force la valeur correcte.
-	if not _health_initialized:
+	# Guard current_hp > 0 : ignore un appel avec une valeur non-initialisée (= 0).
+	if not _health_initialized and current_hp > 0:
 		hp_bar.value = float(current_hp)
 
 	if shield_rect:
