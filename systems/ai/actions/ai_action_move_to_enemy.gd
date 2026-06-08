@@ -5,22 +5,9 @@ extends AIAction
 func execute(context: AIContext) -> void:
 	var unit: Unit = context.unit
 	var start_hex: Vector3i = context.current_hex
-	var best_target: Unit = null
-	var min_dist: int = -1
-
+	
 	# 1. Recherche de la cible ennemie la plus proche
-	for hex: Vector3i in GridManager.unit_positions:
-		var other_unit: Unit = GridManager.unit_positions[hex]
-		if not is_instance_valid(other_unit) or other_unit == unit:
-			continue
-
-		if other_unit.faction == unit.faction:
-			continue
-
-		var dist: int = HexMath.distance_2d(start_hex, hex)
-		if best_target == null or dist < min_dist:
-			min_dist = dist
-			best_target = other_unit
+	var best_target: Unit = AIUtils.get_closest_enemy(start_hex, unit.faction)
 			
 	if not best_target or not GridManager.pathfinder:
 		_end_action()

@@ -29,8 +29,8 @@ func execute(context: AIContext) -> void:
 	# 2. Récupération des cases atteignables
 	var valid_range: Array[Vector3i] = GridTargeting.get_valid_casting_range(context.current_hex, skill_to_use)
 	
-	var best_target_hex: Vector3i = Vector3i(0, 0, -999)
-	var lowest_hp: int = 999999
+	var best_target_hex: Vector3i = AIUtils.INVALID_HEX
+	var lowest_hp: int = AIUtils.MAX_DISTANCE
 	var found_target: bool = false
 	
 	# 3. Évaluation tactique des cibles
@@ -38,23 +38,15 @@ func execute(context: AIContext) -> void:
 		if not GridManager.unit_positions.has(target_hex):
 			continue
 			
-		var target_unit: Unit = GridManager.unit_positions[target_hex]
+		var target_node: Node3D = GridManager.unit_positions[target_hex]
+		if not target_node or not target_node is Unit:
+			continue
+			
+		var target_unit := target_node as Unit
 		if not is_instance_valid(target_unit) or target_unit == unit:
 			continue
 			
-		# Filtrage strict de l'allégeance (Identify Friend or Foe)
-		var is_enemy: bool = target_unit.faction != unit.faction
-		var valid_alignment: bool = false
-		
-		match skill_to_use.allowed_alignments:
-			SkillData.TargetAlignment.ENEMY:
-				valid_alignment = is_enemy
-			SkillData.TargetAlignment.ALLY:
-				valid_alignment = not is_enemy
-			SkillData.TargetAlignment.ANY:
-				valid_alignment = true
-				
-		if not valid_alignment:
+		if not AIUtils.is_valid_alignment(unit, target_unit, skill_to_use.allowed_alignments):
 			continue
 			
 		# Heuristique : Prioriser la cible avec le moins de points de vie
@@ -65,7 +57,7 @@ func execute(context: AIContext) -> void:
 				best_target_hex = target_hex
 				found_target = true
 				
-	if not found_target:
+	if not found_target or best_target_hex == AIUtils.INVALID_HEX:
 		_end_action()
 		return
 		

@@ -21,18 +21,7 @@ func evaluate(context: AIContext) -> float:
 		if not is_instance_valid(target_unit) or target_unit == unit:
 			continue
 			
-		var is_enemy: bool = target_unit.faction != unit.faction
-		var valid_alignment: bool = false
-		
-		match skill_to_check.allowed_alignments:
-			SkillData.TargetAlignment.ENEMY:
-				valid_alignment = is_enemy
-			SkillData.TargetAlignment.ALLY:
-				valid_alignment = not is_enemy
-			SkillData.TargetAlignment.ANY:
-				valid_alignment = true
-				
-		if valid_alignment:
+		if AIUtils.is_valid_alignment(unit, target_unit, skill_to_check.allowed_alignments):
 			return 1.0 # Une cible valide est présente dans la zone de ciblage
 			
 	return 0.0

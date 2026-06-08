@@ -14,8 +14,8 @@ func _on_turn_started(unit: Unit) -> void:
 	if not surface:
 		return
 		
-	# Duck-typing sécurisé pour les composants
-	if unit.get("status_receiver") != null:
+	# Typage strict pour les composants
+	if unit.status_receiver:
 		for status_res: Resource in surface.applied_status_effects:
 			var status := status_res as StatusEffectData # StatusEffectData n'est peut-être pas la classe exacte, on fait confiance au cast
 			if status:

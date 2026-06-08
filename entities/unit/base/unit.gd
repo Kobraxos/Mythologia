@@ -149,6 +149,40 @@ func end_turn() -> void:
 			_indicator_tween.kill()
 
 # PUBLIC FUNCTIONS
+## Vérifie si l'unité est capable de se déplacer (pas de contrôles de foule bloquants).
+func can_move() -> bool:
+	if status_receiver:
+		if status_receiver.is_rooted() or status_receiver.is_stunned():
+			return false
+	return true
+
+## Vérifie si l'unité est capable de lancer une compétence (pas de contrôles de foule bloquants).
+func can_cast_skill() -> bool:
+	if status_receiver:
+		if status_receiver.is_stunned() or status_receiver.is_silenced():
+			return false
+	return true
+
+## Demande un déplacement. Valide l'état, consomme les ressources, puis exécute le chemin.
+func request_movement(path: Array[Vector3i]) -> bool:
+	if not can_move():
+		return false
+		
+	if path.size() <= 1:
+		return false
+		
+	var cost: int = 0
+	if GridManager.pathfinder and stats:
+		cost = GridManager.pathfinder.get_path_cost(path, stats)
+		
+	if action_economy:
+		if not action_economy.has_enough_mp(cost):
+			return false
+		action_economy.consume_mp(cost)
+		
+	execute_path(path)
+	return true
+
 ## Exécute un chemin de déplacement donné. (Appelé par les Contrôleurs : Joueur ou IA)
 func execute_path(path: Array[Vector3i]) -> void:
 	if path.size() <= 1:

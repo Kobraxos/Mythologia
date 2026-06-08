@@ -28,6 +28,16 @@ const LINE_Y_OFFSET: float = 0.05
 ## Le modèle 3D autonome pour le curseur de survol de la souris.
 @export var hover_cursor_prefab: PackedScene
 
+@export_category("Object Pooling")
+## Nombre d'instances pré-chargées pour le déplacement.
+@export var prewarm_move_size: int = 100
+## Nombre d'instances pré-chargées pour les cibles d'attaque.
+@export var prewarm_attack_size: int = 50
+## Nombre d'instances pré-chargées pour l'affichage de la portée.
+@export var prewarm_range_size: int = 50
+## Nombre d'instances pré-chargées pour les points de chemin.
+@export var prewarm_path_size: int = 20
+
 # PRIVATE VARIABLES
 var _move_pool: Array[Node3D] = []
 var _attack_pool: Array[Node3D] = []
@@ -72,6 +82,14 @@ func _ready() -> void:
 		add_child(cursor)
 	else:
 		push_error("HighlightManager: 'hover_cursor_prefab' manquant.")
+
+	# AAA : Object Pooling Pre-Warming
+	if move_highlight_prefab: _prewarm_pool(_move_pool, move_highlight_prefab, prewarm_move_size)
+	if attack_highlight_prefab: _prewarm_pool(_attack_pool, attack_highlight_prefab, prewarm_attack_size)
+	if range_highlight_prefab: _prewarm_pool(_range_pool, range_highlight_prefab, prewarm_range_size)
+	if path_highlight_prefab: _prewarm_pool(_path_pool, path_highlight_prefab, prewarm_path_size)
+	if path_line_prefab: _prewarm_pool(_path_line_pool, path_line_prefab, prewarm_path_size * 2)
+	if ghost_highlight_prefab: _prewarm_pool(_ghost_pool, ghost_highlight_prefab, 1)
 
 # SIGNAL HANDLERS
 func _on_movement_targeted(reachable_hexes: Array[Vector3i]) -> void:
@@ -203,3 +221,11 @@ func _hide_pool(pool: Array[Node3D]) -> void:
 	for mesh: Node3D in pool:
 		if is_instance_valid(mesh):
 			mesh.visible = false
+
+func _prewarm_pool(pool: Array[Node3D], prefab: PackedScene, size: int) -> void:
+	while pool.size() < size:
+		var mesh: Node3D = prefab.instantiate() as Node3D
+		if mesh:
+			add_child(mesh)
+			mesh.visible = false
+			pool.append(mesh)

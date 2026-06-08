@@ -166,10 +166,8 @@ func _heuristic(a: Vector3i, b: Vector3i) -> float:
 func _is_traversable(current: Vector3i, next_hex: Vector3i, stats: UnitStats, unit_faction: int, occupied_hexes: Dictionary) -> bool:
 	# 1. Résolution dynamique : Les unités bloquent-elles le passage ?
 	if occupied_hexes.has(next_hex):
-		var occupant: Variant = occupied_hexes[next_hex]
-		# Abstraction pure (Duck Typing) : On ne caste pas en Unit
-		var occupant_faction: int = occupant.get("faction") if occupant.get("faction") != null else -1
-		if occupant_faction != unit_faction:
+		var occupant := occupied_hexes[next_hex] as Unit
+		if occupant and occupant.faction != unit_faction:
 			return false # Les ennemis bloquent toujours
 
 	# 2. Résolution topologique mathématique

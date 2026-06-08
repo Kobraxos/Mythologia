@@ -15,27 +15,12 @@ func evaluate(context: AIContext) -> float:
 		return 0.0
 		
 	var start_hex: Vector3i = context.current_hex
-	var min_dist: int = 999999
-	var found_enemy: bool = false
+	var closest_enemy: Unit = AIUtils.get_closest_enemy(start_hex, unit.faction)
 	
-	for hex: Vector3i in GridManager.unit_positions:
-		var target_node: Node3D = GridManager.unit_positions.get(hex)
-		if not target_node or not target_node is Unit:
-			continue
-			
-		var target_unit := target_node as Unit
-		if not is_instance_valid(target_unit) or target_unit == unit:
-			continue
-			
-		if target_unit.faction != unit.faction:
-			var dist: int = HexMath.distance_2d(start_hex, hex)
-			if dist < min_dist:
-				min_dist = dist
-				found_enemy = true
-				
-	if not found_enemy:
+	if not closest_enemy:
 		return 0.0
 		
+	var min_dist: int = HexMath.distance_2d(start_hex, closest_enemy.current_hex)
 	var normalized_dist: float = clampf(float(min_dist) / max_expected_distance, 0.0, 1.0)
 	
 	return normalized_dist if higher_score_when_far else (1.0 - normalized_dist)
