@@ -10,6 +10,8 @@ extends Node
 ## Référence globale au pathfinder actuel de la scène.
 var pathfinder: HexPathfinder = HexPathfinder.new()
 
+const INVALID_ELEVATION: int = -999
+
 @export_category("Registries")
 ## Registre des données de terrain de base. Clé: Vector3i (Axial+Z), Valeur: TerrainData
 var terrain_tiles: Dictionary[Vector3i, TerrainData] = {}
@@ -99,3 +101,11 @@ func get_elevation(q: int, r: int) -> int:
 	if _elevation_map.has(hex2d):
 		return _elevation_map[hex2d]
 	return 0
+
+## Retourne la hauteur (Z) de la surface la plus haute pour une coordonnée donnée, ou INVALID_ELEVATION si vide.
+func get_hex_elevation(hex: Vector3i) -> int:
+	for z: int in range(max_elevation, -1, -1):
+		if terrain_tiles.has(Vector3i(hex.x, hex.y, z)):
+			return z
+	return INVALID_ELEVATION
+

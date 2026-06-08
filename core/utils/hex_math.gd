@@ -7,6 +7,7 @@ const SQRT_3: float = 1.7320508075688772
 const SQRT_3_3: float = 0.5773502691896257  # sqrt(3.0) / 3.0
 const ONE_THIRD: float = 0.3333333333333333
 const TWO_THIRDS: float = 0.6666666666666666
+const INVALID_HEX := Vector3i(9999, 9999, 9999)
 
 ## STANDARD AAA 2.5D : 
 ## Un Vector3i de grille = (Q, R, Elevation). 
