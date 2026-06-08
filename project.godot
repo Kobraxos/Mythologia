@@ -23,6 +23,7 @@ CombatEvents="*res://core/autoloads/combat_events.gd"
 GridTargeting="*uid://b05pqoo2ju852"
 GridDisplacement="*uid://twq6gtbrc0b7"
 VfxManager="*uid://cltc22ajwh2fb"
+ElementalSystem="*uid://cyv4svak4qyxs"
 
 [display]
 

@@ -65,3 +65,15 @@ signal grid_topology_ready(topology: Dictionary)
 @warning_ignore("unused_signal")
 ## Émis lorsqu'une unité a terminé un déplacement. Sert de déclencheur pour les systèmes Data-Oriented.
 signal unit_moved(unit: Node, from_hex: Vector3i, to_hex: Vector3i)
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une surface est posée sur la grille (ex: par une compétence ou réaction).
+signal surface_spawned(hex: Vector3i, surface_data: TerrainData)
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une surface est retirée de la grille (durée expirée ou réaction).
+signal surface_removed(hex: Vector3i)
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une réaction chimique se produit sur un hexagone.
+signal elemental_reaction_triggered(hex: Vector3i, reaction_id: StringName)

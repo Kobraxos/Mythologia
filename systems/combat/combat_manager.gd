@@ -207,6 +207,13 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 				if was_hit and is_final_hit and (skill.knockback_distance > 0 or skill.pull_distance > 0):
 					displaced_targets.append(target_unit)
 					
+			# AAA : Déploiement de Surface et Traitement Élémentaire (Même sur des cases vides !)
+			if is_final_hit:
+				if skill.spawned_surface and skill.spawned_surface.is_surface:
+					GridManager.add_surface(hex, skill.spawned_surface)
+				ElementalSystem.process_elemental_impact(hex, skill.skill_element, caster_unit, skill)
+
+					
 		if is_final_hit:
 			# 3. Résolution Mathématique des Déplacements Forcés (0 ms)
 			var knockback_destinations: Dictionary = {}

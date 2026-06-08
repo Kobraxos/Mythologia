@@ -11,8 +11,12 @@ extends Node
 var pathfinder: HexPathfinder = HexPathfinder.new()
 
 @export_category("Registries")
-## Registre des données de terrain. Clé: Vector3i (Axial+Z), Valeur: TerrainData
+## Registre des données de terrain de base. Clé: Vector3i (Axial+Z), Valeur: TerrainData
 var terrain_tiles: Dictionary[Vector3i, TerrainData] = {}
+## Registre des surfaces volatiles (couche supérieure). Clé: Vector3i, Valeur: TerrainData
+var surface_tiles: Dictionary[Vector3i, TerrainData] = {}
+## Registre de la durée de vie restante des surfaces volatiles. Clé: Vector3i, Valeur: int (tours restants)
+var surface_durations: Dictionary[Vector3i, int] = {}
 ## Registre spatial des unités. Clé: Vector3i, Valeur: Unit
 var unit_positions: Dictionary[Vector3i, Unit] = {}
 
@@ -37,8 +41,42 @@ func clear_pathfinding_cache() -> void:
 
 func clear_terrain() -> void:
 	terrain_tiles.clear()
+	surface_tiles.clear()
+	surface_durations.clear()
 	pathfinder = HexPathfinder.new()
 	max_elevation = 0
 
 func clear_units() -> void:
 	unit_positions.clear()
+
+# --- SURFACE CRUD ---
+
+## Ajoute une surface sur l'hexagone. Remplace la surface existante.
+func add_surface(hex: Vector3i, surface_data: TerrainData) -> void:
+	if not surface_data.is_surface:
+		push_error("GridManager: Tentative d'ajouter un TerrainData non marqué comme is_surface !")
+		return
+		
+	# Si une surface est déjà là, on la nettoie virtuellement
+	if surface_tiles.has(hex):
+		GridEvents.surface_removed.emit(hex)
+		
+	surface_tiles[hex] = surface_data
+	surface_durations[hex] = surface_data.duration_turns
+	
+	GridEvents.surface_spawned.emit(hex, surface_data)
+
+## Retire la surface de l'hexagone.
+func remove_surface(hex: Vector3i) -> void:
+	if surface_tiles.has(hex):
+		surface_tiles.erase(hex)
+		surface_durations.erase(hex)
+		GridEvents.surface_removed.emit(hex)
+
+## Retourne le terrain actif sur la case (la Surface prioritairement, sinon le Terrain de base).
+func get_active_terrain(hex: Vector3i) -> TerrainData:
+	if surface_tiles.has(hex):
+		return surface_tiles[hex]
+	if terrain_tiles.has(hex):
+		return terrain_tiles[hex]
+	return null

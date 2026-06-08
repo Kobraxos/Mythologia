@@ -2,6 +2,13 @@ class_name TerrainData
 extends Resource
 
 @export_category("Identity & Visuals")
+## Détermine si ce terrain est une surface volatile (ex: Flaque de feu, gaz empoisonné) ou le sol structurel de base.
+@export var is_surface: bool = false
+@export_group("Surface Lifecycle")
+## Durée de vie en tours de la surface. 0 = infinie. Valable uniquement si is_surface = true.
+@export var duration_turns: int = 0
+
+@export_category("Identity & Visuals")
 @export var id: StringName = &""
 @export var terrain_name: String = "Unknown Terrain"
 @export_multiline var description: String = ""
@@ -26,13 +33,4 @@ extends Resource
 @export var terrain_element: SkillData.Element = SkillData.Element.NONE
 ## Liste des éléments qui se propagent instantanément sur les cases adjacentes partageant ce terrain (ex: Foudre sur l'Eau).
 @export var conducts_elements: Array[SkillData.Element] = []
-
-@export_group("Elemental Transformations")
-## Terrain de remplacement généré si ce terrain est frappé par une attaque de type FEU (ex: Herbe -> Cendre). Injecter une ressource TerrainData.
-@export var transform_on_fire: Resource
-## Terrain de remplacement généré si ce terrain est frappé par une attaque de type GLACE (ex: Eau -> Glace). Injecter une ressource TerrainData.
-@export var transform_on_ice: Resource
-## Terrain de remplacement généré si ce terrain est frappé par une attaque de type EAU (ex: Lave -> Obsidienne). Injecter une ressource TerrainData.
-@export var transform_on_water: Resource
-## Terrain de remplacement généré si ce terrain est frappé par une attaque de type FOUDRE. Injecter une ressource TerrainData.
-@export var transform_on_lightning: Resource
+
