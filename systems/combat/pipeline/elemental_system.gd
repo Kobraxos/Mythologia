@@ -16,7 +16,7 @@ func _ready() -> void:
 		_reaction_map[key] = reaction
 
 ## Traite l'impact d'un sort sur une case et arbitre les réactions chimiques de façon 100% Data-Driven.
-func process_elemental_impact(hex: Vector3i, element: CoreEnums.Element, caster: Unit, skill: SkillData) -> void:
+func process_elemental_impact(hex: Vector3i, element: int, caster: Unit, skill: SkillData) -> void:
 	if element == CoreEnums.Element.NONE:
 		return
 		
@@ -24,7 +24,7 @@ func process_elemental_impact(hex: Vector3i, element: CoreEnums.Element, caster:
 	if not active_terrain:
 		return
 		
-	var target_element: CoreEnums.Element = active_terrain.terrain_element
+	var target_element: int = active_terrain.terrain_element
 	if target_element == CoreEnums.Element.NONE:
 		return
 		

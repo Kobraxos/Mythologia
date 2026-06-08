@@ -17,7 +17,7 @@ var is_shielding: bool = false
 var is_critical: bool = false
 var is_dodged: bool = false
 
-var element: CoreEnums.Element = CoreEnums.Element.NONE
+var element: int = 0 # CoreEnums.Element.NONE
 var is_mythic: bool = false
 
 ## Tags permettant aux passifs/modificateurs de filtrer ce dégât 

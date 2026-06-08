@@ -8,7 +8,7 @@ func _ready() -> void:
 	GridEvents.surface_spawned.connect(_on_surface_spawned)
 	GridEvents.surface_removed.connect(_on_surface_removed)
 
-func _on_surface_spawned(hex: Vector3i, surface_data: TerrainData) -> void:
+func _on_surface_spawned(hex: Vector3i, surface_data: Resource) -> void: # surface_data is TerrainData
 	# Nettoie le précédent visuel s'il y en a un
 	if active_visuals.has(hex):
 		_on_surface_removed(hex)

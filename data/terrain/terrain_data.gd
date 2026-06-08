@@ -33,4 +33,3 @@ extends Resource
 @export_enum("NONE", "FIRE", "WATER", "ICE", "LIGHTNING", "EARTH", "POISON", "LIGHT", "SHADOW") var terrain_element: int = 0
 ## Liste des éléments qui se propagent instantanément sur les cases adjacentes partageant ce terrain (ex: Foudre sur l'Eau).
 @export var conducts_elements: Array[int] = []
-
