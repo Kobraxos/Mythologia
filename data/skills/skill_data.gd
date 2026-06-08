@@ -18,8 +18,6 @@ enum AreaShape { SINGLE_TARGET, CIRCLE, LINE, CONE, RING, FLOOD_FILL }
 ## Contraintes de propagation de l'AoE (Utile pour les gaz, fluides, ou ondes de choc).
 enum AoEHeightPropagation { IGNORE, DOWNWARD_ONLY, UPWARD_ONLY, SAME_LEVEL_ONLY, PROJECT_FLAT_IN_AIR }
 
-## Éléments magiques pour les réactions avec l'environnement (Terrain/Surfaces).
-enum Element { NONE, FIRE, WATER, ICE, LIGHTNING, EARTH, POISON, LIGHT, SHADOW }
 
 ## Modificateurs contextuels modifiant dynamiquement la puissance du sort.
 enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CASTER_CURRENT_MANA, FLAT_HP_DIFFERENCE, ELEVATION_DIFFERENCE }
@@ -84,7 +82,7 @@ enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CAST
 @export_category("Combat Matrix (Multipliers)")
 @export_group("Offense")
 ## Tag élémentaire du sort (utilisé pour les réactions de terrain et résistances).
-@export var skill_element: Element = Element.NONE
+@export_enum("NONE", "FIRE", "WATER", "ICE", "LIGHTNING", "EARTH", "POISON", "LIGHT", "SHADOW") var skill_element: int = 0
 @export var physical_damage_multiplier: float = 1.0
 @export var mythic_damage_multiplier: float = 0.0
 ## Bonus ponctuel de pénétration pour ignorer l'armure sur cette attaque spécifique.

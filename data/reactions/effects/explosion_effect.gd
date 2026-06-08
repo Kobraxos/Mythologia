@@ -4,7 +4,7 @@ extends ReactionEffectData
 @export_category("Dégâts de l'Explosion")
 @export var damage_base: float = 10.0
 @export var damage_mythic_scaling: float = 1.5
-@export var element: SkillData.Element = SkillData.Element.FIRE
+@export_enum("NONE", "FIRE", "WATER", "ICE", "LIGHTNING", "EARTH", "POISON", "LIGHT", "SHADOW") var element: int = 1 # FIRE
 
 @export_category("Visuels")
 @export var vfx_id: StringName = &"poison_explosion"

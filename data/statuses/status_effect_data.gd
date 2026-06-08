@@ -27,7 +27,7 @@ enum StatScaling { NONE, MULTIPLY_BY_ELEVATION, MULTIPLY_BY_MISSING_HP }
 
 @export_category("Stat Modifiers")
 ## Condition contextuelle requise pour que ces modificateurs s'appliquent en temps réel (ex: ELEVATION_GREATER_THAN_ZERO).
-@export var activation_condition: StatusTriggerData.TriggerCondition = StatusTriggerData.TriggerCondition.ALWAYS
+@export_enum("ALWAYS", "ELEVATION_GREATER_THAN_ZERO", "TARGET_HP_BELOW_HALF", "SOURCE_HAS_LINE_OF_SIGHT") var activation_condition: int = 0
 ## Règle de calcul dynamique : multiplie les valeurs ci-dessous selon un contexte (ex: par le niveau de hauteur Z).
 @export var stat_scaling: StatScaling = StatScaling.NONE
 ## Liste strictement typée des altérations de statistiques appliquées pendant la durée de l'effet.
@@ -48,7 +48,7 @@ enum StatScaling { NONE, MULTIPLY_BY_ELEVATION, MULTIPLY_BY_MISSING_HP }
 @export var damage_per_turn: int = 0
 ## Soins reçus au début du tour de l'unité.
 @export var healing_per_turn: int = 0
-@export var dot_element: SkillData.Element = SkillData.Element.NONE
+@export_enum("NONE", "FIRE", "WATER", "ICE", "LIGHTNING", "EARTH", "POISON", "LIGHT", "SHADOW") var dot_element: int = 0
 
 @export_category("Reactive Triggers")
 ## Liste des compétences à déclencher en réaction à des événements de jeu.

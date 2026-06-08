@@ -12,9 +12,9 @@ var pathfinder: HexPathfinder = HexPathfinder.new()
 
 @export_category("Registries")
 ## Registre des données de terrain de base. Clé: Vector3i (Axial+Z), Valeur: TerrainData
-var terrain_tiles: Dictionary[Vector3i, TerrainData] = {}
+var terrain_tiles: Dictionary = {} # Dictionary[Vector3i, TerrainData]
 ## Registre des surfaces volatiles (couche supérieure). Clé: Vector3i, Valeur: TerrainData
-var surface_tiles: Dictionary[Vector3i, TerrainData] = {}
+var surface_tiles: Dictionary = {} # Dictionary[Vector3i, TerrainData]
 ## Registre de la durée de vie restante des surfaces volatiles. Clé: Vector3i, Valeur: int (tours restants)
 var surface_durations: Dictionary[Vector3i, int] = {}
 ## Registre spatial des unités. Clé: Vector3i, Valeur: Unit
@@ -52,7 +52,7 @@ func clear_units() -> void:
 # --- SURFACE CRUD ---
 
 ## Ajoute une surface sur l'hexagone. Remplace la surface existante.
-func add_surface(hex: Vector3i, surface_data: TerrainData) -> void:
+func add_surface(hex: Vector3i, surface_data: Resource) -> void: # surface_data is TerrainData
 	if not surface_data.is_surface:
 		push_error("GridManager: Tentative d'ajouter un TerrainData non marqué comme is_surface !")
 		return
@@ -74,7 +74,7 @@ func remove_surface(hex: Vector3i) -> void:
 		GridEvents.surface_removed.emit(hex)
 
 ## Retourne le terrain actif sur la case (la Surface prioritairement, sinon le Terrain de base).
-func get_active_terrain(hex: Vector3i) -> TerrainData:
+func get_active_terrain(hex: Vector3i) -> Resource: # Returns TerrainData
 	if surface_tiles.has(hex):
 		return surface_tiles[hex]
 	if terrain_tiles.has(hex):

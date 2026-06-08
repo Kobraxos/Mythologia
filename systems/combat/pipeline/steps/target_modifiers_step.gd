@@ -16,14 +16,14 @@ func apply(data: DamageData) -> void:
 	# Résistances Élémentaires (Pourcentage)
 	var res: float = 0.0
 	match data.element:
-		SkillData.Element.FIRE: res = data.target.stats.res_fire
-		SkillData.Element.WATER: res = data.target.stats.res_water
-		SkillData.Element.ICE: res = data.target.stats.res_ice
-		SkillData.Element.LIGHTNING: res = data.target.stats.res_lightning
-		SkillData.Element.EARTH: res = data.target.stats.res_earth
-		SkillData.Element.POISON: res = data.target.stats.res_poison
-		SkillData.Element.LIGHT: res = data.target.stats.res_light
-		SkillData.Element.SHADOW: res = data.target.stats.res_shadow
+		CoreEnums.Element.FIRE: res = data.target.stats.res_fire
+		CoreEnums.Element.WATER: res = data.target.stats.res_water
+		CoreEnums.Element.ICE: res = data.target.stats.res_ice
+		CoreEnums.Element.LIGHTNING: res = data.target.stats.res_lightning
+		CoreEnums.Element.EARTH: res = data.target.stats.res_earth
+		CoreEnums.Element.POISON: res = data.target.stats.res_poison
+		CoreEnums.Element.LIGHT: res = data.target.stats.res_light
+		CoreEnums.Element.SHADOW: res = data.target.stats.res_shadow
 		
 	# Application de la résistance
 	amount *= (1.0 - res)

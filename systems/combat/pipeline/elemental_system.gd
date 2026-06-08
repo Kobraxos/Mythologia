@@ -16,16 +16,16 @@ func _ready() -> void:
 		_reaction_map[key] = reaction
 
 ## Traite l'impact d'un sort sur une case et arbitre les réactions chimiques de façon 100% Data-Driven.
-func process_elemental_impact(hex: Vector3i, element: SkillData.Element, caster: Unit, skill: SkillData) -> void:
-	if element == SkillData.Element.NONE:
+func process_elemental_impact(hex: Vector3i, element: CoreEnums.Element, caster: Unit, skill: SkillData) -> void:
+	if element == CoreEnums.Element.NONE:
 		return
 		
 	var active_terrain: TerrainData = GridManager.get_active_terrain(hex)
 	if not active_terrain:
 		return
 		
-	var target_element: SkillData.Element = active_terrain.terrain_element
-	if target_element == SkillData.Element.NONE:
+	var target_element: CoreEnums.Element = active_terrain.terrain_element
+	if target_element == CoreEnums.Element.NONE:
 		return
 		
 	var key: String = str(element) + "_" + str(target_element)

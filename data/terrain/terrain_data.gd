@@ -30,7 +30,7 @@ extends Resource
 
 @export_category("Elemental System (Systemic Gameplay)")
 ## L'élément inhérent de ce terrain (utile pour les immunités ou les réactions conditionnelles).
-@export var terrain_element: SkillData.Element = SkillData.Element.NONE
+@export_enum("NONE", "FIRE", "WATER", "ICE", "LIGHTNING", "EARTH", "POISON", "LIGHT", "SHADOW") var terrain_element: int = 0
 ## Liste des éléments qui se propagent instantanément sur les cases adjacentes partageant ce terrain (ex: Foudre sur l'Eau).
-@export var conducts_elements: Array[SkillData.Element] = []
+@export var conducts_elements: Array[int] = []
 
