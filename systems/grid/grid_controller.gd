@@ -141,4 +141,10 @@ func _on_skill_button_clicked(skill: SkillData) -> void:
 	change_state("skill")
 
 func _on_active_unit_changed(unit: Unit) -> void:
+	# AAA: Annuler immédiatement toute action en cours (FSM) pour nettoyer les zones ciblées
+	change_state("default")
+	
 	active_turn_unit = unit
+	if is_instance_valid(unit):
+		selected_unit = unit
+		GridEvents.unit_selected.emit(unit)
