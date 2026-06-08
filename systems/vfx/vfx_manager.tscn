@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://cltc22ajwh2fb"]
 
 [ext_resource type="Script" uid="uid://dt3n8morhj0hx" path="res://systems/vfx/vfx_manager.gd" id="1_8xrg5"]
-[ext_resource type="PackedScene" uid="uid://cq5amavawdnmu" path="res://assets/3d/vfx/impact_hit_vfx.tscn" id="2_impact"]
-[ext_resource type="PackedScene" uid="uid://c6yhealvfx001" path="res://assets/3d/vfx/heal_effect_vfx.tscn" id="3_heal"]
-[ext_resource type="PackedScene" uid="uid://dhvyurtygc7rm" path="res://assets/3d/vfx/dash_trail_vfx.tscn" id="4_dash"]
+[ext_resource type="PackedScene" uid="uid://cq5amavawdnmu" path="res://systems/vfx/prefabs/impact_hit_vfx.tscn" id="2_impact"]
+[ext_resource type="PackedScene" uid="uid://c6yhealvfx001" path="res://systems/vfx/prefabs/heal_effect_vfx.tscn" id="3_heal"]
+[ext_resource type="PackedScene" uid="uid://dhvyurtygc7rm" path="res://systems/vfx/prefabs/dash_trail_vfx.tscn" id="4_dash"]
 
 [node name="VfxManager" type="Node" unique_id=1512995435]
 script = ExtResource("1_8xrg5")
