@@ -17,6 +17,4 @@ func apply(data: DamageData) -> void:
 			data.is_dodged = true
 			data.current_amount = 0.0
 			data.final_amount = 0
-			if not CombatEvents.has_user_signal("attack_dodged"):
-				CombatEvents.add_user_signal("attack_dodged", [{"name": "target", "type": TYPE_OBJECT}])
-			CombatEvents.emit_signal("attack_dodged", data.target)
+			CombatEvents.attack_dodged.emit(data.target)

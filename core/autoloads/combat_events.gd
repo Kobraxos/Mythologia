@@ -38,3 +38,11 @@ signal move_button_clicked()
 @warning_ignore("unused_signal")
 ## Émis lorsqu'une unité meurt sur le champ de bataille.
 signal unit_died(unit: Unit)
+
+@warning_ignore("unused_signal")
+## Émis lorsqu'une attaque est esquivée.
+signal attack_dodged(target: Node3D)
+
+@warning_ignore("unused_signal")
+## Émis pour déclencher un VFX depuis un système métier sans couplage avec la position 3D.
+signal vfx_requested(vfx_id: String, pos: Vector3, dir: Vector3, attached_target: Node3D)

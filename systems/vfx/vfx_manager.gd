@@ -8,15 +8,7 @@ extends Node
 var _pools: Dictionary = {} # Clé: String (vfx_id), Valeur: Array[PooledVfx]
 
 func _ready() -> void:
-	# Création dynamique du signal AAA
-	if not CombatEvents.has_user_signal("vfx_requested"):
-		CombatEvents.add_user_signal("vfx_requested", [
-			{"name": "vfx_id", "type": TYPE_STRING},
-			{"name": "pos", "type": TYPE_VECTOR3},
-			{"name": "dir", "type": TYPE_VECTOR3},
-			{"name": "attached_target", "type": TYPE_OBJECT}
-		])
-	CombatEvents.connect("vfx_requested", _on_vfx_requested)
+	CombatEvents.vfx_requested.connect(_on_vfx_requested)
 
 	# Auto-instanciation des particules définies dans l'inspecteur
 	for vfx_id: String in vfx_library:

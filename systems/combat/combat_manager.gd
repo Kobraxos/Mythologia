@@ -1,6 +1,10 @@
 class_name CombatManager
 extends Node
 
+const DASH_ANIM_DURATION := 0.3
+const LEAP_ANIM_DURATION := 0.4
+const MULTI_HIT_DELAY := 0.3
+
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
 	CombatEvents.skill_cast_requested.connect(_on_skill_cast_requested)
@@ -32,17 +36,17 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		var hp_cmd := VisualCommand.new()
 		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
 		hp_cmd.target = t
-		if t.get("health_component") != null: hp_cmd.int_payload = t.health_component.get_current_health()
+		var target_unit := t as Unit
+		if is_instance_valid(target_unit) and target_unit.health_component:
+			hp_cmd.int_payload = target_unit.health_component.get_current_health()
 		captured_texts.append(hp_cmd)
 		
-		# AAA VFX : Injection d'une Commande VFX directionnelle (Statique au point d'impact)
+		# AAA VFX : Injection d'une Commande VFX directionnelle (Séquenceur calculera pos/dir)
 		var vfx_cmd := VisualCommand.new()
 		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = "impact_hit" # Vfx ID
-		vfx_cmd.position_payload = t.global_position + Vector3(0, 1.0, 0) # Centre de masse
-		if is_instance_valid(caster) and is_instance_valid(t):
-			var dir := (t.global_position - caster.global_position).normalized()
-			vfx_cmd.direction_payload = dir if dir.length_squared() > 0.0 else Vector3.UP
+		vfx_cmd.string_payload = VfxConstants.IMPACT_HIT
+		vfx_cmd.target = t
+		vfx_cmd.source = caster
 		captured_texts.append(vfx_cmd)
 		
 	var capture_heal := func(t: Node3D, amount: int) -> void:
@@ -57,13 +61,15 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		var hp_cmd := VisualCommand.new()
 		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
 		hp_cmd.target = t
-		if t.get("health_component") != null: hp_cmd.int_payload = t.health_component.get_current_health()
+		var target_unit := t as Unit
+		if is_instance_valid(target_unit) and target_unit.health_component:
+			hp_cmd.int_payload = target_unit.health_component.get_current_health()
 		captured_texts.append(hp_cmd)
 		
 		# AAA VFX : Injection d'une Commande VFX avec Attachement Dynamique
 		var vfx_cmd := VisualCommand.new()
 		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = "heal_effect" # Vfx ID
+		vfx_cmd.string_payload = VfxConstants.HEAL_EFFECT
 		vfx_cmd.target = t # Assigne l'attachement au Node3D cible
 		vfx_cmd.direction_payload = Vector3.UP
 		captured_texts.append(vfx_cmd)
@@ -79,12 +85,14 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		var hp_cmd := VisualCommand.new()
 		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
 		hp_cmd.target = t
-		if t.get("health_component") != null: hp_cmd.int_payload = t.health_component.get_current_health()
+		var target_unit := t as Unit
+		if is_instance_valid(target_unit) and target_unit.health_component:
+			hp_cmd.int_payload = target_unit.health_component.get_current_health()
 		captured_texts.append(hp_cmd)
 		
 		var vfx_cmd := VisualCommand.new()
 		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = "shield_granted"
+		vfx_cmd.string_payload = VfxConstants.SHIELD_GRANTED
 		vfx_cmd.target = t
 		vfx_cmd.direction_payload = Vector3.UP
 		captured_texts.append(vfx_cmd)
@@ -96,19 +104,17 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		cmd.string_payload = "DODGE"
 		captured_texts.append(cmd)
 		
-		# AAA VFX : Poussière d'esquive (statique au sol)
+		# AAA VFX : Poussière d'esquive (Séquenceur la placera)
 		var vfx_cmd := VisualCommand.new()
 		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = "dodge_dust" # ID à ajouter dans l'inspecteur VfxManager
-		vfx_cmd.position_payload = t.global_position
+		vfx_cmd.string_payload = VfxConstants.DODGE_DUST
+		vfx_cmd.target = t
 		captured_texts.append(vfx_cmd)
 		
 	CombatEvents.damage_dealt.connect(capture_dmg)
 	CombatEvents.healing_done.connect(capture_heal)
 	CombatEvents.shield_granted.connect(capture_shield)
-	if not CombatEvents.has_user_signal("attack_dodged"):
-		CombatEvents.add_user_signal("attack_dodged", [{"name": "target", "type": TYPE_OBJECT}])
-	CombatEvents.connect("attack_dodged", capture_dodge)
+	CombatEvents.attack_dodged.connect(capture_dodge)
 	
 	var sequence: Array[VisualCommandGroup] = []
 	
@@ -138,30 +144,24 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 			cmd.target_hex = final_caster_hex
 			
 			if skill.caster_movement == SkillData.CasterMovement.DASH_TO_TARGET:
-				cmd.duration = 0.3
+				cmd.duration = DASH_ANIM_DURATION
 				
 				var vfx_cmd := VisualCommand.new()
 				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-				vfx_cmd.string_payload = "dash_trail"
+				vfx_cmd.string_payload = VfxConstants.DASH_TRAIL
 				vfx_cmd.target = caster_unit
-				var start_pos := caster_unit.global_position
-				var end_pos := HexMath.hex_to_world(final_caster_hex, GridManager.hex_size, GridManager.elevation_step)
-				var move_dir := (end_pos - start_pos).normalized()
-				vfx_cmd.direction_payload = move_dir if move_dir.length_squared() > 0.0 else Vector3.UP
+				vfx_cmd.target_hex = final_caster_hex
 				move_group.commands.append(vfx_cmd)
 				
 			elif skill.caster_movement == SkillData.CasterMovement.LEAP_TO_TARGET:
-				cmd.duration = 0.4
+				cmd.duration = LEAP_ANIM_DURATION
 				cmd.is_leap = true
 				
 				var vfx_cmd := VisualCommand.new()
 				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-				vfx_cmd.string_payload = "leap_trail"
+				vfx_cmd.string_payload = VfxConstants.LEAP_TRAIL
 				vfx_cmd.target = caster_unit
-				var start_pos := caster_unit.global_position
-				var end_pos := HexMath.hex_to_world(final_caster_hex, GridManager.hex_size, GridManager.elevation_step)
-				var move_dir := (end_pos - start_pos).normalized()
-				vfx_cmd.direction_payload = move_dir if move_dir.length_squared() > 0.0 else Vector3.UP
+				vfx_cmd.target_hex = final_caster_hex
 				move_group.commands.append(vfx_cmd)
 				
 			elif skill.caster_movement == SkillData.CasterMovement.TELEPORT_TO_TARGET:
@@ -169,14 +169,14 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 				
 				var vfx_out := VisualCommand.new()
 				vfx_out.type = VisualCommand.Type.SPAWN_VFX
-				vfx_out.string_payload = "teleport_out"
-				vfx_out.position_payload = caster_unit.global_position
+				vfx_out.string_payload = VfxConstants.TELEPORT_OUT
+				vfx_out.target = caster_unit
 				move_group.commands.append(vfx_out)
 				
 				var vfx_in := VisualCommand.new()
 				vfx_in.type = VisualCommand.Type.SPAWN_VFX
-				vfx_in.string_payload = "teleport_in"
-				vfx_in.position_payload = HexMath.hex_to_world(final_caster_hex, GridManager.hex_size, GridManager.elevation_step)
+				vfx_in.string_payload = VfxConstants.TELEPORT_IN
+				vfx_in.target_hex = final_caster_hex
 				move_group.commands.append(vfx_in)
 				
 			move_group.commands.append(cmd)
@@ -196,7 +196,7 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		anim_cmd.type = VisualCommand.Type.PLAY_ANIMATION
 		anim_cmd.target = caster
 		anim_cmd.string_payload = skill.animation_trigger
-		anim_cmd.duration = 0.3 # C'est ce délai qui cadence le "Bam... Bam..."
+		anim_cmd.duration = MULTI_HIT_DELAY # C'est ce délai qui cadence le "Bam... Bam..."
 		current_group.commands.append(anim_cmd)
 		
 		# Exécution Logique Instantanée (0 ms) pour la frappe actuelle
@@ -243,12 +243,9 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 				
 				var vfx_cmd := VisualCommand.new()
 				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-				vfx_cmd.string_payload = "dash_trail"
+				vfx_cmd.string_payload = VfxConstants.DASH_TRAIL
 				vfx_cmd.target = t
-				var start_pos := t.global_position
-				var end_pos := HexMath.hex_to_world(knockback_destinations[t], GridManager.hex_size, GridManager.elevation_step)
-				var move_dir := (end_pos - start_pos).normalized()
-				vfx_cmd.direction_payload = move_dir if move_dir.length_squared() > 0.0 else Vector3.UP
+				vfx_cmd.target_hex = knockback_destinations[t]
 				current_group.commands.append(vfx_cmd)
 				
 		# Ajout des Textes et Particules capturés pour CETTE frappe
@@ -262,7 +259,7 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 	CombatEvents.damage_dealt.disconnect(capture_dmg)
 	CombatEvents.healing_done.disconnect(capture_heal)
 	CombatEvents.shield_granted.disconnect(capture_shield)
-	CombatEvents.disconnect("attack_dodged", capture_dodge)
+	CombatEvents.attack_dodged.disconnect(capture_dodge)
 		
 	# Déploiement du Séquenceur Éphémère (Mort programmée)
 	var sequencer = CombatSequencer.new()
@@ -343,7 +340,7 @@ func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData, is_fin
 					actual_target = caster
 					
 				# Duck typing de sécurité pour s'assurer que la cible gère bien les statuts
-				if actual_target and actual_target.get("status_receiver") != null:
+				if actual_target and actual_target.status_receiver:
 					actual_target.status_receiver.apply_status(payload.status_effect)
 					
 		# 4. Compétence de suivi (Follow-up Skill)

@@ -57,15 +57,39 @@ func _play_group(group: VisualCommandGroup) -> void:
 				CombatEvents.visual_text_requested.emit(cmd.target, cmd.int_payload, type, cmd.element_payload as CoreEnums.Element)
 
 			VisualCommand.Type.UPDATE_HEALTH_BAR:
+				var max_hp: int = 1
+				var target_unit := cmd.target as Unit
+				if is_instance_valid(target_unit) and target_unit.health_component:
+					max_hp = target_unit.health_component.get_max_health()
 				if CombatEvents.has_user_signal("visual_health_updated"):
-					var max_hp: int = 1
-					if is_instance_valid(cmd.target) and cmd.target.get("health_component") != null:
-						max_hp = cmd.target.health_component.get_max_health()
 					CombatEvents.emit_signal("visual_health_updated", cmd.target, cmd.int_payload, max_hp)
 
 			VisualCommand.Type.SPAWN_VFX:
-				if CombatEvents.has_user_signal("vfx_requested"):
-					CombatEvents.emit_signal("vfx_requested", cmd.string_payload, cmd.position_payload, cmd.direction_payload, cmd.target)
+				var pos := cmd.position_payload
+				var dir := cmd.direction_payload
+				
+				if is_instance_valid(cmd.target):
+					if pos == Vector3.ZERO:
+						pos = cmd.target.global_position
+						if cmd.string_payload == VfxConstants.IMPACT_HIT:
+							pos += Vector3(0, 1.0, 0)
+					
+					if dir == Vector3.ZERO and is_instance_valid(cmd.source):
+						dir = (cmd.target.global_position - cmd.source.global_position).normalized()
+						
+				# Cas des mouvements (dash/leap)
+				if cmd.target_hex != Vector3i.ZERO and is_instance_valid(cmd.target):
+					var end_pos := HexMath.hex_to_world(cmd.target_hex, GridManager.hex_size, GridManager.elevation_step)
+					dir = (end_pos - cmd.target.global_position).normalized()
+					
+				# Cas du teleport in
+				if cmd.string_payload == VfxConstants.TELEPORT_IN and cmd.target_hex != Vector3i.ZERO:
+					pos = HexMath.hex_to_world(cmd.target_hex, GridManager.hex_size, GridManager.elevation_step)
+					
+				if dir.length_squared() == 0.0:
+					dir = Vector3.UP
+					
+				CombatEvents.vfx_requested.emit(cmd.string_payload, pos, dir, cmd.target)
 
 	# Attente unique synchronisée sur l'animation la plus longue du groupe
 	if max_duration > 0.0:

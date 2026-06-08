@@ -12,6 +12,7 @@ enum Type {
 }
 
 var type: Type
+var source: Node3D
 var target: Node3D
 var target_hex: Vector3i
 var string_payload: String
