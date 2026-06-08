@@ -9,9 +9,15 @@ signal skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vector
 ## Émis par le CombatManager une fois que le sort a fini d'être résolu (animations, dégâts appliqués).
 signal skill_resolved(caster: Node3D, skill: SkillData, target_hex: Vector3i)
 
+enum FloatingTextType { DAMAGE, CRIT, HEAL, DODGE, SHIELD, IMMUNE, MISS }
+
 @warning_ignore("unused_signal")
 ## Émis quand des dégâts sont infligés (pour l'UI et les Floating Texts).
 signal damage_dealt(target: Node3D, amount: int, is_crit: bool)
+
+@warning_ignore("unused_signal")
+## Émis pour déclencher un texte flottant de manière centralisée et typée AAA.
+signal visual_text_requested(target: Node3D, amount: int, type: FloatingTextType, element: CoreEnums.Element)
 
 @warning_ignore("unused_signal")
 ## Émis quand des soins sont prodigués.

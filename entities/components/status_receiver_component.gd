@@ -114,9 +114,18 @@ func apply_start_turn_effects() -> void:
 
 	for status: ActiveStatus in _active_statuses:
 		if status.data.damage_per_turn > 0:
-			health_component.take_damage(status.data.damage_per_turn)
+			var dmg: int = status.data.damage_per_turn
+			health_component.take_damage(dmg)
+			var unit := get_parent() as Node3D
+			if unit:
+				CombatEvents.visual_text_requested.emit(unit, dmg, CombatEvents.FloatingTextType.DAMAGE, status.data.dot_element as CoreEnums.Element)
+				
 		if status.data.healing_per_turn > 0:
-			health_component.heal(status.data.healing_per_turn)
+			var heal: int = status.data.healing_per_turn
+			health_component.heal(heal)
+			var unit := get_parent() as Node3D
+			if unit:
+				CombatEvents.visual_text_requested.emit(unit, heal, CombatEvents.FloatingTextType.HEAL, CoreEnums.Element.NONE)
 
 ## TICK ORDER (FIN) : Réduit les durées et nettoie les effets expirés.
 func tick_durations() -> void:

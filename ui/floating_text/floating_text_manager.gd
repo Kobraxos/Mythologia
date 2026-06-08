@@ -9,7 +9,9 @@ extends Control
 
 @export_category("Configuration")
 @export var pool_size: int = 20
-@export var damage_color: Color = Color(1.0, 0.2, 0.2)
+@export var default_damage_color: Color = Color(1.0, 0.2, 0.2)
+@export var fire_color: Color = Color(1.0, 0.4, 0.0)
+@export var poison_color: Color = Color(0.2, 0.8, 0.2)
 @export var crit_color: Color = Color(1.0, 0.8, 0.0)
 @export var heal_color: Color = Color(0.2, 1.0, 0.4)
 @export var shield_color: Color = Color(0.2, 0.6, 1.0) # Bleu ciel (Aegis)
@@ -20,23 +22,22 @@ extends Control
 
 # PRIVATE VARIABLES
 var _pool: Array[FloatingText] = []
+## Dictionnaire pour empiler les délais par cible (Staggering AAA)
+var _target_queues: Dictionary = {}
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
-	# Création dynamique du signal AAA exclusif au Séquenceur Visuel
-	if not CombatEvents.has_user_signal("visual_text_requested"):
-		CombatEvents.add_user_signal("visual_text_requested", [
-			{"name": "target", "type": TYPE_OBJECT}, 
-			{"name": "amount", "type": TYPE_INT},
-			{"name": "is_crit", "type": TYPE_BOOL},
-			{"name": "is_heal", "type": TYPE_BOOL},
-			{"name": "is_dodge", "type": TYPE_BOOL},
-			{"name": "is_shield", "type": TYPE_BOOL}
-		])
-	CombatEvents.connect("visual_text_requested", _on_visual_text_requested)
+	CombatEvents.visual_text_requested.connect(_on_visual_text_requested)
 	TurnEvents.turn_skipped_stun.connect(_on_turn_skipped_stun)
 	
 	_initialize_pool()
+
+func _process(delta: float) -> void:
+	# Purge de la file d'attente (Staggering)
+	for target: Node3D in _target_queues.keys():
+		_target_queues[target] -= delta
+		if _target_queues[target] <= 0.0:
+			_target_queues.erase(target)
 
 # PRIVATE FUNCTIONS
 func _initialize_pool() -> void:
@@ -56,27 +57,71 @@ func _get_available_text() -> FloatingText:
 			return ft
 	return null # Object Pool plein (Optionnel : Agrandir le pool dynamiquement)
 
+func _get_color_for_element(element: CoreEnums.Element) -> Color:
+	match element:
+		CoreEnums.Element.FIRE: return fire_color
+		CoreEnums.Element.POISON: return poison_color
+		# Par défaut on retourne la couleur standard
+		_: return default_damage_color
+
 # SIGNAL HANDLERS
-func _on_visual_text_requested(target: Node3D, amount: int, is_crit: bool, is_heal: bool, is_dodge: bool, is_shield: bool = false) -> void:
-	var color: Color = dodge_color if is_dodge else (shield_color if is_shield else (heal_color if is_heal else (crit_color if is_crit else damage_color)))
+func _on_visual_text_requested(target: Node3D, amount: int, type: CombatEvents.FloatingTextType, element: CoreEnums.Element) -> void:
+	var color: Color
 	var prefix: String = ""
 	var text_val: String = ""
+	var is_crit: bool = false
+	var is_dodge: bool = false
 	
-	if is_dodge:
-		text_val = "Esquive"
-	else:
-		if is_shield: prefix = "+Aegis "
-		elif is_heal: prefix = "+"
-		elif is_crit: prefix = "Crit! "
-		text_val = prefix + str(amount)
-	
+	match type:
+		CombatEvents.FloatingTextType.DODGE:
+			color = dodge_color
+			is_dodge = true
+			text_val = "Esquive"
+		CombatEvents.FloatingTextType.MISS:
+			color = dodge_color
+			text_val = "Raté"
+		CombatEvents.FloatingTextType.IMMUNE:
+			color = dodge_color
+			text_val = "Immunisé"
+		CombatEvents.FloatingTextType.SHIELD:
+			color = shield_color
+			prefix = "+Aegis "
+			text_val = prefix + str(amount)
+		CombatEvents.FloatingTextType.HEAL:
+			color = heal_color
+			prefix = "+"
+			text_val = prefix + str(amount)
+		CombatEvents.FloatingTextType.CRIT:
+			color = crit_color
+			is_crit = true
+			prefix = "Crit! "
+			text_val = prefix + str(amount)
+		CombatEvents.FloatingTextType.DAMAGE:
+			color = _get_color_for_element(element)
+			text_val = str(amount)
+			
 	var ft: FloatingText = _get_available_text()
 	var camera: Camera3D = get_viewport().get_camera_3d()
 	
-	if not ft or not camera:
+	if not ft or not camera or not is_instance_valid(target):
 		return
 		
-	ft.animate(target, camera, text_val, color, height_offset, is_crit, is_dodge)
+	# Gestion du Staggering (Queueing visuel)
+	var delay: float = 0.0
+	if _target_queues.has(target):
+		delay = _target_queues[target]
+		_target_queues[target] += 0.2 # 200ms d'espacement pour chaque texte supplémentaire
+	else:
+		_target_queues[target] = 0.2
+		
+	# Lancement avec délai (Si le script FloatingText gère un delay_start ou via un petit Timer ici)
+	if delay > 0.0:
+		get_tree().create_timer(delay).timeout.connect(func():
+			if is_instance_valid(target) and is_instance_valid(ft):
+				ft.animate(target, camera, text_val, color, height_offset, is_crit, is_dodge)
+		)
+	else:
+		ft.animate(target, camera, text_val, color, height_offset, is_crit, is_dodge)
 
 # SIGNAL HANDLERS (Stun)
 func _on_turn_skipped_stun(unit: Unit) -> void:

@@ -25,6 +25,7 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 		cmd.target = t
 		cmd.int_payload = amount
 		cmd.string_payload = "CRIT" if is_crit else "DAMAGE"
+		cmd.element_payload = skill.skill_element
 		captured_texts.append(cmd)
 		
 		# AAA UI : Capture de la santé post-impact pour le Séquenceur
