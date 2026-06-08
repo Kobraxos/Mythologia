@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cq2w3e4r5t6y7"]
 
 [ext_resource type="Material" uid="uid://dp1e2y3f4h5j6" path="res://data/terrain/visuals/mat_dirt.tres" id="1_mat"]
-[ext_resource type="ArrayMesh" uid="uid://bhkn5v2swm7hy" path="res://assets/3d/hex_base_mesh.res" id="2_mesh"]
+[ext_resource type="ArrayMesh" uid="uid://bhkn5v2swm7hy" path="res://assets/3d/msh_hex_base.res" id="2_mesh"]
 
 [node name="VisualDirt" type="MeshInstance3D" unique_id=1944771020]
 material_override = ExtResource("1_mat")

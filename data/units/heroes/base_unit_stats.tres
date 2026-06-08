@@ -6,7 +6,7 @@
 [ext_resource type="Resource" uid="uid://un6eqfxtq56o" path="res://data/skills/attacks/rayon_solaire.tres" id="4_odqmy"]
 [ext_resource type="Resource" uid="uid://dash001" path="res://data/skills/spells/dash_eclair.tres" id="5_spell"]
 [ext_resource type="Resource" uid="uid://ring001" path="res://data/skills/spells/anneau_de_feu.tres" id="8_spell"]
-[ext_resource type="Texture2D" uid="uid://cawdwey71ermw" path="res://assets/2d/tezcatlipoca.png" id="12_tibrx"]
+[ext_resource type="Texture2D" uid="uid://cawdwey71ermw" path="res://assets/2d/tex_tezcatlipoca.png" id="12_tibrx"]
 
 [resource]
 script = ExtResource("1_t58gu")

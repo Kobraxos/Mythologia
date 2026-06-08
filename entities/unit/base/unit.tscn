@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://d1df841eup3hb" path="res://assets/2d/vfx/tex_faction_ring.png" id="3_8pp4k"]
 [ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/units/heroes/base_unit_stats.tres" id="3_stats"]
 [ext_resource type="Script" uid="uid://c4e3lwbdyynxo" path="res://entities/components/action_economy_component.gd" id="4_o06vs"]
-[ext_resource type="Shader" uid="uid://cjap0gxqavdix" path="res://assets/shaders/faction_ring.gdshader" id="4_shader"]
+[ext_resource type="Shader" uid="uid://cjap0gxqavdix" path="res://assets/shaders/shd_faction_ring.gdshader" id="4_shader"]
 [ext_resource type="Script" uid="uid://edhixlttj85b" path="res://entities/components/health_component.gd" id="5_health"]
 [ext_resource type="Script" uid="uid://crrh4b8n2otgj" path="res://entities/components/stat_manager_component.gd" id="6_stat"]
 [ext_resource type="Script" uid="uid://bwfx005dm8l14" path="res://entities/components/skill_caster_component.gd" id="7_0lf1k"]

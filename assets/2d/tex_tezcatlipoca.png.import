@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cawdwey71ermw"
-path="res://.godot/imported/tezcatlipoca.png-5a9fe1fed9f1d8ad6a69f1766c1983e8.ctex"
+path="res://.godot/imported/tex_tezcatlipoca.png-76e7a17d357b2e27d4b5c0afc7398e95.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/2d/tezcatlipoca.png"
-dest_files=["res://.godot/imported/tezcatlipoca.png-5a9fe1fed9f1d8ad6a69f1766c1983e8.ctex"]
+source_file="res://assets/2d/tex_tezcatlipoca.png"
+dest_files=["res://.godot/imported/tex_tezcatlipoca.png-76e7a17d357b2e27d4b5c0afc7398e95.ctex"]
 
 [params]
 

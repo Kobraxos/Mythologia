@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://ui/timeline/timeline_ui.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://ui/timeline/timeline_portrait.tscn" id="2_portrait"]
 [ext_resource type="PackedScene" uid="uid://timeline_separator_uid" path="res://ui/timeline/timeline_separator.tscn" id="3_separator"]
-[ext_resource type="Shader" path="res://assets/shaders/timeline_bg.gdshader" id="4_shader"]
+[ext_resource type="Shader" path="res://assets/shaders/shd_timeline_bg.gdshader" id="4_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 shader = ExtResource("4_shader")
