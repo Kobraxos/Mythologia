@@ -38,4 +38,4 @@ Tu NE DOIS PAS modifier le code de toi-même. Fournis uniquement le rapport d'au
 *(Pour chaque infraction majeure, indique le fichier, la ligne, et la règle violée).*
 
 #### 🛠️ Plan de Refactorisation Chirurgicale Proposé
-*(Explique froidement les étapes pour corriger la dette. Précise s'il faut extraire une logique dans un nouveau système, remplacer des appels par un Event Bus, ou typer une variable. Pose-moi la question à la fin : "Puis-je appliquer ce correctif ?").*
+*(Explique froidement les étapes pour corriger la dette. Précise s'il faut extraire une logique dans un nouveau système, remplacer des appels par un Event Bus, ou typer une variable. Crée ensuite un artifact `implementation_plan.md` détaillé, tel qu'attendu d'un processus AAA strict, avant toute modification de code. Pose-moi la question à la fin : "Puis-je appliquer ce correctif ?").*
