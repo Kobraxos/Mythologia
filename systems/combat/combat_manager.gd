@@ -1,10 +1,6 @@
 class_name CombatManager
 extends Node
 
-const DASH_ANIM_DURATION := 0.3
-const LEAP_ANIM_DURATION := 0.4
-const MULTI_HIT_DELAY := 0.3
-
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
 	CombatEvents.skill_cast_requested.connect(_on_skill_cast_requested)
@@ -20,253 +16,80 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 	# 1. Requête Mathématique (L'Arbitre interroge le Géomètre)
 	var affected_hexes: Array[Vector3i] = GridTargeting.get_affected_hexes(caster_hex, target_hex, skill)
 	
-	# 1.5 Interception AAA : On écoute les événements de la DamagePipeline pour les mettre en file d'attente
-	var captured_texts: Array[VisualCommand] = []
+	# Émission du signal de début pour que l'Interprète Visuel commence l'enregistrement
+	CombatEvents.skill_execution_started.emit(caster_unit, skill, target_hex)
 	
-	var capture_dmg := func(t: Node3D, amount: int, is_crit: bool) -> void:
-		var cmd := VisualCommand.new()
-		cmd.type = VisualCommand.Type.DAMAGE_NUMBER
-		cmd.target = t
-		cmd.int_payload = amount
-		cmd.string_payload = "CRIT" if is_crit else "DAMAGE"
-		cmd.element_payload = skill.skill_element
-		captured_texts.append(cmd)
-		
-		# AAA UI : Capture de la santé post-impact pour le Séquenceur
-		var hp_cmd := VisualCommand.new()
-		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
-		hp_cmd.target = t
-		var target_unit := t as Unit
-		if is_instance_valid(target_unit) and target_unit.health_component:
-			hp_cmd.int_payload = target_unit.health_component.get_current_health()
-		captured_texts.append(hp_cmd)
-		
-		# AAA VFX : Injection d'une Commande VFX directionnelle (Séquenceur calculera pos/dir)
-		var vfx_cmd := VisualCommand.new()
-		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = VfxConstants.IMPACT_HIT
-		vfx_cmd.target = t
-		vfx_cmd.source = caster
-		captured_texts.append(vfx_cmd)
-		
-	var capture_heal := func(t: Node3D, amount: int) -> void:
-		var cmd := VisualCommand.new()
-		cmd.type = VisualCommand.Type.DAMAGE_NUMBER
-		cmd.target = t
-		cmd.int_payload = amount
-		cmd.string_payload = "HEAL"
-		captured_texts.append(cmd)
-		
-		# AAA UI : Capture de la santé post-soin pour le Séquenceur
-		var hp_cmd := VisualCommand.new()
-		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
-		hp_cmd.target = t
-		var target_unit := t as Unit
-		if is_instance_valid(target_unit) and target_unit.health_component:
-			hp_cmd.int_payload = target_unit.health_component.get_current_health()
-		captured_texts.append(hp_cmd)
-		
-		# AAA VFX : Injection d'une Commande VFX avec Attachement Dynamique
-		var vfx_cmd := VisualCommand.new()
-		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = VfxConstants.HEAL_EFFECT
-		vfx_cmd.target = t # Assigne l'attachement au Node3D cible
-		vfx_cmd.direction_payload = Vector3.UP
-		captured_texts.append(vfx_cmd)
-		
-	var capture_shield := func(t: Node3D, amount: int) -> void:
-		var cmd := VisualCommand.new()
-		cmd.type = VisualCommand.Type.DAMAGE_NUMBER
-		cmd.target = t
-		cmd.int_payload = amount
-		cmd.string_payload = "AEGIS"
-		captured_texts.append(cmd)
-		
-		var hp_cmd := VisualCommand.new()
-		hp_cmd.type = VisualCommand.Type.UPDATE_HEALTH_BAR
-		hp_cmd.target = t
-		var target_unit := t as Unit
-		if is_instance_valid(target_unit) and target_unit.health_component:
-			hp_cmd.int_payload = target_unit.health_component.get_current_health()
-		captured_texts.append(hp_cmd)
-		
-		var vfx_cmd := VisualCommand.new()
-		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = VfxConstants.SHIELD_GRANTED
-		vfx_cmd.target = t
-		vfx_cmd.direction_payload = Vector3.UP
-		captured_texts.append(vfx_cmd)
-		
-	var capture_dodge := func(t: Node3D) -> void:
-		var cmd := VisualCommand.new()
-		cmd.type = VisualCommand.Type.DAMAGE_NUMBER
-		cmd.target = t
-		cmd.string_payload = "DODGE"
-		captured_texts.append(cmd)
-		
-		# AAA VFX : Poussière d'esquive (Séquenceur la placera)
-		var vfx_cmd := VisualCommand.new()
-		vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-		vfx_cmd.string_payload = VfxConstants.DODGE_DUST
-		vfx_cmd.target = t
-		captured_texts.append(vfx_cmd)
-		
-	CombatEvents.damage_dealt.connect(capture_dmg)
-	CombatEvents.healing_done.connect(capture_heal)
-	CombatEvents.shield_granted.connect(capture_shield)
-	CombatEvents.attack_dodged.connect(capture_dodge)
+	# Résolution métier pure (0 ms)
+	_resolve_movement(caster_unit, skill, target_hex)
+	_resolve_hits(caster_unit, skill, affected_hexes)
 	
-	var sequence: Array[VisualCommandGroup] = []
-	
-	# AAA : Déplacement du lanceur AVANT de frapper (Dash, Leap, Teleport)
-	if skill.caster_movement != SkillData.CasterMovement.NONE:
-		var final_caster_hex: Vector3i = caster_unit.current_hex
-		
-		if skill.caster_movement == SkillData.CasterMovement.DASH_TO_TARGET:
-			final_caster_hex = GridDisplacement.get_dash_destination(caster_unit, target_hex)
-		elif skill.caster_movement == SkillData.CasterMovement.LEAP_TO_TARGET:
-			final_caster_hex = GridDisplacement.get_leap_destination(caster_unit, target_hex)
-		elif skill.caster_movement == SkillData.CasterMovement.TELEPORT_TO_TARGET:
-			final_caster_hex = GridDisplacement.get_teleport_destination(caster_unit, target_hex)
-			
-		if final_caster_hex != caster_unit.current_hex:
-			var prev_hex = caster_unit.current_hex
-			GridManager.unit_positions.erase(prev_hex)
-			GridManager.unit_positions[final_caster_hex] = caster_unit
-			caster_unit.current_hex = final_caster_hex
-			GridEvents.unit_moved.emit(caster_unit, prev_hex, final_caster_hex)
-			
-			var move_group := VisualCommandGroup.new()
-			
-			var cmd := VisualCommand.new()
-			cmd.type = VisualCommand.Type.FORCED_MOVEMENT
-			cmd.target = caster_unit
-			cmd.target_hex = final_caster_hex
-			
-			if skill.caster_movement == SkillData.CasterMovement.DASH_TO_TARGET:
-				cmd.duration = DASH_ANIM_DURATION
-				
-				var vfx_cmd := VisualCommand.new()
-				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-				vfx_cmd.string_payload = VfxConstants.DASH_TRAIL
-				vfx_cmd.target = caster_unit
-				vfx_cmd.target_hex = final_caster_hex
-				move_group.commands.append(vfx_cmd)
-				
-			elif skill.caster_movement == SkillData.CasterMovement.LEAP_TO_TARGET:
-				cmd.duration = LEAP_ANIM_DURATION
-				cmd.is_leap = true
-				
-				var vfx_cmd := VisualCommand.new()
-				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-				vfx_cmd.string_payload = VfxConstants.LEAP_TRAIL
-				vfx_cmd.target = caster_unit
-				vfx_cmd.target_hex = final_caster_hex
-				move_group.commands.append(vfx_cmd)
-				
-			elif skill.caster_movement == SkillData.CasterMovement.TELEPORT_TO_TARGET:
-				cmd.duration = 0.0
-				
-				var vfx_out := VisualCommand.new()
-				vfx_out.type = VisualCommand.Type.SPAWN_VFX
-				vfx_out.string_payload = VfxConstants.TELEPORT_OUT
-				vfx_out.target = caster_unit
-				move_group.commands.append(vfx_out)
-				
-				var vfx_in := VisualCommand.new()
-				vfx_in.type = VisualCommand.Type.SPAWN_VFX
-				vfx_in.string_payload = VfxConstants.TELEPORT_IN
-				vfx_in.target_hex = final_caster_hex
-				move_group.commands.append(vfx_in)
-				
-			move_group.commands.append(cmd)
-			sequence.append(move_group)
-	
-	# 2. Boucle du Multi-Hit AAA (Séquençage temporel)
-	var max_hits: int = max(1, skill.hit_count)
+	# Signal de fin. L'Interprète visuel déploie alors le Séquenceur.
+	CombatEvents.skill_execution_finished.emit()
 
+# PRIVATE FUNCTIONS
+func _resolve_movement(caster_unit: Unit, skill: SkillData, target_hex: Vector3i) -> void:
+	if skill.caster_movement == SkillData.CasterMovement.NONE:
+		return
+		
+	var final_caster_hex: Vector3i = caster_unit.current_hex
+	if skill.caster_movement == SkillData.CasterMovement.DASH_TO_TARGET:
+		final_caster_hex = GridDisplacement.get_dash_destination(caster_unit, target_hex)
+	elif skill.caster_movement == SkillData.CasterMovement.LEAP_TO_TARGET:
+		final_caster_hex = GridDisplacement.get_leap_destination(caster_unit, target_hex)
+	elif skill.caster_movement == SkillData.CasterMovement.TELEPORT_TO_TARGET:
+		final_caster_hex = GridDisplacement.get_teleport_destination(caster_unit, target_hex)
+		
+	if final_caster_hex != caster_unit.current_hex:
+		var prev_hex = caster_unit.current_hex
+		GridManager.unit_positions.erase(prev_hex)
+		GridManager.unit_positions[final_caster_hex] = caster_unit
+		caster_unit.current_hex = final_caster_hex
+		GridEvents.unit_moved.emit(caster_unit, prev_hex, final_caster_hex)
+
+func _resolve_hits(caster_unit: Unit, skill: SkillData, affected_hexes: Array[Vector3i]) -> void:
+	var max_hits: int = max(1, skill.hit_count)
+	var displaced_targets: Dictionary = {}
+	
 	for hit_index: int in range(max_hits):
 		var is_final_hit: bool = (hit_index == max_hits - 1)
-		var current_group := VisualCommandGroup.new()
-		captured_texts.clear() # Réinitialise l'interception pour cette frappe
-		var displaced_targets: Array[Unit] = []
 		
-		# AAA : Rythmique du Multi-Hit (On simule une animation pour créer le délai dans le Séquenceur)
-		var anim_cmd := VisualCommand.new()
-		anim_cmd.type = VisualCommand.Type.PLAY_ANIMATION
-		anim_cmd.target = caster
-		anim_cmd.string_payload = skill.animation_trigger
-		anim_cmd.duration = MULTI_HIT_DELAY # C'est ce délai qui cadence le "Bam... Bam..."
-		current_group.commands.append(anim_cmd)
+		# Rythme pour l'Interprète (Nouveau VisualCommandGroup)
+		CombatEvents.skill_hit_started.emit(hit_index)
 		
-		# Exécution Logique Instantanée (0 ms) pour la frappe actuelle
 		for hex: Vector3i in affected_hexes:
 			var target_node: Node3D = GridManager.unit_positions.get(hex)
 			if target_node and target_node is Unit:
 				var target_unit := target_node as Unit
 				var was_hit: bool = _resolve_single_target(caster_unit, target_unit, skill, is_final_hit)
 				if was_hit and is_final_hit and (skill.knockback_distance > 0 or skill.pull_distance > 0):
-					displaced_targets.append(target_unit)
+					displaced_targets[target_unit] = true
 					
-			# AAA : Déploiement de Surface et Traitement Élémentaire (Même sur des cases vides !)
+			# Traitement de surface et élémentaire
 			if is_final_hit:
 				if skill.spawned_surface and skill.spawned_surface.get("is_surface") == true:
 					GridManager.add_surface(hex, skill.spawned_surface)
 				ElementalSystem.process_elemental_impact(hex, skill.skill_element, caster_unit, skill)
-
-					
-		if is_final_hit:
-			# 3. Résolution Mathématique des Déplacements Forcés (0 ms)
-			var knockback_destinations: Dictionary = {}
-			for t: Unit in displaced_targets:
-				var final_hex: Vector3i = t.current_hex
-				if skill.knockback_distance > 0:
-					final_hex = GridDisplacement.get_knockback_destination(caster_unit, t, skill.knockback_distance)
-				elif skill.pull_distance > 0:
-					final_hex = GridDisplacement.get_pull_destination(caster_unit, t, skill.pull_distance)
-					
-				if final_hex != t.current_hex:
-					knockback_destinations[t] = final_hex
-					var prev_hex = t.current_hex
-					GridManager.unit_positions.erase(prev_hex)
-					GridManager.unit_positions[final_hex] = t
-					t.current_hex = final_hex
-					GridEvents.unit_moved.emit(t, prev_hex, final_hex)
-					
-			# Ajout des commandes de déplacement
-			for t: Unit in knockback_destinations:
-				var cmd := VisualCommand.new()
-				cmd.type = VisualCommand.Type.FORCED_MOVEMENT
-				cmd.target = t
-				cmd.target_hex = knockback_destinations[t]
-				current_group.commands.append(cmd)
 				
-				var vfx_cmd := VisualCommand.new()
-				vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-				vfx_cmd.string_payload = VfxConstants.DASH_TRAIL
-				vfx_cmd.target = t
-				vfx_cmd.target_hex = knockback_destinations[t]
-				current_group.commands.append(vfx_cmd)
-				
-		# Ajout des Textes et Particules capturés pour CETTE frappe
-		for cmd: VisualCommand in captured_texts:
-			current_group.commands.append(cmd)
-			
-		if not current_group.commands.is_empty():
-			sequence.append(current_group)
-			
-	# 3.5 Fin de l'Interception
-	CombatEvents.damage_dealt.disconnect(capture_dmg)
-	CombatEvents.healing_done.disconnect(capture_heal)
-	CombatEvents.shield_granted.disconnect(capture_shield)
-	CombatEvents.attack_dodged.disconnect(capture_dodge)
+		CombatEvents.skill_hit_resolved.emit(hit_index)
 		
-	# Déploiement du Séquenceur Éphémère (Mort programmée)
-	var sequencer = CombatSequencer.new()
-	add_child(sequencer)
-	sequencer.play_sequence(sequence, caster, skill, target_hex)
+	# Déplacements forcés (Knockback/Pull) après tous les coups
+	_resolve_knockbacks(caster_unit, skill, displaced_targets.keys())
 
-# PRIVATE FUNCTIONS
+func _resolve_knockbacks(caster_unit: Unit, skill: SkillData, displaced_targets: Array) -> void:
+	for t: Unit in displaced_targets:
+		var final_hex: Vector3i = t.current_hex
+		if skill.knockback_distance > 0:
+			final_hex = GridDisplacement.get_knockback_destination(caster_unit, t, skill.knockback_distance)
+		elif skill.pull_distance > 0:
+			final_hex = GridDisplacement.get_pull_destination(caster_unit, t, skill.pull_distance)
+			
+		if final_hex != t.current_hex:
+			var prev_hex = t.current_hex
+			GridManager.unit_positions.erase(prev_hex)
+			GridManager.unit_positions[final_hex] = t
+			t.current_hex = final_hex
+			GridEvents.unit_moved.emit(t, prev_hex, final_hex)
+
 func _resolve_single_target(caster: Unit, target: Unit, skill: SkillData, is_final_hit: bool = true) -> bool:
 	var is_dodged := false
 	

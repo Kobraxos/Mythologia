@@ -25,6 +25,16 @@ var _shield_tween: Tween
 var _is_initialized: bool = false
 var _health_initialized: bool = false
 
+# Smart UI States
+var _is_active_turn: bool = false
+var _is_hovered: bool = false
+var _is_damaged: bool = false
+var _has_status_effects: bool = false
+var _is_targeted: bool = false
+var _is_alt_pressed: bool = false
+var _visibility_tween: Tween
+var _current_target_alpha: float = -1.0
+
 # Status icons
 var _status_container: HBoxContainer = null
 var _status_icons: Dictionary = {} # StatusEffectData -> StatusIcon
@@ -87,6 +97,24 @@ func setup(unit: Unit) -> void:
 			{"name": "max_hp", "type": TYPE_INT}
 		])
 	CombatEvents.connect("visual_shield_updated", _on_visual_shield_updated)
+	
+	# Abonnements Smart UI
+	TurnEvents.active_unit_changed.connect(_on_active_unit_changed)
+	GridEvents.hex_hovered.connect(_on_hex_hovered)
+	GridEvents.timeline_portrait_hovered.connect(_on_timeline_portrait_hovered)
+	
+	if UIEvents.has_signal("tactical_view_toggled"):
+		UIEvents.tactical_view_toggled.connect(_on_tactical_view_toggled)
+		_is_alt_pressed = UIEvents.is_tactical_view_active
+		
+	if GridEvents.has_signal("aoe_targeted"):
+		GridEvents.aoe_targeted.connect(_on_targeted_hexes)
+	if GridEvents.has_signal("aoe_cleared"):
+		GridEvents.aoe_cleared.connect(_on_targeting_cleared)
+	if GridEvents.has_signal("skill_range_targeted"):
+		GridEvents.skill_range_targeted.connect(_on_targeted_hexes)
+	if GridEvents.has_signal("skill_range_cleared"):
+		GridEvents.skill_range_cleared.connect(_on_targeting_cleared)
 
 	# Enregistrement de l'événement Shield Break (pour VFX futurs)
 	if not CombatEvents.has_user_signal("visual_shield_broken"):
@@ -135,11 +163,30 @@ func _process(_delta: float) -> void:
 	# Calcul de la projection AAA avec offset ajustable pour les sprites 2D
 	var world_pos: Vector3 = _target.global_position + Vector3(0, height_offset, 0)
 	
-	# AAA : Si l'unité est cachée (ex: elle est morte), on cache l'overlay
+	var should_show: bool = _is_active_turn or _is_hovered or _is_damaged or _has_status_effects or _is_targeted or _is_alt_pressed
+	
+	# AAA : Si l'unité est cachée (ex: morte) ou derrière la caméra, on cache tout instantanément
 	if not _target.visible or _camera.is_position_behind(world_pos):
+		modulate.a = 0.0
 		visible = false
+		_current_target_alpha = 0.0
 	else:
-		visible = true
+		var target_alpha: float = 1.0 if should_show else 0.0
+		
+		if _current_target_alpha != target_alpha:
+			_current_target_alpha = target_alpha
+			
+			if _visibility_tween and _visibility_tween.is_valid():
+				_visibility_tween.kill()
+				
+			if target_alpha > 0.0:
+				visible = true # Assure la visibilité avant de fade in
+				
+			_visibility_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			_visibility_tween.tween_property(self, "modulate:a", target_alpha, 0.2)
+			
+			if target_alpha == 0.0:
+				_visibility_tween.tween_callback(func() -> void: visible = false)
 		
 		# AAA : Calcul de l'échelle par rapport à la profondeur (Depth Scaling)
 		var scale_factor: float = 1.0
@@ -208,6 +255,7 @@ func _update_shield_rect(current_shield: int, max_shield: int, current_hp: int, 
 		shield_rect.size.x = clampf(bar_width * shield_ratio, 0.0, bar_width * (1.0 - hp_ratio))
 		shield_rect.size.y = hp_bar.size.y
 		shield_rect.visible = (current_shield > 0 and shield_rect.size.x > 0.5)
+	_is_damaged = (current_hp < max_hp) or (current_shield < max_shield)
 
 func _deferred_init_shield() -> void:
 	if not is_instance_valid(_target) or not _target.health_component:
@@ -275,6 +323,8 @@ func _build_status_container() -> void:
 	# Affichage des statuts déjà actifs au moment du spawn de l'overlay
 	for active_s: Object in _target.status_receiver.get_active_statuses():
 		_add_status_icon(active_s)
+		
+	_has_status_effects = (_target.status_receiver.get_active_statuses().size() > 0)
 
 func _add_status_icon(active_status: Object) -> void:
 	if not active_status or not active_status.get("data"):
@@ -294,6 +344,7 @@ func _add_status_icon(active_status: Object) -> void:
 func _on_status_applied(status: StatusEffectData) -> void:
 	if not is_instance_valid(_target) or not _target.status_receiver:
 		return
+	_has_status_effects = true
 	# Retrouve l'ActiveStatus correspondant
 	for active_s: Object in _target.status_receiver.get_active_statuses():
 		if active_s.data == status:
@@ -304,6 +355,8 @@ func _on_status_removed(status: StatusEffectData) -> void:
 	if _status_icons.has(status):
 		_status_icons[status].queue_free()
 		_status_icons.erase(status)
+	if is_instance_valid(_target) and _target.status_receiver:
+		_has_status_effects = (_target.status_receiver.get_active_statuses().size() > 0)
 
 func _on_turn_ended(_unit: Unit) -> void:
 	# Rafraîchit le compteur de tous les statuts actifs
@@ -313,3 +366,29 @@ func _on_turn_ended(_unit: Unit) -> void:
 		var data: StatusEffectData = active_s.data
 		if _status_icons.has(data):
 			_status_icons[data].refresh_turns(active_s.remaining_turns)
+
+# ─────────────────────────────────────────────
+# SMART UI EVENTS
+# ─────────────────────────────────────────────
+
+func _on_active_unit_changed(unit: Unit) -> void:
+	_is_active_turn = (unit == _target)
+
+func _on_hex_hovered(hex_coord: Vector3i) -> void:
+	if is_instance_valid(_target):
+		_is_hovered = (hex_coord == _target.current_hex)
+
+func _on_timeline_portrait_hovered(unit: Unit, is_hovered: bool) -> void:
+	if unit == _target:
+		_is_hovered = is_hovered
+
+func _on_tactical_view_toggled(is_active: bool) -> void:
+	_is_alt_pressed = is_active
+
+func _on_targeted_hexes(hexes: Array[Vector3i]) -> void:
+	if is_instance_valid(_target):
+		_is_targeted = hexes.has(_target.current_hex)
+
+func _on_targeting_cleared() -> void:
+	_is_targeted = false
+

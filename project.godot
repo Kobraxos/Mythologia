@@ -20,10 +20,12 @@ GridEvents="*uid://8m3hpexdam5f"
 GridManager="*uid://dvydv8ux37s2x"
 TurnEvents="*res://core/autoloads/turn_events.gd"
 CombatEvents="*res://core/autoloads/combat_events.gd"
+UIEvents="*res://core/autoloads/ui_events.gd"
 GridTargeting="*uid://b05pqoo2ju852"
 GridDisplacement="*uid://twq6gtbrc0b7"
 VfxManager="*uid://cltc22ajwh2fb"
 ElementalSystem="*res://systems/combat/pipeline/elemental_system.gd"
+CombatVisualInterpreter="*res://systems/combat/sequencer/combat_visual_interpreter.gd"
 
 [display]
 

@@ -23,6 +23,9 @@ var unit_positions: Dictionary[Vector3i, Unit] = {}
 ## La hauteur maximale actuelle de la grille générée, utilisée par les systèmes mathématiques (ex: Raycasting).
 var max_elevation: int = 0
 
+## Cache d'élévation pour une résolution rapide 2D -> hauteur en O(1). Clé: Vector2i, Valeur: int
+var _elevation_map: Dictionary = {} # Dictionary[Vector2i, int]
+
 func _ready() -> void:
 	# Invalidation du cache dynamique via des lambdas (sécurité de signature AAA face aux Event Bus)
 	if CombatEvents.has_signal("unit_died"):
@@ -30,6 +33,9 @@ func _ready() -> void:
 		
 	if TurnEvents.has_signal("active_unit_changed"):
 		TurnEvents.active_unit_changed.connect(func(_unit): clear_pathfinding_cache())
+		
+	if GridEvents.has_signal("grid_topology_ready"):
+		GridEvents.grid_topology_ready.connect(_build_elevation_cache)
 		
 	# S'il existe un événement lié aux mouvements complétés, le relier ici :
 	if GridEvents.has_signal("movement_completed"):
@@ -39,10 +45,16 @@ func _ready() -> void:
 func clear_pathfinding_cache() -> void:
 	pathfinder.clear_dynamic_cache()
 
+func _build_elevation_cache(_topology: Dictionary) -> void:
+	_elevation_map.clear()
+	for hex: Vector3i in terrain_tiles.keys():
+		_elevation_map[Vector2i(hex.x, hex.y)] = hex.z
+
 func clear_terrain() -> void:
 	terrain_tiles.clear()
 	surface_tiles.clear()
 	surface_durations.clear()
+	_elevation_map.clear()
 	pathfinder = HexPathfinder.new()
 	max_elevation = 0
 
@@ -80,3 +92,10 @@ func get_active_terrain(hex: Vector3i) -> Resource: # Returns TerrainData
 	if terrain_tiles.has(hex):
 		return terrain_tiles[hex]
 	return null
+
+## Récupère l'élévation (Z) d'une coordonnée 2D en O(1).
+func get_elevation(q: int, r: int) -> int:
+	var hex2d := Vector2i(q, r)
+	if _elevation_map.has(hex2d):
+		return _elevation_map[hex2d]
+	return 0

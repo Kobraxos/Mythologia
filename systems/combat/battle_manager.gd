@@ -59,13 +59,9 @@ func _process_spawn_points() -> void:
 		var unique_stats: UnitStats = spawn_point.stats.duplicate() as UnitStats
 		unit.initialize(unique_stats, spawn_point.faction)
 		
-		var turn_manager_node: Node = get_tree().get_first_node_in_group("turn_manager")
-		if turn_manager_node and turn_manager_node.has_method("register_unit"):
-			turn_manager_node.register_unit(unit)
+		TurnEvents.register_unit_requested.emit(unit)
 
 ## Scanne la grille pour trouver la case (et surtout sa hauteur Z) correspondant à une coordonnée 2D.
 func _get_surface_hex(q: int, r: int) -> Vector3i:
-	for hex: Vector3i in GridManager.terrain_tiles.keys():
-		if hex.x == q and hex.y == r:
-			return hex
-	return Vector3i(q, r, 0) # Fallback de sécurité
+	var elevation: int = GridManager.get_elevation(q, r)
+	return Vector3i(q, r, elevation)

@@ -19,6 +19,7 @@ func _ready() -> void:
 	# Le manager écoute le mégaphone, il se fiche de savoir qui a pressé le bouton.
 	TurnEvents.turn_end_requested.connect(_on_turn_end_requested)
 	CombatEvents.unit_died.connect(_on_unit_died)
+	TurnEvents.register_unit_requested.connect(register_unit)
 	# Déclenchement Data-Driven de la bataille
 	CombatEvents.units_spawned.connect(start_battle)
 

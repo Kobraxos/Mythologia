@@ -4,6 +4,8 @@ extends Node
 ## "Les Yeux" du combat. Dépile les commandes visuelles à l'écran.
 ## Instancié à la volée par le CombatManager, s'auto-détruit à la fin.
 
+const LEAP_ARC_HEIGHT := 2.0
+
 func play_sequence(sequence: Array[VisualCommandGroup], caster: Node3D, skill: SkillData, target_hex: Vector3i) -> void:
 	for group: VisualCommandGroup in sequence:
 		await _play_group(group)
@@ -33,7 +35,7 @@ func _play_group(group: VisualCommandGroup) -> void:
 						tw.tween_property(unit, "position:z", pos.z, cmd.duration).set_trans(Tween.TRANS_LINEAR)
 						
 						# Arc parabolique : monte puis descend
-						var peak_y: float = maxf(unit.position.y, pos.y) + 2.0 # +2 mètres de hauteur au-dessus du plus haut
+						var peak_y: float = maxf(unit.position.y, pos.y) + LEAP_ARC_HEIGHT
 						var up_tw := unit.create_tween()
 						up_tw.tween_property(unit, "position:y", peak_y, cmd.duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 						up_tw.tween_property(unit, "position:y", pos.y, cmd.duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)

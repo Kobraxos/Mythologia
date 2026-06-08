@@ -2,6 +2,10 @@ extends Node
 
 # SIGNALS
 @warning_ignore("unused_signal")
+## Demande l'enregistrement d'une unité dans le gestionnaire de tour.
+signal register_unit_requested(unit: Unit)
+
+@warning_ignore("unused_signal")
 ## Émis quand le combat est officiellement prêt à démarrer.
 signal battle_started()
 

@@ -9,6 +9,22 @@ signal skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vector
 ## Émis par le CombatManager une fois que le sort a fini d'être résolu (animations, dégâts appliqués).
 signal skill_resolved(caster: Node3D, skill: SkillData, target_hex: Vector3i)
 
+@warning_ignore("unused_signal")
+## Émis par le CombatManager au début de la résolution logique (O ms).
+signal skill_execution_started(caster: Node3D, skill: SkillData, target_hex: Vector3i)
+
+@warning_ignore("unused_signal")
+## Émis par le CombatManager au début d'une itération de hit.
+signal skill_hit_started(hit_index: int)
+
+@warning_ignore("unused_signal")
+## Émis par le CombatManager à la fin d'une itération de hit.
+signal skill_hit_resolved(hit_index: int)
+
+@warning_ignore("unused_signal")
+## Émis par le CombatManager à la fin totale de sa résolution mathématique.
+signal skill_execution_finished()
+
 enum FloatingTextType { DAMAGE, CRIT, HEAL, DODGE, SHIELD, IMMUNE, MISS }
 
 @warning_ignore("unused_signal")
