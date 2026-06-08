@@ -38,11 +38,21 @@ func setup(skills: Array) -> void:
 
 func clear() -> void:
 	for child: Node in get_children():
+		child.hide()
 		child.queue_free()
 	visible = false
 
 func update_usable_skills(available_ap: int, cooldowns: Dictionary = {}) -> void:
 	for child: Node in get_children():
 		if child is SkillButton:
+			if child.is_queued_for_deletion():
+				continue
 			var current_cd: int = cooldowns.get(child._skill, 0) if child._skill else 0
 			child.check_usability(available_ap, current_cd)
+
+func set_all_disabled(is_disabled: bool) -> void:
+	for child: Node in get_children():
+		if child is SkillButton:
+			if child.is_queued_for_deletion():
+				continue
+			child.disabled = is_disabled

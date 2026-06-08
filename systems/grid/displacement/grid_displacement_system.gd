@@ -69,7 +69,7 @@ func _process_displacement(origin_unit: Unit, target_unit: Unit, distance: int, 
 
 func _resolve_caster_destination(caster: Unit, target_hex: Vector3i, check_path: bool) -> Vector3i:
 	# AAA 1 : Si la case cible est libre (ex: ciblage au sol), on atterrit dessus directement.
-	var target_z := GridManager.get_hex_elevation(target_hex)
+	var target_z: int = GridManager.get_hex_elevation(target_hex)
 	if target_z != GridManager.INVALID_ELEVATION:
 		var target_3d := Vector3i(target_hex.x, target_hex.y, target_z)
 		var is_free: bool = not GridManager.unit_positions.has(target_3d) or GridManager.unit_positions[target_3d] == caster
@@ -120,7 +120,7 @@ func _check_dash_path(origin_hex: Vector3i, target_hex: Vector3i) -> bool:
 			
 	var current_hex_3d := origin_hex
 	for p_2d: Vector2i in line:
-		var p_z := GridManager.get_hex_elevation(Vector3i(p_2d.x, p_2d.y, 0))
+		var p_z: int = GridManager.get_hex_elevation(Vector3i(p_2d.x, p_2d.y, 0))
 		if p_z == GridManager.INVALID_ELEVATION or abs(p_z - current_hex_3d.z) > MAX_ELEVATION_DIFF:
 			return false
 		

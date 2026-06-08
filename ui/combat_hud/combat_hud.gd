@@ -24,17 +24,24 @@ extends Control
 var _tracked_economy: ActionEconomyComponent
 var _tracked_caster: SkillCasterComponent
 var _current_cooldowns: Dictionary = {}
+var _current_active_unit: Unit = null
+var _selected_unit: Unit = null
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
 	GridEvents.unit_selected.connect(_on_unit_selected)
 	GridEvents.unit_deselected.connect(_on_unit_deselected)
+	if TurnEvents.has_signal("active_unit_changed"):
+		TurnEvents.active_unit_changed.connect(_on_active_unit_changed)
+	
 	if action_bar:
 		action_bar.clear()
 	if move_button:
+		move_button.focus_mode = Control.FOCUS_NONE
 		move_button.visible = false
 		move_button.pressed.connect(_on_move_button_pressed)
 	if end_turn_button:
+		end_turn_button.focus_mode = Control.FOCUS_NONE
 		end_turn_button.visible = false
 		end_turn_button.pressed.connect(_on_end_turn_button_pressed)
 
@@ -50,9 +57,12 @@ func _on_unit_selected(unit: Unit) -> void:
 
 	_untrack_action_economy()
 	_untrack_skill_caster()
+	_selected_unit = null
 
 	if not is_instance_valid(unit):
 		return
+
+	_selected_unit = unit
 
 	# 1. Habillage Dynamique (Data-Driven Faction UI)
 	self.theme = default_theme
@@ -83,9 +93,12 @@ func _on_unit_selected(unit: Unit) -> void:
 	var skills: Array = unit.skill_caster.get("_known_skills") if "_known_skills" in unit.skill_caster else []
 	if not skills.is_empty() and action_bar:
 		action_bar.setup(skills)
-		_update_action_bar_usability()
+
+	# Initialisation de l'état interactif global (Boutons grisés si ce n'est pas le tour de l'unité)
+	_update_interactivity()
 
 func _on_unit_deselected() -> void:
+	_selected_unit = null
 	if action_bar:
 		action_bar.clear()
 	_untrack_action_economy()
@@ -137,12 +150,12 @@ func _update_action_bar_usability() -> void:
 func _on_ap_changed(_current: int, _max_val: int) -> void:
 	# Le ResourcePanel se met à jour seul via ses propres connexions.
 	# On garde ce handler uniquement pour mettre à jour l'usabilité de la barre d'actions.
-	_update_action_bar_usability()
+	_update_interactivity()
 
 func _on_mp_changed(_current: int, _max_val: int) -> void:
 	# Le ResourcePanel se met à jour seul via ses propres connexions.
 	# On garde ce handler uniquement pour mettre à jour l'usabilité du bouton de déplacement.
-	_update_move_button_usability()
+	_update_interactivity()
 
 func _update_move_button_usability() -> void:
 	if move_button and is_instance_valid(_tracked_economy):
@@ -153,3 +166,28 @@ func _on_move_button_pressed() -> void:
 
 func _on_end_turn_button_pressed() -> void:
 	TurnEvents.turn_end_requested.emit()
+
+func _on_active_unit_changed(unit: Unit) -> void:
+	_current_active_unit = unit
+	_update_interactivity()
+
+func _update_interactivity() -> void:
+	var is_active_turn: bool = false
+	if is_instance_valid(_selected_unit) and is_instance_valid(_current_active_unit):
+		is_active_turn = (_selected_unit == _current_active_unit)
+	
+	if move_button:
+		if not is_active_turn:
+			move_button.disabled = true
+		else:
+			_update_move_button_usability()
+			
+	if end_turn_button:
+		end_turn_button.disabled = not is_active_turn
+		
+	if action_bar:
+		if not is_active_turn:
+			if action_bar.has_method("set_all_disabled"):
+				action_bar.set_all_disabled(true)
+		else:
+			_update_action_bar_usability()

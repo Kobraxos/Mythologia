@@ -9,6 +9,7 @@ var _base_text: String = ""
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
+	focus_mode = Control.FOCUS_NONE
 	pressed.connect(_on_pressed)
 
 # PUBLIC FUNCTIONS
