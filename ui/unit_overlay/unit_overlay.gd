@@ -105,7 +105,7 @@ func setup(unit: Unit) -> void:
 	
 	if UIEvents.has_signal("tactical_view_toggled"):
 		UIEvents.tactical_view_toggled.connect(_on_tactical_view_toggled)
-		_is_alt_pressed = UIEvents.is_tactical_view_active
+		_is_alt_pressed = Input.is_action_pressed("tactical_highlight_info")
 		
 	if GridEvents.has_signal("aoe_targeted"):
 		GridEvents.aoe_targeted.connect(_on_targeted_hexes)
@@ -391,4 +391,3 @@ func _on_targeted_hexes(hexes: Array[Vector3i]) -> void:
 
 func _on_targeting_cleared() -> void:
 	_is_targeted = false
-

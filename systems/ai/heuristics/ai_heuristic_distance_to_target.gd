@@ -15,7 +15,7 @@ func evaluate(context: AIContext) -> float:
 		return 0.0
 		
 	var start_hex: Vector3i = context.current_hex
-	var closest_enemy: Unit = AIUtils.get_closest_enemy(start_hex, unit.faction)
+	var closest_enemy: Unit = AIUtils.get_closest_enemy(start_hex, unit.faction, GridManager.unit_positions)
 	
 	if not closest_enemy:
 		return 0.0

@@ -93,12 +93,12 @@ func _find_best_adjacent_hex(caster: Unit, target_hex: Vector3i, check_path: boo
 func _check_dash_path(origin_hex: Vector3i, target_hex: Vector3i) -> bool:
 	var origin_2d := Vector2i(origin_hex.x, origin_hex.y)
 	var dest_2d := Vector2i(target_hex.x, target_hex.y)
-	var dist := HexAoE.hex_distance_2d(origin_2d, dest_2d)
+	var dist := HexMath.distance_2d_flat(origin_2d, dest_2d)
 	var line: Array[Vector2i] = []
 	
 	if dist > 0:
 		for i: int in range(1, dist + 1):
-			line.append(HexAoE.cubic_to_axial(HexAoE.axial_to_cubic(origin_2d).lerp(HexAoE.axial_to_cubic(dest_2d), float(i) / float(dist))))
+			line.append(HexMath.cubic_to_axial(HexMath.axial_to_cubic(origin_2d).lerp(HexMath.axial_to_cubic(dest_2d), float(i) / float(dist))))
 			
 	var current_hex_3d := origin_hex
 	for p_2d in line:
@@ -119,18 +119,18 @@ func _check_dash_path(origin_hex: Vector3i, target_hex: Vector3i) -> bool:
 func _get_knockback_trajectory_2d(origin: Vector2i, target: Vector2i, distance: int) -> Array[Vector2i]:
 	var line: Array[Vector2i] = []
 	if origin == target or distance <= 0: return line
-	var dist_to_target := HexAoE.hex_distance_2d(origin, target)
+	var dist_to_target := HexMath.distance_2d_flat(origin, target)
 	for i: int in range(1, distance + 1):
-		line.append(HexAoE.cubic_to_axial(HexAoE.axial_to_cubic(origin).lerp(HexAoE.axial_to_cubic(target), float(dist_to_target + i) / float(dist_to_target))))
+		line.append(HexMath.cubic_to_axial(HexMath.axial_to_cubic(origin).lerp(HexMath.axial_to_cubic(target), float(dist_to_target + i) / float(dist_to_target))))
 	return line
 
 func _get_pull_trajectory_2d(origin: Vector2i, target: Vector2i, distance: int) -> Array[Vector2i]:
 	var line: Array[Vector2i] = []
 	if origin == target or distance <= 0: return line
-	var dist_to_target := HexAoE.hex_distance_2d(origin, target)
+	var dist_to_target := HexMath.distance_2d_flat(origin, target)
 	var actual_distance: int = min(distance, dist_to_target - 1)
 	for i: int in range(1, actual_distance + 1):
-		line.append(HexAoE.cubic_to_axial(HexAoE.axial_to_cubic(target).lerp(HexAoE.axial_to_cubic(origin), float(i) / float(dist_to_target))))
+		line.append(HexMath.cubic_to_axial(HexMath.axial_to_cubic(target).lerp(HexMath.axial_to_cubic(origin), float(i) / float(dist_to_target))))
 	return line
 
 func _get_surface_elevation(hex_2d: Vector2i) -> int:

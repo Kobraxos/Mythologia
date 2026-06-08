@@ -50,7 +50,7 @@ func _play_group(group: VisualCommandGroup) -> void:
 				max_duration = max(max_duration, cmd.duration)
 				
 			VisualCommand.Type.DAMAGE_NUMBER:
-				CombatEvents.visual_text_requested.emit(cmd.target, cmd.int_payload, cmd.text_type as CombatEvents.FloatingTextType, cmd.element_payload as CoreEnums.Element)
+				CombatEvents.visual_text_requested.emit(cmd.target, cmd.int_payload, cmd.text_type as CoreEnums.FloatingTextType, cmd.element_payload as CoreEnums.Element)
 
 			VisualCommand.Type.UPDATE_HEALTH_BAR:
 				var max_hp: int = 1

@@ -27,6 +27,7 @@
 [ext_resource type="Resource" uid="uid://satyr" path="res://data/units/monsters/archer_satyr.tres" id="18_archer"]
 [ext_resource type="Resource" uid="uid://mcyclops" path="res://data/units/monsters/mage_cyclops.tres" id="19_mage"]
 [ext_resource type="Resource" uid="uid://wminotaur" path="res://data/units/monsters/warrior_minotaur.tres" id="20_warrior"]
+[ext_resource type="Script" path="res://systems/combat/player_input_controller.gd" id="21_pic"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.05
@@ -65,6 +66,9 @@ script = ExtResource("10_ly45u")
 
 [node name="CombatManager" type="Node" parent="." unique_id=969117626]
 script = ExtResource("11_yqcj1")
+
+[node name="PlayerInputController" type="Node" parent="CombatManager"]
+script = ExtResource("21_pic")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1610242160]
 

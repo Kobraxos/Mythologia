@@ -36,3 +36,14 @@ enum VfxType {
 	TELEPORT_OUT,
 	TELEPORT_IN
 }
+
+## Types de textes flottants pour le retour visuel.
+enum FloatingTextType {
+	DAMAGE,
+	CRIT,
+	HEAL,
+	DODGE,
+	SHIELD,
+	IMMUNE,
+	MISS
+}

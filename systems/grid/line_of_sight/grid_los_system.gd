@@ -136,18 +136,18 @@ func get_visible_hexes(origin: Vector3i, radius: int, ignored_hex: Vector3i = IN
 func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i, ignored_hex: Vector3i = INVALID_HEX) -> bool:
 	var start_2d := Vector2i(start_hex.x, start_hex.y)
 	var target_2d := Vector2i(target_hex.x, target_hex.y)
-	var dist: int = _hex_distance_2d(start_2d, target_2d)
+	var dist: int = HexMath.distance_2d_flat(start_2d, target_2d)
 
 	if dist <= 1:
 		return true
 
-	var start_cube := _axial_to_cubic(start_2d)
-	var target_cube := _axial_to_cubic(target_2d)
+	var start_cube := HexMath.axial_to_cubic(start_2d)
+	var target_cube := HexMath.axial_to_cubic(target_2d)
 
 	for i: int in range(1, dist):
 		var t: float = float(i) / float(dist)
 		var current_cube := start_cube.lerp(target_cube, t)
-		var current_2d := _cubic_to_axial(current_cube)
+		var current_2d := HexMath.cubic_to_axial(current_cube)
 		
 		var current_z: int = _get_elevation(current_2d)
 		if current_z == INVALID_ELEVATION:
@@ -237,14 +237,3 @@ func _get_elevation(hex_2d: Vector2i) -> int:
 
 func _has_dynamic_blocker(hex_3d: Vector3i) -> bool:
 	return _dynamic_blockers.has(hex_3d)
-
-func _hex_distance_2d(a: Vector2i, b: Vector2i) -> int:
-	return (abs(a.x - b.x) + abs(a.x + a.y - b.x - b.y) + abs(a.y - b.y)) / 2
-func _axial_to_cubic(hex: Vector2i) -> Vector3:
-	return Vector3(float(hex.x), float(hex.y), float(-hex.x - hex.y))
-func _cubic_to_axial(cube: Vector3) -> Vector2i:
-	var q: int = roundi(cube.x); var r: int = roundi(cube.y); var s: int = roundi(cube.z)
-	var q_diff: float = absf(float(q) - cube.x); var r_diff: float = absf(float(r) - cube.y); var s_diff: float = absf(float(s) - cube.z)
-	if q_diff > r_diff and q_diff > s_diff: q = -r - s
-	elif r_diff > s_diff: r = -q - s
-	return Vector2i(q, r)

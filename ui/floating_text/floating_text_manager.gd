@@ -65,7 +65,7 @@ func _get_color_for_element(element: CoreEnums.Element) -> Color:
 		_: return default_damage_color
 
 # SIGNAL HANDLERS
-func _on_visual_text_requested(target: Node3D, amount: int, type: CombatEvents.FloatingTextType, element: CoreEnums.Element) -> void:
+func _on_visual_text_requested(target: Node3D, amount: int, type: CoreEnums.FloatingTextType, element: CoreEnums.Element) -> void:
 	var color: Color
 	var prefix: String = ""
 	var text_val: String = ""
@@ -73,30 +73,30 @@ func _on_visual_text_requested(target: Node3D, amount: int, type: CombatEvents.F
 	var is_dodge: bool = false
 	
 	match type:
-		CombatEvents.FloatingTextType.DODGE:
+		CoreEnums.FloatingTextType.DODGE:
 			color = dodge_color
 			is_dodge = true
 			text_val = "Esquive"
-		CombatEvents.FloatingTextType.MISS:
+		CoreEnums.FloatingTextType.MISS:
 			color = dodge_color
 			text_val = "Raté"
-		CombatEvents.FloatingTextType.IMMUNE:
+		CoreEnums.FloatingTextType.IMMUNE:
 			color = dodge_color
 			text_val = "Immunisé"
-		CombatEvents.FloatingTextType.SHIELD:
+		CoreEnums.FloatingTextType.SHIELD:
 			color = shield_color
 			prefix = "+Aegis "
 			text_val = prefix + str(amount)
-		CombatEvents.FloatingTextType.HEAL:
+		CoreEnums.FloatingTextType.HEAL:
 			color = heal_color
 			prefix = "+"
 			text_val = prefix + str(amount)
-		CombatEvents.FloatingTextType.CRIT:
+		CoreEnums.FloatingTextType.CRIT:
 			color = crit_color
 			is_crit = true
 			prefix = "Crit! "
 			text_val = prefix + str(amount)
-		CombatEvents.FloatingTextType.DAMAGE:
+		CoreEnums.FloatingTextType.DAMAGE:
 			color = _get_color_for_element(element)
 			text_val = str(amount)
 			

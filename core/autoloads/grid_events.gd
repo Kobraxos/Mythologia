@@ -68,7 +68,7 @@ signal request_grid_generation()
 
 @warning_ignore("unused_signal")
 ## Émis lorsqu'une unité a terminé un déplacement. Sert de déclencheur pour les systèmes Data-Oriented.
-signal unit_moved(unit: Node, from_hex: Vector3i, to_hex: Vector3i)
+signal unit_moved(unit: Unit, from_hex: Vector3i, to_hex: Vector3i)
 
 @warning_ignore("unused_signal")
 ## Émis lorsqu'une surface est posée sur la grille (ex: par une compétence ou réaction).

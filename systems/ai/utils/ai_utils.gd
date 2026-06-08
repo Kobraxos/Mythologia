@@ -23,16 +23,12 @@ static func is_valid_alignment(caster: Unit, target: Unit, alignment: SkillData.
 	return false
 
 ## Retourne l'unité ennemie la plus proche de la position de départ.
-static func get_closest_enemy(start_hex: Vector3i, caster_faction: Unit.Faction) -> Unit:
+static func get_closest_enemy(start_hex: Vector3i, caster_faction: Unit.Faction, unit_positions: Dictionary[Vector3i, Unit]) -> Unit:
 	var best_target: Unit = null
 	var min_dist: int = MAX_DISTANCE
 	
-	for hex: Vector3i in GridManager.unit_positions:
-		var target_node: Node3D = GridManager.unit_positions.get(hex)
-		if not target_node or not target_node is Unit:
-			continue
-			
-		var target_unit := target_node as Unit
+	for hex: Vector3i in unit_positions:
+		var target_unit: Unit = unit_positions[hex]
 		if not is_instance_valid(target_unit) or target_unit.faction == caster_faction:
 			continue
 			

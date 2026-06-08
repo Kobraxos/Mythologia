@@ -12,9 +12,9 @@ var pathfinder: HexPathfinder = HexPathfinder.new()
 
 @export_category("Registries")
 ## Registre des données de terrain de base. Clé: Vector3i (Axial+Z), Valeur: TerrainData
-var terrain_tiles: Dictionary = {} # Dictionary[Vector3i, TerrainData]
+var terrain_tiles: Dictionary[Vector3i, TerrainData] = {}
 ## Registre des surfaces volatiles (couche supérieure). Clé: Vector3i, Valeur: TerrainData
-var surface_tiles: Dictionary = {} # Dictionary[Vector3i, TerrainData]
+var surface_tiles: Dictionary[Vector3i, TerrainData] = {}
 ## Registre de la durée de vie restante des surfaces volatiles. Clé: Vector3i, Valeur: int (tours restants)
 var surface_durations: Dictionary[Vector3i, int] = {}
 ## Registre spatial des unités. Clé: Vector3i, Valeur: Unit
@@ -24,22 +24,22 @@ var unit_positions: Dictionary[Vector3i, Unit] = {}
 var max_elevation: int = 0
 
 ## Cache d'élévation pour une résolution rapide 2D -> hauteur en O(1). Clé: Vector2i, Valeur: int
-var _elevation_map: Dictionary = {} # Dictionary[Vector2i, int]
+var _elevation_map: Dictionary[Vector2i, int] = {}
 
 func _ready() -> void:
 	# Invalidation du cache dynamique via des lambdas (sécurité de signature AAA face aux Event Bus)
 	if CombatEvents.has_signal("unit_died"):
-		CombatEvents.unit_died.connect(func(_unit): clear_pathfinding_cache())
+		CombatEvents.unit_died.connect(func(_unit: Unit) -> void: clear_pathfinding_cache())
 		
 	if TurnEvents.has_signal("active_unit_changed"):
-		TurnEvents.active_unit_changed.connect(func(_unit): clear_pathfinding_cache())
+		TurnEvents.active_unit_changed.connect(func(_unit: Unit) -> void: clear_pathfinding_cache())
 		
 	if GridEvents.has_signal("grid_topology_ready"):
 		GridEvents.grid_topology_ready.connect(_build_elevation_cache)
 		
 	# S'il existe un événement lié aux mouvements complétés, le relier ici :
-	if GridEvents.has_signal("movement_completed"):
-		GridEvents.movement_completed.connect(func(_unit): clear_pathfinding_cache())
+	if GridEvents.has_signal("unit_moved"):
+		GridEvents.unit_moved.connect(func(_unit: Unit, _from_hex: Vector3i, _to_hex: Vector3i) -> void: clear_pathfinding_cache())
 
 ## Purgation manuelle à déclencher après toute altération de l'état du plateau (mouvement, mort, spawn)
 func clear_pathfinding_cache() -> void:
@@ -64,8 +64,8 @@ func clear_units() -> void:
 # --- SURFACE CRUD ---
 
 ## Ajoute une surface sur l'hexagone. Remplace la surface existante.
-func add_surface(hex: Vector3i, surface_data: Resource) -> void: # surface_data is TerrainData
-	if not surface_data.get("is_surface"):
+func add_surface(hex: Vector3i, surface_data: TerrainData) -> void:
+	if not surface_data.is_surface:
 		push_error("GridManager: Tentative d'ajouter un TerrainData non marqué comme is_surface !")
 		return
 		
@@ -74,7 +74,7 @@ func add_surface(hex: Vector3i, surface_data: Resource) -> void: # surface_data 
 		GridEvents.surface_removed.emit(hex)
 		
 	surface_tiles[hex] = surface_data
-	surface_durations[hex] = surface_data.get("duration_turns")
+	surface_durations[hex] = surface_data.duration_turns
 	
 	GridEvents.surface_spawned.emit(hex, surface_data)
 
@@ -86,7 +86,7 @@ func remove_surface(hex: Vector3i) -> void:
 		GridEvents.surface_removed.emit(hex)
 
 ## Retourne le terrain actif sur la case (la Surface prioritairement, sinon le Terrain de base).
-func get_active_terrain(hex: Vector3i) -> Resource: # Returns TerrainData
+func get_active_terrain(hex: Vector3i) -> TerrainData:
 	if surface_tiles.has(hex):
 		return surface_tiles[hex]
 	if terrain_tiles.has(hex):

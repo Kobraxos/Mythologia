@@ -7,7 +7,7 @@ func execute(context: AIContext) -> void:
 	var start_hex: Vector3i = context.current_hex
 	
 	# 1. Recherche de la cible ennemie la plus proche
-	var best_target: Unit = AIUtils.get_closest_enemy(start_hex, unit.faction)
+	var best_target: Unit = AIUtils.get_closest_enemy(start_hex, unit.faction, GridManager.unit_positions)
 			
 	if not best_target or not GridManager.pathfinder:
 		_end_action()

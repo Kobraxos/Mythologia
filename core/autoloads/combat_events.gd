@@ -25,7 +25,6 @@ signal skill_hit_resolved(hit_index: int)
 ## Émis par le CombatManager à la fin totale de sa résolution mathématique.
 signal skill_execution_finished()
 
-enum FloatingTextType { DAMAGE, CRIT, HEAL, DODGE, SHIELD, IMMUNE, MISS }
 
 @warning_ignore("unused_signal")
 ## Émis quand des dégâts sont infligés (pour l'UI et les Floating Texts).
@@ -33,7 +32,7 @@ signal damage_dealt(target: Node3D, amount: int, is_crit: bool)
 
 @warning_ignore("unused_signal")
 ## Émis pour déclencher un texte flottant de manière centralisée et typée AAA.
-signal visual_text_requested(target: Node3D, amount: int, type: FloatingTextType, element: CoreEnums.Element)
+signal visual_text_requested(target: Node3D, amount: int, type: CoreEnums.FloatingTextType, element: CoreEnums.Element)
 
 @warning_ignore("unused_signal")
 ## Émis quand des soins sont prodigués.

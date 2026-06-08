@@ -41,17 +41,17 @@ static func get_circle_2d(center: Vector2i, radius: int) -> Array[Vector2i]:
 
 static func get_line_2d(start: Vector2i, target: Vector2i, length: int) -> Array[Vector2i]:
 	var line: Array[Vector2i] = []
-	var dist: int = hex_distance_2d(start, target)
+	var dist: int = HexMath.distance_2d_flat(start, target)
 	if dist == 0:
 		return [start]
 
-	var start_cube := axial_to_cubic(start)
-	var target_cube := axial_to_cubic(target)
+	var start_cube := HexMath.axial_to_cubic(start)
+	var target_cube := HexMath.axial_to_cubic(target)
 
 	for i: int in range(1, length + 1):
 		var t: float = float(i) / float(dist)
 		var current_cube := start_cube.lerp(target_cube, t)
-		line.append(cubic_to_axial(current_cube))
+		line.append(HexMath.cubic_to_axial(current_cube))
 	return line
 
 static func get_cone_2d(start: Vector2i, target: Vector2i, length: int) -> Array[Vector2i]:
@@ -59,31 +59,17 @@ static func get_cone_2d(start: Vector2i, target: Vector2i, length: int) -> Array
 	if start == target:
 		return []
 		
-	var start_cube := axial_to_cubic(start)
-	var target_cube := axial_to_cubic(target)
+	var start_cube := HexMath.axial_to_cubic(start)
+	var target_cube := HexMath.axial_to_cubic(target)
 	var dir_cube := (target_cube - start_cube).normalized()
 
 	for q: int in range(-length, length + 1):
 		for r: int in range(max(-length, -q - length), min(length, -q + length) + 1):
 			if q == 0 and r == 0: continue
 			var current_2d := Vector2i(start.x + q, start.y + r)
-			var current_cube := axial_to_cubic(current_2d)
+			var current_cube := HexMath.axial_to_cubic(current_2d)
 			var current_dir := (current_cube - start_cube).normalized()
 			
 			if dir_cube.dot(current_dir) >= 0.5:
 				cone.append(current_2d)
 	return cone
-
-# UTILS MATHÉMATIQUES PURS
-static func hex_distance_2d(a: Vector2i, b: Vector2i) -> int:
-	return (abs(a.x - b.x) + abs(a.x + a.y - b.x - b.y) + abs(a.y - b.y)) / 2
-
-static func axial_to_cubic(hex: Vector2i) -> Vector3:
-	return Vector3(float(hex.x), float(hex.y), float(-hex.x - hex.y))
-
-static func cubic_to_axial(cube: Vector3) -> Vector2i:
-	var q: int = roundi(cube.x); var r: int = roundi(cube.y); var s: int = roundi(cube.z)
-	var q_diff: float = absf(float(q) - cube.x); var r_diff: float = absf(float(r) - cube.y); var s_diff: float = absf(float(s) - cube.z)
-	if q_diff > r_diff and q_diff > s_diff: q = -r - s
-	elif r_diff > s_diff: r = -q - s
-	return Vector2i(q, r)
