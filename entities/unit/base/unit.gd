@@ -105,6 +105,12 @@ func start_turn() -> void:
 	if action_economy:
 		action_economy.start_turn()
 		
+	# Vérification du Stun après l'application des statuts initiaux
+	if status_receiver and status_receiver.is_stunned():
+		TurnEvents.turn_skipped_stun.emit(self)
+		TurnEvents.turn_end_requested.emit.call_deferred()
+		return
+		
 	# AAA VFX : L'anneau s'excite
 	if faction_ring and faction_ring.material_override:
 		var mat := faction_ring.material_override as ShaderMaterial

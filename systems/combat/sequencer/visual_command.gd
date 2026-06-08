@@ -23,4 +23,5 @@ var direction_payload: Vector3
 var element_payload: int = 0
 var text_type: int = 0 # CombatEvents.FloatingTextType
 var is_leap: bool = false
+var vfx_type: int = 0 # CoreEnums.VfxType
 

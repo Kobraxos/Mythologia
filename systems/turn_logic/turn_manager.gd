@@ -79,20 +79,6 @@ func next_turn() -> void:
 
 		active.start_turn()
 
-		# ─── AAA : Gestion du Stun (Étourdissement) ───────────────────────────────
-		# L'unité prend brièvement possession de son tour (active_unit_changed émis),
-		# le signal turn_skipped_stun déclenche le feedback visuel (texte flottant, UI),
-		# puis après un délai, le tour passe automatiquement.
-		if active.status_receiver and active.status_receiver.is_stunned():
-			TurnEvents.active_unit_changed.emit(active)
-			TurnEvents.turn_skipped_stun.emit(active)
-			_generate_and_emit_timeline()
-			await get_tree().create_timer(1.0).timeout
-			active.end_turn()
-			TurnEvents.turn_ended.emit(active)
-			next_turn()
-			return
-
 		TurnEvents.active_unit_changed.emit(active)
 		break
 

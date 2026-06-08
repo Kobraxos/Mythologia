@@ -94,7 +94,7 @@ func _on_damage_dealt(target: Node3D, amount: int, is_crit: bool) -> void:
 	
 	var vfx_cmd := VisualCommand.new()
 	vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-	vfx_cmd.string_payload = VfxConstants.IMPACT_HIT if VfxConstants else "impact_hit"
+	vfx_cmd.vfx_type = CoreEnums.VfxType.IMPACT_HIT
 	vfx_cmd.target = target
 	vfx_cmd.source = _caster
 	_current_group.commands.append(vfx_cmd)
@@ -119,7 +119,7 @@ func _on_healing_done(target: Node3D, amount: int) -> void:
 	
 	var vfx_cmd := VisualCommand.new()
 	vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-	vfx_cmd.string_payload = VfxConstants.HEAL_EFFECT if VfxConstants else "heal_effect"
+	vfx_cmd.vfx_type = CoreEnums.VfxType.HEAL_EFFECT
 	vfx_cmd.target = target
 	vfx_cmd.direction_payload = Vector3.UP
 	_current_group.commands.append(vfx_cmd)
@@ -144,7 +144,7 @@ func _on_shield_granted(target: Node3D, amount: int) -> void:
 	
 	var vfx_cmd := VisualCommand.new()
 	vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-	vfx_cmd.string_payload = VfxConstants.SHIELD_GRANTED if VfxConstants else "shield_granted"
+	vfx_cmd.vfx_type = CoreEnums.VfxType.SHIELD_GRANTED
 	vfx_cmd.target = target
 	vfx_cmd.direction_payload = Vector3.UP
 	_current_group.commands.append(vfx_cmd)
@@ -160,7 +160,7 @@ func _on_attack_dodged(target: Node3D) -> void:
 	
 	var vfx_cmd := VisualCommand.new()
 	vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-	vfx_cmd.string_payload = VfxConstants.DODGE_DUST if VfxConstants else "dodge_dust"
+	vfx_cmd.vfx_type = CoreEnums.VfxType.DODGE_DUST
 	vfx_cmd.target = target
 	_current_group.commands.append(vfx_cmd)
 
@@ -176,30 +176,30 @@ func _on_unit_moved(unit: Node, _from_hex: Vector3i, to_hex: Vector3i) -> void:
 	if unit == _caster:
 		if _skill.caster_movement == SkillData.CasterMovement.DASH_TO_TARGET:
 			cmd.duration = DASH_ANIM_DURATION
-			_add_movement_vfx(unit as Node3D, to_hex, VfxConstants.DASH_TRAIL if VfxConstants else "dash_trail")
+			_add_movement_vfx(unit as Node3D, to_hex, CoreEnums.VfxType.DASH_TRAIL)
 		elif _skill.caster_movement == SkillData.CasterMovement.LEAP_TO_TARGET:
 			cmd.duration = LEAP_ANIM_DURATION
 			cmd.is_leap = true
-			_add_movement_vfx(unit as Node3D, to_hex, VfxConstants.LEAP_TRAIL if VfxConstants else "leap_trail")
+			_add_movement_vfx(unit as Node3D, to_hex, CoreEnums.VfxType.LEAP_TRAIL)
 		elif _skill.caster_movement == SkillData.CasterMovement.TELEPORT_TO_TARGET:
 			cmd.duration = 0.0
 			var vfx_out := VisualCommand.new()
 			vfx_out.type = VisualCommand.Type.SPAWN_VFX
-			vfx_out.string_payload = VfxConstants.TELEPORT_OUT if VfxConstants else "teleport_out"
+			vfx_out.vfx_type = CoreEnums.VfxType.TELEPORT_OUT
 			vfx_out.target = unit as Node3D
 			_current_group.commands.append(vfx_out)
-			_add_movement_vfx(unit as Node3D, to_hex, VfxConstants.TELEPORT_IN if VfxConstants else "teleport_in")
+			_add_movement_vfx(unit as Node3D, to_hex, CoreEnums.VfxType.TELEPORT_IN)
 	else:
 		# C'est un déplacement forcé de la cible (Knockback / Pull)
 		cmd.duration = DASH_ANIM_DURATION
-		_add_movement_vfx(unit as Node3D, to_hex, VfxConstants.DASH_TRAIL if VfxConstants else "dash_trail")
+		_add_movement_vfx(unit as Node3D, to_hex, CoreEnums.VfxType.DASH_TRAIL)
 		
 	_current_group.commands.append(cmd)
 
-func _add_movement_vfx(target: Node3D, target_hex: Vector3i, vfx_name: String) -> void:
+func _add_movement_vfx(target: Node3D, target_hex: Vector3i, vfx_type: int) -> void:
 	var vfx_cmd := VisualCommand.new()
 	vfx_cmd.type = VisualCommand.Type.SPAWN_VFX
-	vfx_cmd.string_payload = vfx_name
+	vfx_cmd.vfx_type = vfx_type
 	vfx_cmd.target = target
 	vfx_cmd.target_hex = target_hex
 	_current_group.commands.append(vfx_cmd)

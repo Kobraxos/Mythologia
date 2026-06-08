@@ -3,9 +3,9 @@
 [ext_resource type="Resource" uid="uid://cyd2aljxwrxdw" path="res://data/skills/attacks/frappe_basique.tres" id="1_2366t"]
 [ext_resource type="Script" uid="uid://didfbrl3fg4h5" path="res://data/units/unit_stats.gd" id="1_t58gu"]
 [ext_resource type="Texture2D" uid="uid://dsqgvi8aue1da" path="res://icon.svg" id="2_gbbgr"]
+[ext_resource type="Resource" uid="uid://un6eqfxtq56o" path="res://data/skills/attacks/rayon_solaire.tres" id="4_odqmy"]
 [ext_resource type="Resource" uid="uid://dash001" path="res://data/skills/spells/dash_eclair.tres" id="5_spell"]
 [ext_resource type="Resource" uid="uid://ring001" path="res://data/skills/spells/anneau_de_feu.tres" id="8_spell"]
-[ext_resource type="Resource" uid="uid://flood001" path="res://data/skills/spells/vague_guerisseuse.tres" id="9_spell"]
 [ext_resource type="Texture2D" uid="uid://cawdwey71ermw" path="res://assets/2d/tezcatlipoca.png" id="12_tibrx"]
 
 [resource]
@@ -41,4 +41,4 @@ effect_focus = 0.05
 effect_resistance = 0.1
 incoming_healing_multiplier = 1.1
 base_attack = ExtResource("1_2366t")
-active_skills = Array[Resource]([ExtResource("1_2366t"), ExtResource("5_spell"), ExtResource("8_spell"), ExtResource("9_spell")])
+active_skills = Array[Resource]([ExtResource("1_2366t"), ExtResource("5_spell"), ExtResource("8_spell"), ExtResource("4_odqmy")])

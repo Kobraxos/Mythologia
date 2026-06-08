@@ -8,7 +8,7 @@
 [node name="VfxManager" type="Node" unique_id=1512995435]
 script = ExtResource("1_8xrg5")
 vfx_library = {
-"dash_trail": ExtResource("4_dash"),
-"heal_effect": ExtResource("3_heal"),
-"impact_hit": ExtResource("2_impact")
+5: ExtResource("4_dash"),
+2: ExtResource("3_heal"),
+1: ExtResource("2_impact")
 }

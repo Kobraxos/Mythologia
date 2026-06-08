@@ -67,7 +67,7 @@ func _play_group(group: VisualCommandGroup) -> void:
 				if is_instance_valid(cmd.target):
 					if pos == Vector3.ZERO:
 						pos = cmd.target.global_position
-						if cmd.string_payload == VfxConstants.IMPACT_HIT:
+						if cmd.vfx_type == CoreEnums.VfxType.IMPACT_HIT:
 							pos += Vector3(0, 1.0, 0)
 					
 					if dir == Vector3.ZERO and is_instance_valid(cmd.source):
@@ -79,13 +79,13 @@ func _play_group(group: VisualCommandGroup) -> void:
 					dir = (end_pos - cmd.target.global_position).normalized()
 					
 				# Cas du teleport in
-				if cmd.string_payload == VfxConstants.TELEPORT_IN and cmd.target_hex != Vector3i.ZERO:
+				if cmd.vfx_type == CoreEnums.VfxType.TELEPORT_IN and cmd.target_hex != Vector3i.ZERO:
 					pos = HexMath.hex_to_world(cmd.target_hex, GridManager.hex_size, GridManager.elevation_step)
 					
 				if dir.length_squared() == 0.0:
 					dir = Vector3.UP
 					
-				CombatEvents.vfx_requested.emit(cmd.string_payload, pos, dir, cmd.target)
+				CombatEvents.vfx_requested.emit(cmd.vfx_type, pos, dir, cmd.target)
 
 	# Attente unique synchronisée sur l'animation la plus longue du groupe
 	if max_duration > 0.0:

@@ -23,3 +23,16 @@ enum StatusTriggerCondition {
 	TARGET_HP_BELOW_HALF,
 	SOURCE_HAS_LINE_OF_SIGHT
 }
+
+## Types d'effets visuels pour l'Object Pooling.
+enum VfxType {
+	NONE,
+	IMPACT_HIT,
+	HEAL_EFFECT,
+	SHIELD_GRANTED,
+	DODGE_DUST,
+	DASH_TRAIL,
+	LEAP_TRAIL,
+	TELEPORT_OUT,
+	TELEPORT_IN
+}
