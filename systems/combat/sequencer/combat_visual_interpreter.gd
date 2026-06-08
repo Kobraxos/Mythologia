@@ -80,8 +80,8 @@ func _on_damage_dealt(target: Node3D, amount: int, is_crit: bool) -> void:
 	cmd.type = VisualCommand.Type.DAMAGE_NUMBER
 	cmd.target = target
 	cmd.int_payload = amount
-	cmd.string_payload = "CRIT" if is_crit else "DAMAGE"
 	cmd.element_payload = _skill.skill_element
+	cmd.text_type = CombatEvents.FloatingTextType.CRIT if is_crit else CombatEvents.FloatingTextType.DAMAGE
 	_current_group.commands.append(cmd)
 	
 	var hp_cmd := VisualCommand.new()
@@ -106,7 +106,7 @@ func _on_healing_done(target: Node3D, amount: int) -> void:
 	cmd.type = VisualCommand.Type.DAMAGE_NUMBER
 	cmd.target = target
 	cmd.int_payload = amount
-	cmd.string_payload = "HEAL"
+	cmd.text_type = CombatEvents.FloatingTextType.HEAL
 	_current_group.commands.append(cmd)
 	
 	var hp_cmd := VisualCommand.new()
@@ -131,7 +131,7 @@ func _on_shield_granted(target: Node3D, amount: int) -> void:
 	cmd.type = VisualCommand.Type.DAMAGE_NUMBER
 	cmd.target = target
 	cmd.int_payload = amount
-	cmd.string_payload = "AEGIS"
+	cmd.text_type = CombatEvents.FloatingTextType.SHIELD
 	_current_group.commands.append(cmd)
 	
 	var hp_cmd := VisualCommand.new()
@@ -155,7 +155,7 @@ func _on_attack_dodged(target: Node3D) -> void:
 	var cmd := VisualCommand.new()
 	cmd.type = VisualCommand.Type.DAMAGE_NUMBER
 	cmd.target = target
-	cmd.string_payload = "DODGE"
+	cmd.text_type = CombatEvents.FloatingTextType.DODGE
 	_current_group.commands.append(cmd)
 	
 	var vfx_cmd := VisualCommand.new()
