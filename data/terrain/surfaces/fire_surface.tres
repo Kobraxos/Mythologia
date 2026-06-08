@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://dfiresurf01"]
+
+[ext_resource type="Script" uid="uid://b67fvhv5qv7qo" path="res://data/terrain/terrain_data.gd" id="1_td"]
+[ext_resource type="PackedScene" uid="uid://cfiresurf01" path="res://systems/grid/visuals/prefabs/fire_surface_visual.tscn" id="2_pref"]
+
+[resource]
+script = ExtResource("1_td")
+is_surface = true
+duration_turns = 3
+id = &"fire_surface"
+terrain_name = "Feu"
+description = "Une flaque ardente."
+visual_prefab = ExtResource("2_pref")
+is_walkable = true
+movement_cost = 1
+blocks_line_of_sight = false
+applied_status_effects = Array[Resource]([])
+terrain_element = 1
+conducts_elements = Array[int]([])

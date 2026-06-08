@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ceno6dy3f25l0" path="res://data/skills/skill_effect_payload.gd" id="1_a7xs3"]
 [ext_resource type="Script" uid="uid://eceh4kcvv4yn" path="res://data/skills/skill_data.gd" id="1_skdata"]
+[ext_resource type="Resource" path="res://data/terrain/surfaces/fire_surface.tres" id="3_fs"]
 
 [resource]
 script = ExtResource("1_skdata")
@@ -20,3 +21,4 @@ aoe_shape = 4
 aoe_radius = 2
 skill_element = 1
 mythic_damage_multiplier = 1.0
+spawned_surface = ExtResource("3_fs")

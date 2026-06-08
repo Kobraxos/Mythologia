@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://dpoisonsurf01"]
+
+[ext_resource type="Script" uid="uid://b67fvhv5qv7qo" path="res://data/terrain/terrain_data.gd" id="1_td"]
+[ext_resource type="PackedScene" uid="uid://cpoisonsurf01" path="res://systems/grid/visuals/prefabs/poison_surface_visual.tscn" id="2_pref"]
+
+[resource]
+script = ExtResource("1_td")
+is_surface = true
+duration_turns = 0
+id = &"poison_surface"
+terrain_name = "Poison"
+description = "Gaz toxique persistant."
+visual_prefab = ExtResource("2_pref")
+is_walkable = true
+movement_cost = 1
+blocks_line_of_sight = false
+applied_status_effects = Array[Resource]([])
+terrain_element = 6
+conducts_elements = Array[int]([])

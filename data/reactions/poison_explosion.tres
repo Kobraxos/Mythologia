@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ReactionData" format=3 uid="uid://drctn01"]
+
+[ext_resource type="Script" path="res://data/reactions/reaction_data.gd" id="1_rd"]
+[ext_resource type="Script" path="res://data/reactions/effects/explosion_effect.gd" id="2_ed"]
+
+[sub_resource type="Resource" id="Resource_exp"]
+script = ExtResource("2_ed")
+damage_base = 15.0
+damage_mythic_scaling = 1.5
+element = 1
+vfx_id = &"poison_explosion"
+
+[resource]
+script = ExtResource("1_rd")
+trigger_element = 1
+target_surface_element = 6
+effects = Array[ExtResource("2_ed")]([SubResource("Resource_exp")])

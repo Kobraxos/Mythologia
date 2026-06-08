@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://cfiresurf01"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fire"]
+albedo_color = Color(1, 0.4, 0, 0.8)
+emission_enabled = true
+emission = Color(1, 0.2, 0, 1)
+emission_energy_multiplier = 2.0
+transparency = 1
+
+[sub_resource type="TorusMesh" id="TorusMesh_fire"]
+material = SubResource("StandardMaterial3D_fire")
+inner_radius = 0.3
+outer_radius = 0.5
+rings = 16
+ring_segments = 8
+
+[node name="FireSurfaceVisual" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("TorusMesh_fire")
