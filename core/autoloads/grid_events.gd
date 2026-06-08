@@ -63,6 +63,10 @@ signal hex_hovered(hex_coord: Vector3i)
 signal grid_topology_ready(topology: Dictionary)
 
 @warning_ignore("unused_signal")
+## Émis par le GameFlowManager pour démarrer la génération procédurale ou le chargement de la grille.
+signal request_grid_generation()
+
+@warning_ignore("unused_signal")
 ## Émis lorsqu'une unité a terminé un déplacement. Sert de déclencheur pour les systèmes Data-Oriented.
 signal unit_moved(unit: Node, from_hex: Vector3i, to_hex: Vector3i)
 

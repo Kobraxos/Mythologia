@@ -13,9 +13,14 @@ const MAX_TIMELINE_PREVIEW: int = 12
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
+	# Enregistrement pour être découvert sans couplage fort
+	add_to_group("turn_manager")
+	
 	# Le manager écoute le mégaphone, il se fiche de savoir qui a pressé le bouton.
 	TurnEvents.turn_end_requested.connect(_on_turn_end_requested)
 	CombatEvents.unit_died.connect(_on_unit_died)
+	# Déclenchement Data-Driven de la bataille
+	CombatEvents.units_spawned.connect(start_battle)
 
 # PUBLIC FUNCTIONS
 func register_unit(unit: Unit) -> void:

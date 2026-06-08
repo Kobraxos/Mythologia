@@ -46,3 +46,7 @@ signal attack_dodged(target: Node3D)
 @warning_ignore("unused_signal")
 ## Émis pour déclencher un VFX depuis un système métier sans couplage avec la position 3D.
 signal vfx_requested(vfx_id: String, pos: Vector3, dir: Vector3, attached_target: Node3D)
+
+@warning_ignore("unused_signal")
+## Émis lorsque toutes les unités initiales ont été placées sur la grille.
+signal units_spawned()

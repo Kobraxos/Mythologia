@@ -21,7 +21,8 @@ var hex_tiles: Dictionary[Vector3i, Node3D] = {}
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
-	pass # Le DDD exige que l'Orchestrateur (BattleManager) contrôle le moment de la génération.
+	# Le DDD exige que l'Orchestrateur (ex: GameFlowManager) contrôle le moment de la génération.
+	GridEvents.request_grid_generation.connect(generate_grid)
 
 # PUBLIC FUNCTIONS
 ## Fonction principale qui assemble le plateau en traduisant les mathématiques en 3D.

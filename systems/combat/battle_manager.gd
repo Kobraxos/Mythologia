@@ -1,10 +1,7 @@
 class_name BattleManager
 extends Node
 
-@export_category("Dependencies")
-@export var grid_generator: GridGenerator
-## Référence au système de tour qui gérera les acteurs instanciés.
-@export var turn_manager: TurnManager
+const ERR_MISSING_DEPS = "BattleManager: Dépendances manquantes ('player_unit_prefab')."
 
 @export_category("Spawns")
 ## Le préfabriqué de l'unité à faire apparaître.
@@ -16,44 +13,45 @@ extends Node
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
-	if not grid_generator or not player_unit_prefab or not turn_manager:
-		push_error("BattleManager: Dépendances manquantes ('grid_generator', 'player_unit_prefab' ou 'turn_manager').")
+	if not player_unit_prefab:
+		push_error(ERR_MISSING_DEPS)
 		return
 		
-	# L'arbre de scène Godot est verrouillé pendant le _ready(). On décale l'assemblage procédural à la frame suivante.
-	call_deferred("_initialize_battle")
+	# On s'abonne à la génération de la grille au lieu de la piloter.
+	GridEvents.grid_topology_ready.connect(_on_grid_topology_ready)
 
-func _initialize_battle() -> void:
-	# Phase 1 : Le monde est construit (la montagne se dresse)
-	grid_generator.generate_grid()
-	
-	# Phase 1.5 : Initialisation des Systèmes Visuels
-	var surface_visuals = SurfaceVisuals.new()
-	grid_generator.add_child(surface_visuals)
-	
-	# Phase 2 : Les acteurs entrent en scène (Spawn procédural)
+# SIGNAL HANDLERS
+func _on_grid_topology_ready(_topology: Dictionary) -> void:
 	if hero_stats and enemy_stats:
-		_spawn_unit_at_axial(0, 0, hero_stats, Unit.Faction.PLAYER)
-		_spawn_unit_at_axial(1, -1, enemy_stats, Unit.Faction.ENEMY)
-		
-	# Phase 3 : Le temps s'écoule
-	turn_manager.start_battle()
+		_spawn_units_from_group("player_spawns", hero_stats, Unit.Faction.PLAYER)
+		_spawn_units_from_group("enemy_spawns", enemy_stats, Unit.Faction.ENEMY)
+	
+	# Signal de fin d'instanciation. Le TurnManager (ou autre) peut maintenant prendre le relais.
+	CombatEvents.units_spawned.emit()
 
 # PRIVATE FUNCTIONS
-func _spawn_unit_at_axial(q: int, r: int, stats: UnitStats, faction: Unit.Faction) -> void:
-	var target_hex: Vector3i = _get_surface_hex(q, r)
-	
-	var unit: Unit = player_unit_prefab.instantiate() as Unit
-	# L'astuce AAA : On donne la position 3D AVANT le add_child. 
-	# Ainsi, quand l'unité exécutera son _ready(), elle lira sa hauteur exacte !
-	unit.position = HexMath.hex_to_world(target_hex, GridManager.hex_size, GridManager.elevation_step)
-	add_child(unit)
-	unit.initialize(stats, faction)
-	turn_manager.register_unit(unit)
-
-## Scanne la grille pour trouver la case (et surtout sa hauteur Z) correspondant à une coordonnée 2D.
-func _get_surface_hex(q: int, r: int) -> Vector3i:
-	for hex: Vector3i in GridManager.terrain_tiles.keys():
-		if hex.x == q and hex.y == r:
-			return hex
-	return Vector3i(q, r, 0) # Fallback de sécurité
+func _spawn_units_from_group(group_name: String, stats: UnitStats, faction: Unit.Faction) -> void:
+	var spawn_nodes: Array[Node] = get_tree().get_nodes_in_group(group_name)
+	for spawn_node: Node in spawn_nodes:
+		if spawn_node is Node3D:
+			# Conversion de la position globale (Monde) vers la grille logique
+			var target_hex: Vector3i = HexMath.world_to_hex(spawn_node.global_position, GridManager.hex_size, GridManager.elevation_step)
+			
+			var unit: Unit = player_unit_prefab.instantiate() as Unit
+			# Placement 3D précis basé sur la logique HexMath
+			unit.position = HexMath.hex_to_world(target_hex, GridManager.hex_size, GridManager.elevation_step)
+			add_child(unit)
+			unit.initialize(stats, faction)
+			
+			# Note : L'enregistrement dans le TurnManager pourrait aussi se faire
+			# de manière event-driven (ex: via GridEvents.unit_spawned), mais ici 
+			# on s'assure que tout est prêt pour le début de combat.
+			# Pour un AAA strict, le TurnManager devrait écouter l'événement "unit_spawned".
+			# On le simule ici si l'enregistrement dépend encore d'une fonction publique.
+			# Dans notre refactor, on pourrait utiliser un groupe ou un signal si TurnManager n'a plus de méthode register_unit.
+			# Supposons que l'entité Unit gère son propre enregistrement via un composant ou que 
+			# le TurnManager s'abonne à GridEvents.unit_spawned. S'il y a un composant, on le laisse.
+			# Pour l'instant on réutilise l'événement existant s'il n'y en a pas, on appelle get_tree().get_first_node_in_group.
+			var turn_manager_node: Node = get_tree().get_first_node_in_group("turn_manager")
+			if turn_manager_node and turn_manager_node.has_method("register_unit"):
+				turn_manager_node.register_unit(unit)
