@@ -209,7 +209,7 @@ func _on_skill_cast_requested(caster: Node3D, skill: SkillData, target_hex: Vect
 					
 			# AAA : Déploiement de Surface et Traitement Élémentaire (Même sur des cases vides !)
 			if is_final_hit:
-				if skill.spawned_surface and skill.spawned_surface.is_surface:
+				if skill.spawned_surface and skill.spawned_surface.get("is_surface") == true:
 					GridManager.add_surface(hex, skill.spawned_surface)
 				ElementalSystem.process_elemental_impact(hex, skill.skill_element, caster_unit, skill)
 

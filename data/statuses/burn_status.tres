@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="StatusEffectData" format=3 uid="uid://burn001"]
+
+[ext_resource type="Script" uid="uid://dpaxqrovrib1k" path="res://data/statuses/status_effect_data.gd" id="1_burn"]
+
+[resource]
+script = ExtResource("1_burn")
+id = &"brulure"
+effect_name = "Brûlure"
+description = "Brûle au début du tour."
+type = 1
+duration_in_turns = 2
+merge_strategy = 0
+is_dispellable = true
+is_untargetable = false
+activation_condition = 0
+stat_scaling = 0
+modifiers = Array[Resource]([])
+is_stunned = false
+is_rooted = false
+is_silenced = false
+is_disarmed = false
+damage_per_turn = 5
+healing_per_turn = 0
+dot_element = 1
+triggers = Array[Resource]([])
+prevents_death = false
+set_health_on_prevent = 1

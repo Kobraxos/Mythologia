@@ -13,12 +13,14 @@ func _on_surface_spawned(hex: Vector3i, surface_data: Resource) -> void: # surfa
 	if active_visuals.has(hex):
 		_on_surface_removed(hex)
 		
-	if surface_data and surface_data.visual_prefab:
-		var visual_instance: Node3D = surface_data.visual_prefab.instantiate() as Node3D
-		if visual_instance:
-			add_child(visual_instance)
-			visual_instance.global_position = HexMath.hex_to_world(hex, GridManager.hex_size, GridManager.elevation_step)
-			active_visuals[hex] = visual_instance
+	if surface_data and surface_data.get("visual_prefab"):
+		var prefab = surface_data.get("visual_prefab") as PackedScene
+		if prefab:
+			var visual_instance: Node3D = prefab.instantiate() as Node3D
+			if visual_instance:
+				add_child(visual_instance)
+				visual_instance.global_position = HexMath.hex_to_world(hex, GridManager.hex_size, GridManager.elevation_step)
+				active_visuals[hex] = visual_instance
 
 func _on_surface_removed(hex: Vector3i) -> void:
 	if active_visuals.has(hex):

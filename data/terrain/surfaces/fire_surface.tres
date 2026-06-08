@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b67fvhv5qv7qo" path="res://data/terrain/terrain_data.gd" id="1_td"]
 [ext_resource type="PackedScene" uid="uid://cfiresurf01" path="res://systems/grid/visuals/prefabs/fire_surface_visual.tscn" id="2_pref"]
+[ext_resource type="Resource" uid="uid://burn001" path="res://data/statuses/burn_status.tres" id="3_burn"]
 
 [resource]
 script = ExtResource("1_td")
@@ -14,6 +15,6 @@ visual_prefab = ExtResource("2_pref")
 is_walkable = true
 movement_cost = 1
 blocks_line_of_sight = false
-applied_status_effects = Array[Resource]([])
+applied_status_effects = Array[Resource]([ExtResource("3_burn")])
 terrain_element = 1
 conducts_elements = Array[int]([])

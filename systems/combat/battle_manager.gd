@@ -27,6 +27,10 @@ func _initialize_battle() -> void:
 	# Phase 1 : Le monde est construit (la montagne se dresse)
 	grid_generator.generate_grid()
 	
+	# Phase 1.5 : Initialisation des Systèmes Visuels
+	var surface_visuals = SurfaceVisuals.new()
+	grid_generator.add_child(surface_visuals)
+	
 	# Phase 2 : Les acteurs entrent en scène (Spawn procédural)
 	if hero_stats and enemy_stats:
 		_spawn_unit_at_axial(0, 0, hero_stats, Unit.Faction.PLAYER)

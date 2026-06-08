@@ -53,7 +53,7 @@ func clear_units() -> void:
 
 ## Ajoute une surface sur l'hexagone. Remplace la surface existante.
 func add_surface(hex: Vector3i, surface_data: Resource) -> void: # surface_data is TerrainData
-	if not surface_data.is_surface:
+	if not surface_data.get("is_surface"):
 		push_error("GridManager: Tentative d'ajouter un TerrainData non marqué comme is_surface !")
 		return
 		
@@ -62,7 +62,7 @@ func add_surface(hex: Vector3i, surface_data: Resource) -> void: # surface_data 
 		GridEvents.surface_removed.emit(hex)
 		
 	surface_tiles[hex] = surface_data
-	surface_durations[hex] = surface_data.duration_turns
+	surface_durations[hex] = surface_data.get("duration_turns")
 	
 	GridEvents.surface_spawned.emit(hex, surface_data)
 
