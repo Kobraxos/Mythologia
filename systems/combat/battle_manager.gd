@@ -22,36 +22,50 @@ func _ready() -> void:
 
 # SIGNAL HANDLERS
 func _on_grid_topology_ready(_topology: Dictionary) -> void:
-	if hero_stats and enemy_stats:
-		_spawn_units_from_group("player_spawns", hero_stats, Unit.Faction.PLAYER)
-		_spawn_units_from_group("enemy_spawns", enemy_stats, Unit.Faction.ENEMY)
+	_process_spawn_points()
 	
 	# Signal de fin d'instanciation. Le TurnManager (ou autre) peut maintenant prendre le relais.
 	CombatEvents.units_spawned.emit()
 
 # PRIVATE FUNCTIONS
-func _spawn_units_from_group(group_name: String, stats: UnitStats, faction: Unit.Faction) -> void:
-	var spawn_nodes: Array[Node] = get_tree().get_nodes_in_group(group_name)
-	for spawn_node: Node in spawn_nodes:
-		if spawn_node is Node3D:
-			# Conversion de la position globale (Monde) vers la grille logique
-			var target_hex: Vector3i = HexMath.world_to_hex(spawn_node.global_position, GridManager.hex_size, GridManager.elevation_step)
+func _process_spawn_points() -> void:
+	var spawn_nodes: Array[Node] = get_tree().get_nodes_in_group("spawn_points")
+	
+	if spawn_nodes.is_empty():
+		push_warning("BattleManager: Aucun nœud trouvé dans le groupe 'spawn_points'.")
+		return
+		
+	for node: Node in spawn_nodes:
+		var spawn_point := node as SpawnPoint
+		if not spawn_point:
+			continue
 			
-			var unit: Unit = player_unit_prefab.instantiate() as Unit
-			# Placement 3D précis basé sur la logique HexMath
-			unit.position = HexMath.hex_to_world(target_hex, GridManager.hex_size, GridManager.elevation_step)
-			add_child(unit)
-			unit.initialize(stats, faction)
+		if not spawn_point.stats:
+			push_warning("BattleManager: SpawnPoint '%s' ignoré car il n'a pas de ressource 'stats' assignée." % spawn_point.name)
+			continue
 			
-			# Note : L'enregistrement dans le TurnManager pourrait aussi se faire
-			# de manière event-driven (ex: via GridEvents.unit_spawned), mais ici 
-			# on s'assure que tout est prêt pour le début de combat.
-			# Pour un AAA strict, le TurnManager devrait écouter l'événement "unit_spawned".
-			# On le simule ici si l'enregistrement dépend encore d'une fonction publique.
-			# Dans notre refactor, on pourrait utiliser un groupe ou un signal si TurnManager n'a plus de méthode register_unit.
-			# Supposons que l'entité Unit gère son propre enregistrement via un composant ou que 
-			# le TurnManager s'abonne à GridEvents.unit_spawned. S'il y a un composant, on le laisse.
-			# Pour l'instant on réutilise l'événement existant s'il n'y en a pas, on appelle get_tree().get_first_node_in_group.
-			var turn_manager_node: Node = get_tree().get_first_node_in_group("turn_manager")
-			if turn_manager_node and turn_manager_node.has_method("register_unit"):
-				turn_manager_node.register_unit(unit)
+		# Conversion de la position globale (Monde) vers la grille logique
+		var raw_hex: Vector3i = HexMath.world_to_hex(spawn_point.global_position, GridManager.hex_size, GridManager.elevation_step)
+		
+		# AAA : Retrouver la vraie élévation du terrain pour cette coordonnée 2D
+		var target_hex: Vector3i = _get_surface_hex(raw_hex.x, raw_hex.y)
+		
+		var unit: Unit = player_unit_prefab.instantiate() as Unit
+		# Placement 3D précis basé sur la logique HexMath
+		unit.position = HexMath.hex_to_world(target_hex, GridManager.hex_size, GridManager.elevation_step)
+		add_child(unit)
+		
+		# AAA : Duplication des stats pour éviter que tous les héros partagent la même barre de PV
+		var unique_stats: UnitStats = spawn_point.stats.duplicate() as UnitStats
+		unit.initialize(unique_stats, spawn_point.faction)
+		
+		var turn_manager_node: Node = get_tree().get_first_node_in_group("turn_manager")
+		if turn_manager_node and turn_manager_node.has_method("register_unit"):
+			turn_manager_node.register_unit(unit)
+
+## Scanne la grille pour trouver la case (et surtout sa hauteur Z) correspondant à une coordonnée 2D.
+func _get_surface_hex(q: int, r: int) -> Vector3i:
+	for hex: Vector3i in GridManager.terrain_tiles.keys():
+		if hex.x == q and hex.y == r:
+			return hex
+	return Vector3i(q, r, 0) # Fallback de sécurité

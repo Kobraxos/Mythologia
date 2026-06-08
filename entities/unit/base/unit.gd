@@ -30,6 +30,8 @@ var faction: Faction = Faction.NEUTRAL
 # PRIVATE VARIABLES
 var _move_tween: Tween
 var _is_selected: bool = false
+var _active_indicator: Label3D
+var _indicator_tween: Tween
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
@@ -42,6 +44,16 @@ func _ready() -> void:
 	position = HexMath.hex_to_world(current_hex, GridManager.hex_size, GridManager.elevation_step) # Snap visuel strict
 	GridManager.unit_positions[current_hex] = self
 	GridEvents.unit_spawned.emit(self)
+	
+	# Création de l'indicateur d'unité active (Chevron flottant)
+	_active_indicator = Label3D.new()
+	_active_indicator.text = "▼"
+	_active_indicator.font_size = 120
+	_active_indicator.position = Vector3(0, 2.5, 0)
+	_active_indicator.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_active_indicator.no_depth_test = true # Toujours visible par-dessus le reste
+	_active_indicator.visible = false
+	add_child(_active_indicator)
 
 ## Appelé par le BattleManager lors du Spawn pour injecter l'âme (les données) dans la coquille.
 func initialize(new_stats: UnitStats, unit_faction: Faction = Faction.NEUTRAL) -> void:
@@ -52,12 +64,16 @@ func initialize(new_stats: UnitStats, unit_faction: Faction = Faction.NEUTRAL) -
 		match faction:
 			Faction.PLAYER:
 				faction_ring.modulate = Color(0.2, 0.6, 1.0, 0.8) # Bleu Divin / Olympe
+				if _active_indicator: _active_indicator.modulate = Color(0.2, 0.6, 1.0)
 			Faction.ENEMY:
 				faction_ring.modulate = Color(0.9, 0.1, 0.1, 0.8) # Rouge Sang / Tartare
+				if _active_indicator: _active_indicator.modulate = Color(0.9, 0.1, 0.1)
 			Faction.ALLY:
 				faction_ring.modulate = Color(0.2, 0.8, 0.4, 0.8) # Vert Nature
+				if _active_indicator: _active_indicator.modulate = Color(0.2, 0.8, 0.4)
 			_:
 				faction_ring.modulate = Color(0.5, 0.5, 0.5, 0.8) # Gris Neutre
+				if _active_indicator: _active_indicator.modulate = Color(1.0, 1.0, 1.0)
 				
 	if stat_manager:
 		stat_manager.initialize(stats)
@@ -89,12 +105,22 @@ func start_turn() -> void:
 	if action_economy:
 		action_economy.start_turn()
 		
-	# AAA VFX : L'anneau s'excite quand c'est le tour de l'unité
+	# AAA VFX : L'anneau s'excite
 	if faction_ring and faction_ring.material_override:
 		var mat := faction_ring.material_override as ShaderMaterial
-		var tw := create_tween().set_parallel(true)
-		tw.tween_property(mat, "shader_parameter/rotation_speed", 0.8, 0.5)
-		tw.tween_property(mat, "shader_parameter/pulse_intensity", 0.4, 0.5)
+		var tw := create_tween().set_parallel(true).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+		tw.tween_property(mat, "shader_parameter/rotation_speed", 1.5, 0.5)
+		tw.tween_property(mat, "shader_parameter/pulse_intensity", 0.8, 0.5)
+		
+	# AAA VFX : Indicateur Actif (Chevron flottant)
+	if _active_indicator:
+		_active_indicator.visible = true
+		_active_indicator.position.y = 2.5
+		if _indicator_tween and _indicator_tween.is_valid():
+			_indicator_tween.kill()
+		_indicator_tween = create_tween().set_loops()
+		_indicator_tween.tween_property(_active_indicator, "position:y", 2.0, 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+		_indicator_tween.tween_property(_active_indicator, "position:y", 2.5, 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 ## Appelé par le TurnManager à la fin du tour.
 func end_turn() -> void:
@@ -107,9 +133,14 @@ func end_turn() -> void:
 	# AAA VFX : L'anneau se calme à la fin du tour
 	if faction_ring and faction_ring.material_override:
 		var mat := faction_ring.material_override as ShaderMaterial
-		var tw := create_tween().set_parallel(true)
+		var tw := create_tween().set_parallel(true).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
 		tw.tween_property(mat, "shader_parameter/rotation_speed", 0.2, 0.5)
 		tw.tween_property(mat, "shader_parameter/pulse_intensity", 0.1, 0.5)
+		
+	if _active_indicator:
+		_active_indicator.visible = false
+		if _indicator_tween and _indicator_tween.is_valid():
+			_indicator_tween.kill()
 
 # PUBLIC FUNCTIONS
 ## Exécute un chemin de déplacement donné. (Appelé par les Contrôleurs : Joueur ou IA)

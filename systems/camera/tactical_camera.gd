@@ -25,6 +25,14 @@ func _ready() -> void:
 		_target_zoom = _spring_arm.spring_length
 	else:
 		push_error("TacticalCamera: Nœud SpringArm3D manquant dans la hiérarchie.")
+		
+	# AAA : Le "Regard Divin" (Auto-Panning)
+	TurnEvents.active_unit_changed.connect(_on_active_unit_changed)
+
+func _on_active_unit_changed(unit: Unit) -> void:
+	if is_instance_valid(unit):
+		# Recadre la cible de la caméra sur l'unité active. Le _apply_smoothing fera glisser la caméra en douceur.
+		_target_position = unit.global_position
 
 func _process(delta: float) -> void:
 	_handle_movement(delta)
