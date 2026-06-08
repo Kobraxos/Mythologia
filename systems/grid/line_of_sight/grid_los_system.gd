@@ -4,6 +4,13 @@ extends Node
 ## Système AAA de gestion de Ligne de Vue (LoS) par Raycasting Data-Oriented 2.5D.
 ## Élimine les accès Node3D en maintenant une topologie plate O(1).
 
+const INVALID_ELEVATION: int = -999
+const INVALID_HEX: Vector3i = Vector3i(0, 0, INVALID_ELEVATION)
+const HEX_DIRECTIONS: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
+	Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)
+]
+
 # ÉTATS MATHÉMATIQUES INTERNES (Data-Oriented)
 var _static_heights: Dictionary = {}
 var _dynamic_blockers: Dictionary = {}
@@ -16,7 +23,7 @@ func _ready() -> void:
 
 # PUBLIC API
 ## Calcule toutes les cases affectées par un sort (Shape pur + Interprétation DOD).
-func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: SkillData, ignored_hex: Vector3i = Vector3i(0, 0, -999)) -> Array[Vector3i]:
+func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: SkillData, ignored_hex: Vector3i = INVALID_HEX) -> Array[Vector3i]:
 	var shape: SkillData.AreaShape = skill.aoe_shape
 	var radius: int = skill.aoe_radius
 	var pierces: bool = skill.pierces_obstacles
@@ -32,7 +39,7 @@ func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: Skill
 		SkillData.AreaShape.RING: raw_hexes_2d = HexAoE.get_ring_2d(target_2d, radius, radius)
 		SkillData.AreaShape.FLOOD_FILL:
 			var target_z: int = _get_elevation(target_2d)
-			if target_z != -999:
+			if target_z != INVALID_ELEVATION:
 				return _get_flood_fill(Vector3i(target_2d.x, target_2d.y, target_z), radius, pierces, ignored_hex, skill)
 			return []
 		_: raw_hexes_2d = [target_2d]
@@ -40,7 +47,7 @@ func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: Skill
 	var valid_3d: Array[Vector3i] = []
 	for hex_2d: Vector2i in raw_hexes_2d:
 		var z: int = _get_elevation(hex_2d)
-		if z == -999:
+		if z == INVALID_ELEVATION:
 			if shape == SkillData.AreaShape.LINE and not pierces: break # La ligne s'arrête net dans le vide
 			continue
 			
@@ -75,7 +82,7 @@ func get_affected_hexes(caster_hex: Vector3i, target_hex: Vector3i, skill: Skill
 	return valid_3d
 
 ## Calcule les cases d'où le sort peut être lancé (Ring pur + Interprétation DOD).
-func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData, ignored_hex: Vector3i = Vector3i(0, 0, -999)) -> Array[Vector3i]:
+func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData, ignored_hex: Vector3i = INVALID_HEX) -> Array[Vector3i]:
 	if skill.max_range == 0:
 		return [caster_hex]
 		
@@ -91,7 +98,7 @@ func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData, ignored_hex
 	
 	for hex_2d: Vector2i in raw_ring:
 		var z: int = _get_elevation(hex_2d)
-		if z == -999: continue
+		if z == INVALID_ELEVATION: continue
 			
 		var elevation_diff: int = z - caster_hex.z
 		if elevation_diff > skill.max_elevation_up or elevation_diff < -skill.max_elevation_down: continue
@@ -103,7 +110,7 @@ func get_valid_casting_range(caster_hex: Vector3i, skill: SkillData, ignored_hex
 	return valid_hexes
 
 ## Calcule tous les hexagones visibles depuis l'origine dans un rayon donné.
-func get_visible_hexes(origin: Vector3i, radius: int, ignored_hex: Vector3i = Vector3i(0, 0, -999)) -> Array[Vector3i]:
+func get_visible_hexes(origin: Vector3i, radius: int, ignored_hex: Vector3i = INVALID_HEX) -> Array[Vector3i]:
 	var cache_key: String = "%s_%d_%s" % [origin, radius, ignored_hex]
 	if _aoe_visibility_cache.has(cache_key):
 		return _aoe_visibility_cache[cache_key]
@@ -117,7 +124,7 @@ func get_visible_hexes(origin: Vector3i, radius: int, ignored_hex: Vector3i = Ve
 			var current_2d := Vector2i(center_2d.x + q, center_2d.y + r)
 			var z: int = _get_elevation(current_2d)
 			
-			if z != -999:
+			if z != INVALID_ELEVATION:
 				var target_3d := Vector3i(current_2d.x, current_2d.y, z)
 				if has_line_of_sight(origin, target_3d, ignored_hex):
 					visible_hexes.append(target_3d)
@@ -126,7 +133,7 @@ func get_visible_hexes(origin: Vector3i, radius: int, ignored_hex: Vector3i = Ve
 	return visible_hexes
 
 ## Lancer de Rayon O(1) avec Bresenham Hexagonal (Shadowcasting linéaire).
-func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i, ignored_hex: Vector3i = Vector3i(0, 0, -999)) -> bool:
+func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i, ignored_hex: Vector3i = INVALID_HEX) -> bool:
 	var start_2d := Vector2i(start_hex.x, start_hex.y)
 	var target_2d := Vector2i(target_hex.x, target_hex.y)
 	var dist: int = _hex_distance_2d(start_2d, target_2d)
@@ -143,7 +150,7 @@ func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i, ignored_hex: V
 		var current_2d := _cubic_to_axial(current_cube)
 		
 		var current_z: int = _get_elevation(current_2d)
-		if current_z == -999:
+		if current_z == INVALID_ELEVATION:
 			return false # Traversée du vide interdite
 			
 		var current_3d := Vector3i(current_2d.x, current_2d.y, current_z)
@@ -176,7 +183,7 @@ func _on_grid_topology_ready(topology: Dictionary) -> void:
 func _on_dynamic_blocker_changed(_unit: Node, from_hex: Vector3i, to_hex: Vector3i) -> void:
 	if _dynamic_blockers.has(from_hex):
 		_dynamic_blockers.erase(from_hex)
-	if to_hex.z != -999:
+	if to_hex.z != INVALID_ELEVATION:
 		_dynamic_blockers[to_hex] = true
 	_invalidate_los_cache()
 
@@ -194,11 +201,6 @@ func _get_flood_fill(start_3d: Vector3i, radius: int, pierces: bool, ignored_hex
 	var visited: Dictionary = {}
 	var queue: Array[Vector3i] = [start_3d]
 	visited[start_3d] = 0
-	
-	var directions: Array[Vector2i] = [
-		Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
-		Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)
-	]
 
 	while not queue.is_empty():
 		var current_3d: Vector3i = queue.pop_front()
@@ -209,10 +211,10 @@ func _get_flood_fill(start_3d: Vector3i, radius: int, pierces: bool, ignored_hex
 
 		var current_2d := Vector2i(current_3d.x, current_3d.y)
 
-		for dir: Vector2i in directions:
+		for dir: Vector2i in HEX_DIRECTIONS:
 			var neighbor_2d := current_2d + dir
 			var z: int = _get_elevation(neighbor_2d)
-			if z == -999: continue
+			if z == INVALID_ELEVATION: continue
 
 			var neighbor_3d := Vector3i(neighbor_2d.x, neighbor_2d.y, z)
 			if visited.has(neighbor_3d): continue
@@ -231,7 +233,7 @@ func _get_flood_fill(start_3d: Vector3i, radius: int, pierces: bool, ignored_hex
 
 # UTILS MATHÉMATIQUES DOD
 func _get_elevation(hex_2d: Vector2i) -> int:
-	return _static_heights.get(hex_2d, -999)
+	return _static_heights.get(hex_2d, INVALID_ELEVATION)
 
 func _has_dynamic_blocker(hex_3d: Vector3i) -> bool:
 	return _dynamic_blockers.has(hex_3d)
