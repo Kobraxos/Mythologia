@@ -33,6 +33,7 @@
 [ext_resource type="Script" uid="uid://cw2a56lp8x7ql" path="res://systems/combat/player_input_controller.gd" id="21_pic"]
 [ext_resource type="Material" uid="uid://ol07npqm6q0q" path="res://assets/3d/mat_mythic_sea.tres" id="mat_sea"]
 [ext_resource type="Resource" uid="uid://nectar_altar_123" path="res://data/terrain/features/feat_nectar_altar.tres" id="feat_nectar"]
+[ext_resource type="Resource" uid="uid://feat_lake_123" path="res://data/terrain/features/feat_olympian_lake.tres" id="feat_lake"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.05
@@ -62,8 +63,8 @@ moisture_noise = SubResource("FastNoiseLite_moisture")
 obstacle_noise = SubResource("FastNoiseLite_obstacle")
 road_noise = SubResource("FastNoiseLite_road")
 special_noise = SubResource("FastNoiseLite_special")
-features = Array[Resource("res://systems/grid/grid_generator/grid_feature.gd")]([ExtResource("feat_nectar")])
-feature_count = 2
+features = Array[Resource("res://systems/grid/grid_generator/grid_feature.gd")]([ExtResource("feat_nectar"), ExtResource("feat_lake")])
+feature_count = 3
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=131529003]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)
