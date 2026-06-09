@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://cl846wy55qmn4"]
 
-[ext_resource type="Environment" uid="uid://d3voidenv9999" path="res://levels/test_room/void_environment.tres" id="1_void"]
-[ext_resource type="Material" uid="uid://ol07npqm6q0q" path="res://assets/3d/mat_mythic_sea.tres" id="mat_sea"]
 [ext_resource type="Script" uid="uid://c1net0xfwu22l" path="res://systems/grid/grid_generator/grid_generator.gd" id="1_hw46n"]
+[ext_resource type="Environment" uid="uid://d3voidenwbbba" path="res://levels/test_room/void_environment.tres" id="1_void"]
 [ext_resource type="PackedScene" uid="uid://dj48qksmd0q8x" path="res://systems/camera/tactical_camera.tscn" id="2_camera"]
 [ext_resource type="Resource" uid="uid://75xqi4b6msv0" path="res://data/terrain/tile_dirt.tres" id="2_kt0r7"]
+[ext_resource type="Resource" path="res://data/terrain/tile_grass.tres" id="3_grass"]
 [ext_resource type="PackedScene" uid="uid://d3j1abc123def" path="res://entities/unit/base/unit.tscn" id="3_unit"]
 [ext_resource type="Script" uid="uid://car7yf0c3gkxo" path="res://systems/grid/grid_controller.gd" id="4_controller"]
+[ext_resource type="Resource" path="res://data/terrain/tile_water.tres" id="4_water"]
 [ext_resource type="Script" uid="uid://c2cgnt703ea2e" path="res://systems/grid/highlights/highlight_manager.gd" id="5_highlight"]
 [ext_resource type="PackedScene" uid="uid://bfohpuopwfs7j" path="res://systems/grid/highlights/highlight_move.tscn" id="6_hw3ya"]
 [ext_resource type="PackedScene" uid="uid://bvnnrvkf264q4" path="res://systems/grid/highlights/highlight_attack.tscn" id="7_dajra"]
@@ -30,18 +31,28 @@
 [ext_resource type="Resource" uid="uid://mcyclops" path="res://data/units/monsters/mage_cyclops.tres" id="19_mage"]
 [ext_resource type="Resource" uid="uid://wminotaur" path="res://data/units/monsters/warrior_minotaur.tres" id="20_warrior"]
 [ext_resource type="Script" uid="uid://cw2a56lp8x7ql" path="res://systems/combat/player_input_controller.gd" id="21_pic"]
+[ext_resource type="Material" uid="uid://ol07npqm6q0q" path="res://assets/3d/mat_mythic_sea.tres" id="mat_sea"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.05
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_moisture"]
+frequency = 0.02
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_sea"]
 size = Vector2(100, 100)
 
 [node name="GridGenerator" type="Node3D" unique_id=1068552106]
 script = ExtResource("1_hw46n")
-default_terrain = ExtResource("2_kt0r7")
+map_radius = 8
 elevation_noise = SubResource("FastNoiseLite_kt0r7")
 max_elevation = 5
+fallback_terrain = ExtResource("2_kt0r7")
+moisture_noise = SubResource("FastNoiseLite_moisture")
+arid_terrain = ExtResource("2_kt0r7")
+fertile_terrain = ExtResource("3_grass")
+water_terrain = ExtResource("4_water")
+water_level = 1
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=131529003]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)

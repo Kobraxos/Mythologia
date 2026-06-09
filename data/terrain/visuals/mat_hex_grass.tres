@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/3d/shd_hex_pillar.gdshader" id="1_shader"]
+
+[resource]
+resource_name = "mat_grass"
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/base_color = Color(0.25, 0.45, 0.25, 1)
+shader_parameter/detail_color = Color(0.35, 0.55, 0.3, 1)
+shader_parameter/crack_color = Color(0.15, 0.35, 0.15, 1)
+shader_parameter/emission_strength = 0.0
+shader_parameter/uv_scale = 1.2
+shader_parameter/crack_thickness = 0.05
+shader_parameter/fade_start_y = 0.0
+shader_parameter/fade_end_y = -0.5
+shader_parameter/roughness_base = 0.9
+shader_parameter/metallic_base = 0.0
+shader_parameter/noise_darkening = 0.6

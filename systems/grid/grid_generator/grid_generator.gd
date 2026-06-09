@@ -3,8 +3,6 @@ extends Node3D
 
 # EXPORTS
 @export var map_radius: int = 5
-## La donnée de terrain (ex: Plaine) à injecter dans la grille logique lors de la génération.
-@export var default_terrain: TerrainData
 @export var obstacles: Array[Vector3i] = []
 
 @export_category("Procedural Generation")
@@ -12,6 +10,20 @@ extends Node3D
 @export var elevation_noise: FastNoiseLite
 ## Hauteur maximale (Z) que la génération procédurale peut atteindre.
 @export var max_elevation: int = 3
+
+@export_category("Biome Generation")
+## Terrain de repli si aucun biome ne correspond ou erreur
+@export var fallback_terrain: TerrainData
+## Bruit déterminant l'humidité/fertilité de chaque case
+@export var moisture_noise: FastNoiseLite
+## Terrain utilisé pour les zones arides (humidité <= 0.0)
+@export var arid_terrain: TerrainData
+## Terrain utilisé pour les zones fertiles (humidité > 0.0)
+@export var fertile_terrain: TerrainData
+## Terrain utilisé pour l'eau
+@export var water_terrain: TerrainData
+## Niveau Z (altitude) sous lequel les tuiles deviennent de l'eau
+@export var water_level: int = 0
 
 # PUBLIC VARIABLES
 ## Dictionnaire contenant toutes les tuiles instanciées sur le plateau.
@@ -36,11 +48,6 @@ func generate_grid() -> void:
 	# Synchronisation absolue avec la Couche 2 (Modèle de données)
 	GridManager.clear_terrain()
 
-	# Validation des dépendances requise par les standards
-	if not default_terrain:
-		push_error("GridGenerator: La ressource 'default_terrain' est manquante. Le DDD exige une donnée.")
-		return
-
 	# Le rayon génère par défaut à Z=0 (Sol). Les obstacles peuvent avoir des Z différents.
 	var coords: Array[Vector3i] = HexMath.get_hexes_in_radius(Vector3i.ZERO, map_radius)
 	var local_pathfinder: HexPathfinder = HexPathfinder.new()
@@ -49,8 +56,11 @@ func generate_grid() -> void:
 	var flat_to_3d: Dictionary[Vector2i, Vector3i] = {}
 
 	# Optionnel : On change la graine (seed) à chaque génération pour avoir une carte unique
+	var grid_seed: int = randi()
 	if elevation_noise:
-		elevation_noise.seed = randi()
+		elevation_noise.seed = grid_seed
+	if moisture_noise:
+		moisture_noise.seed = grid_seed + 1000 # Graine décalée pour éviter la corrélation avec l'élévation
 
 	for hex_coord: Vector3i in coords:
 		# Application du relief procédural via le bruit (Noise)
@@ -63,11 +73,34 @@ func generate_grid() -> void:
 		if obstacles.has(hex_coord):
 			continue
 			
-		if not default_terrain.visual_prefab:
-			push_error("GridGenerator: 'visual_prefab' manquant dans la donnée default_terrain.")
+		# --- BIOME SELECTION ---
+		var chosen_terrain: TerrainData = fallback_terrain
+		
+		# 1. Vérification de l'eau (Altitude)
+		if hex_coord.z <= water_level and water_terrain:
+			chosen_terrain = water_terrain
+		else:
+			# 2. Logique d'humidité (Moisture)
+			if moisture_noise:
+				var moisture_val: float = moisture_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
+				if moisture_val > 0.0 and fertile_terrain:
+					chosen_terrain = fertile_terrain
+				elif arid_terrain:
+					chosen_terrain = arid_terrain
+			else:
+				# Fallback si pas de bruit défini
+				if fertile_terrain: chosen_terrain = fertile_terrain
+				elif arid_terrain: chosen_terrain = arid_terrain
+			
+		if not chosen_terrain:
+			push_error("GridGenerator: Aucun TerrainData valide trouvé (fallback, fertile, ou aride).")
 			continue
 			
-		var tile: Node3D = default_terrain.visual_prefab.instantiate() as Node3D
+		if not chosen_terrain.visual_prefab:
+			push_error("GridGenerator: 'visual_prefab' manquant dans la donnée de terrain '%s'." % chosen_terrain.id)
+			continue
+			
+		var tile: Node3D = chosen_terrain.visual_prefab.instantiate() as Node3D
 		if not tile:
 			push_error("GridGenerator: Impossible d'instancier le visuel en tant que Node3D.")
 			continue
@@ -75,14 +108,14 @@ func generate_grid() -> void:
 		# Utilisation de notre utilitaire mathématique pour le placement spatial
 		var world_pos: Vector3 = HexMath.hex_to_world(hex_coord, GridManager.hex_size, GridManager.elevation_step)
 		tile.position = world_pos
-		tile.name = "HexTile_%d_%d_%d" % [hex_coord.x, hex_coord.y, hex_coord.z]
+		tile.name = "HexTile_%s_%d_%d_%d" % [chosen_terrain.id, hex_coord.x, hex_coord.y, hex_coord.z]
 
 		add_child(tile)
 		hex_tiles[hex_coord] = tile
 		
 		# Injections de données vitales
-		GridManager.terrain_tiles[hex_coord] = default_terrain
-		local_pathfinder.add_hex(hex_coord, world_pos, default_terrain.movement_cost)
+		GridManager.terrain_tiles[hex_coord] = chosen_terrain
+		local_pathfinder.add_hex(hex_coord, world_pos, chosen_terrain.movement_cost)
 		flat_to_3d[Vector2i(hex_coord.x, hex_coord.y)] = hex_coord
 
 	# Deuxième passe : Connexion des voisins valides pour la navigation

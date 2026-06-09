@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3]
+
+[ext_resource type="Script" uid="uid://b67fvhv5qv7qo" path="res://data/terrain/terrain_data.gd" id="1_yfgsx"]
+[ext_resource type="PackedScene" path="res://data/terrain/visuals/visual_water.tscn" id="2_vis"]
+
+[resource]
+script = ExtResource("1_yfgsx")
+id = &"water"
+terrain_name = "Eau de l'Olympe"
+description = "Un bassin sacré. Difficile à traverser."
+is_walkable = true
+movement_cost = 2
+terrain_element = 2
+visual_prefab = ExtResource("2_vis")
+metadata/_custom_type_script = "uid://b67fvhv5qv7qo"

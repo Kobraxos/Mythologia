@@ -1,7 +1,8 @@
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
 
-uniform vec3 base_color : source_color = vec3(0.55, 0.55, 0.6); // Greyish marble to prevent blowout
+uniform vec3 base_color : source_color = vec3(0.55, 0.55, 0.6); // Greyish marble
+uniform vec3 detail_color : source_color = vec3(0.45, 0.45, 0.5); // Second color for organic noise
 uniform vec3 crack_color : source_color = vec3(1.0, 0.75, 0.15); // Divine Gold
 uniform float emission_strength : hint_range(0.0, 10.0) = 1.5;
 
@@ -76,14 +77,21 @@ void fragment() {
     float crack_visibility = mix(1.0, 0.15, is_top_surface);
     crack *= crack_visibility;
     
-    // Slight noise to the base marble to give it texture
-    float surface_noise = simplex_noise(world_pos.xz * 4.0) * 0.15;
-    vec3 final_albedo = base_color - vec3(surface_noise * noise_darkening); // Darken slightly for texture
+    // 3. Organic Surface Mixing
+    float surface_noise = simplex_noise(world_pos.xz * 4.0); // 0.0 to 1.0
     
-    // 3. Abyssal Fade (Fade to black as it goes down)
+    // Mix base color and detail color
+    vec3 mixed_color = mix(base_color, detail_color, surface_noise);
+    
+    // Darken slightly for texture depth
+    vec3 final_albedo = mixed_color - vec3(surface_noise * noise_darkening * 0.2); 
+    
+    // Blend the cracks into the albedo so they are visible even without emission (like dry sand in crevices)
+    final_albedo = mix(final_albedo, crack_color, crack);
+    
+    // 4. Abyssal Fade (Fade to black as it goes down)
     float fade = clamp((world_pos.y - fade_end_y) / (fade_start_y - fade_end_y), 0.0, 1.0);
     
-    // Keep base color mostly unaffected by abyssal fade, or keep the original logic
     final_albedo *= fade;
     
     ALBEDO = final_albedo;

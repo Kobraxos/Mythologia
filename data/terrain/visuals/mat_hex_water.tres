@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/3d/shd_hex_liquid.gdshader" id="1_shader"]
+
+[resource]
+resource_name = "mat_water"
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/base_color = Color(0.0, 0.4, 0.6, 1)
+shader_parameter/emission_color = Color(0.0, 0.6, 0.8, 1)
+shader_parameter/emission_strength = 0.5
+shader_parameter/wave_speed = 0.5
+shader_parameter/wave_scale = 2.0
+shader_parameter/fade_start_y = 0.0
+shader_parameter/fade_end_y = -0.5
