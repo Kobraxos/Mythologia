@@ -1,15 +1,16 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled;
 
-uniform vec3 base_color : source_color = vec3(0.02, 0.02, 0.05); // Very dark navy/void
-uniform vec3 emission_color : source_color = vec3(0.4, 0.1, 0.9); // Deep magical purple
-uniform float emission_strength : hint_range(0.0, 10.0) = 2.5;
+uniform vec3 base_color : source_color = vec3(0.15, 0.1, 0.25); // Deep dusk purple
+uniform vec3 cloud_color : source_color = vec3(0.5, 0.25, 0.35); // Warm sunset pink/purple clouds
+uniform vec3 emission_color : source_color = vec3(1.0, 0.6, 0.15); // Glowing golden/orange sunset
+uniform float emission_strength : hint_range(0.0, 10.0) = 1.2;
 
-uniform vec2 pan_speed_1 = vec2(0.03, 0.02);
-uniform vec2 pan_speed_2 = vec2(-0.02, 0.04);
+uniform vec2 pan_speed_1 = vec2(0.015, 0.01);
+uniform vec2 pan_speed_2 = vec2(-0.01, 0.015);
 
-uniform float uv_scale = 4.0;
-uniform float threshold : hint_range(0.0, 1.0) = 0.65; // High threshold for thin, rare wisps
+uniform float uv_scale = 3.0;
+uniform float threshold : hint_range(0.0, 1.0) = 0.5;
 
 // Procedural pseudo-random
 vec2 hash(vec2 p) {
@@ -51,18 +52,22 @@ void fragment() {
     vec2 uv1 = base_uv + TIME * pan_speed_1;
     vec2 uv2 = base_uv + TIME * pan_speed_2;
     
-    // Use FBM for a much more organic, smoky, "soul-like" texture
+    // Use FBM for a thick organic cloud texture
     float n1 = fbm(uv1);
-    float n2 = fbm(uv2);
+    float n2 = fbm(uv2 + vec2(5.2, 1.3)); // Offset second noise
     
     // Average
     float combined = (n1 + n2) * 0.5;
     
-    // Smoothstep for very soft, smoky edges instead of harsh blobs
-    float crests = smoothstep(threshold - 0.2, threshold + 0.1, combined);
+    // Masks for clouds and glowing divine edges
+    float cloud_mask = smoothstep(threshold - 0.25, threshold + 0.15, combined);
+    float glow_mask = smoothstep(threshold + 0.05, threshold + 0.3, combined);
     
-    // Add glow to ALBEDO (since unshaded ignores EMISSION)
-    vec3 final_color = base_color + (emission_color * crests * emission_strength);
+    // Blend sky base color with white clouds
+    vec3 current_color = mix(base_color, cloud_color, cloud_mask);
+    
+    // Add golden divine glow to the thickest parts of the clouds
+    vec3 final_color = current_color + (emission_color * glow_mask * emission_strength);
     
     ALBEDO = final_color;
 }

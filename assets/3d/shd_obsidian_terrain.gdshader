@@ -1,15 +1,19 @@
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
 
-uniform vec3 base_color : source_color = vec3(0.08, 0.08, 0.1); // Dark Obsidian
-uniform vec3 crack_color : source_color = vec3(0.6, 0.1, 1.0); // Magical Purple
-uniform float emission_strength : hint_range(0.0, 10.0) = 2.0;
+uniform vec3 base_color : source_color = vec3(0.55, 0.55, 0.6); // Greyish marble to prevent blowout
+uniform vec3 crack_color : source_color = vec3(1.0, 0.75, 0.15); // Divine Gold
+uniform float emission_strength : hint_range(0.0, 10.0) = 1.5;
 
 uniform float uv_scale = 0.4; // MUCH lower scale = huge, rare veins instead of a messy web
 uniform float crack_thickness : hint_range(0.0, 1.0) = 0.015; // VERY thin hairline fractures
 
 uniform float fade_start_y = 0.0;
 uniform float fade_end_y = -0.5;
+
+uniform float roughness_base : hint_range(0.0, 1.0) = 0.1;
+uniform float metallic_base : hint_range(0.0, 1.0) = 0.1;
+uniform float noise_darkening : hint_range(0.0, 1.0) = 0.5;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -72,20 +76,21 @@ void fragment() {
     float crack_visibility = mix(1.0, 0.15, is_top_surface);
     crack *= crack_visibility;
     
-    // Slight noise to the base obsidian
+    // Slight noise to the base marble to give it texture
     float surface_noise = simplex_noise(world_pos.xz * 4.0) * 0.15;
-    vec3 final_albedo = base_color + vec3(surface_noise);
+    vec3 final_albedo = base_color - vec3(surface_noise * noise_darkening); // Darken slightly for texture
     
     // 3. Abyssal Fade (Fade to black as it goes down)
     float fade = clamp((world_pos.y - fade_end_y) / (fade_start_y - fade_end_y), 0.0, 1.0);
     
+    // Keep base color mostly unaffected by abyssal fade, or keep the original logic
     final_albedo *= fade;
     
     ALBEDO = final_albedo;
     
-    // ROUGHNESS & METALLIC for Obsidian look
-    METALLIC = 0.4;
-    ROUGHNESS = 0.2 + surface_noise;
+    // ROUGHNESS & METALLIC
+    METALLIC = metallic_base;
+    ROUGHNESS = roughness_base + (surface_noise * 0.5);
     
     // EMISSION
     EMISSION = crack_color * crack * emission_strength * fade;
