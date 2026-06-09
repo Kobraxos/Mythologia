@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BiomePalette" format=3]
+
+[ext_resource type="Script" path="res://data/terrain/biome_palette.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://75xqi4b6msv0" path="res://data/terrain/tile_dirt.tres" id="2_dirt"]
+[ext_resource type="Resource" path="res://data/terrain/tile_grass.tres" id="3_grass"]
+[ext_resource type="Resource" path="res://data/terrain/tile_water.tres" id="4_water"]
+[ext_resource type="Resource" path="res://data/terrain/tiles/tile_obstacle.tres" id="5_obstacle"]
+
+[resource]
+script = ExtResource("1_script")
+biome_name = "Olympe"
+water_level = 1
+base_terrain = ExtResource("2_dirt")
+fertile_terrain = ExtResource("3_grass")
+water_terrain = ExtResource("4_water")
+obstacle_terrain = ExtResource("5_obstacle")

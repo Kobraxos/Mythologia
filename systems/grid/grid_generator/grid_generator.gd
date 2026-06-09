@@ -12,18 +12,12 @@ extends Node3D
 @export var max_elevation: int = 3
 
 @export_category("Biome Generation")
-## Terrain de repli si aucun biome ne correspond ou erreur
-@export var fallback_terrain: TerrainData
+## Palette contenant tous les terrains pour ce niveau
+@export var active_biome: BiomePalette
 ## Bruit déterminant l'humidité/fertilité de chaque case
 @export var moisture_noise: FastNoiseLite
-## Terrain utilisé pour les zones arides (humidité <= 0.0)
-@export var arid_terrain: TerrainData
-## Terrain utilisé pour les zones fertiles (humidité > 0.0)
-@export var fertile_terrain: TerrainData
-## Terrain utilisé pour l'eau
-@export var water_terrain: TerrainData
-## Niveau Z (altitude) sous lequel les tuiles deviennent de l'eau
-@export var water_level: int = 0
+## Bruit déterminant l'apparition d'obstacles
+@export var obstacle_noise: FastNoiseLite
 
 # PUBLIC VARIABLES
 ## Dictionnaire contenant toutes les tuiles instanciées sur le plateau.
@@ -60,7 +54,9 @@ func generate_grid() -> void:
 	if elevation_noise:
 		elevation_noise.seed = grid_seed
 	if moisture_noise:
-		moisture_noise.seed = grid_seed + 1000 # Graine décalée pour éviter la corrélation avec l'élévation
+		moisture_noise.seed = grid_seed + 1000 # Graine décalée
+	if obstacle_noise:
+		obstacle_noise.seed = grid_seed + 2000 # Graine décalée
 
 	for hex_coord: Vector3i in coords:
 		# Application du relief procédural via le bruit (Noise)
@@ -74,26 +70,37 @@ func generate_grid() -> void:
 			continue
 			
 		# --- BIOME SELECTION ---
-		var chosen_terrain: TerrainData = fallback_terrain
+		if not active_biome:
+			push_error("GridGenerator: Aucune BiomePalette assignée !")
+			continue
+
+		var chosen_terrain: TerrainData = active_biome.base_terrain
 		
 		# 1. Vérification de l'eau (Altitude)
-		if hex_coord.z <= water_level and water_terrain:
-			chosen_terrain = water_terrain
+		if hex_coord.z <= active_biome.water_level and active_biome.water_terrain:
+			chosen_terrain = active_biome.water_terrain
 		else:
-			# 2. Logique d'humidité (Moisture)
-			if moisture_noise:
-				var moisture_val: float = moisture_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-				if moisture_val > 0.0 and fertile_terrain:
-					chosen_terrain = fertile_terrain
-				elif arid_terrain:
-					chosen_terrain = arid_terrain
-			else:
-				# Fallback si pas de bruit défini
-				if fertile_terrain: chosen_terrain = fertile_terrain
-				elif arid_terrain: chosen_terrain = arid_terrain
+			# 2. Vérification des obstacles (Bruit haute fréquence)
+			var is_obstacle: bool = false
+			if obstacle_noise and active_biome.obstacle_terrain:
+				var obs_val: float = obstacle_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
+				if obs_val > 0.6:
+					chosen_terrain = active_biome.obstacle_terrain
+					is_obstacle = true
+					
+			# 3. Logique d'humidité (Moisture)
+			if not is_obstacle:
+				if moisture_noise:
+					var moisture_val: float = moisture_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
+					if moisture_val > 0.0 and active_biome.fertile_terrain:
+						chosen_terrain = active_biome.fertile_terrain
+					elif active_biome.base_terrain:
+						chosen_terrain = active_biome.base_terrain
+				else:
+					if active_biome.base_terrain: chosen_terrain = active_biome.base_terrain
 			
 		if not chosen_terrain:
-			push_error("GridGenerator: Aucun TerrainData valide trouvé (fallback, fertile, ou aride).")
+			push_error("GridGenerator: Aucun TerrainData valide trouvé dans la palette.")
 			continue
 			
 		if not chosen_terrain.visual_prefab:

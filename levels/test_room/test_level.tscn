@@ -7,7 +7,7 @@
 [ext_resource type="Resource" path="res://data/terrain/tile_grass.tres" id="3_grass"]
 [ext_resource type="PackedScene" uid="uid://d3j1abc123def" path="res://entities/unit/base/unit.tscn" id="3_unit"]
 [ext_resource type="Script" uid="uid://car7yf0c3gkxo" path="res://systems/grid/grid_controller.gd" id="4_controller"]
-[ext_resource type="Resource" path="res://data/terrain/tile_water.tres" id="4_water"]
+[ext_resource type="Resource" path="res://data/terrain/biomes/olympian_biome.tres" id="10_biome"]
 [ext_resource type="Script" uid="uid://c2cgnt703ea2e" path="res://systems/grid/highlights/highlight_manager.gd" id="5_highlight"]
 [ext_resource type="PackedScene" uid="uid://bfohpuopwfs7j" path="res://systems/grid/highlights/highlight_move.tscn" id="6_hw3ya"]
 [ext_resource type="PackedScene" uid="uid://bvnnrvkf264q4" path="res://systems/grid/highlights/highlight_attack.tscn" id="7_dajra"]
@@ -39,6 +39,9 @@ frequency = 0.05
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_moisture"]
 frequency = 0.02
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_obstacle"]
+frequency = 0.05
+
 [sub_resource type="PlaneMesh" id="PlaneMesh_sea"]
 size = Vector2(100, 100)
 
@@ -47,12 +50,9 @@ script = ExtResource("1_hw46n")
 map_radius = 8
 elevation_noise = SubResource("FastNoiseLite_kt0r7")
 max_elevation = 5
-fallback_terrain = ExtResource("2_kt0r7")
+active_biome = ExtResource("10_biome")
 moisture_noise = SubResource("FastNoiseLite_moisture")
-arid_terrain = ExtResource("2_kt0r7")
-fertile_terrain = ExtResource("3_grass")
-water_terrain = ExtResource("4_water")
-water_level = 1
+obstacle_noise = SubResource("FastNoiseLite_obstacle")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=131529003]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)

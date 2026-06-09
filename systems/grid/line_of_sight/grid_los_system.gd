@@ -13,6 +13,7 @@ const HEX_DIRECTIONS: Array[Vector2i] = [
 
 # ÉTATS MATHÉMATIQUES INTERNES (Data-Oriented)
 var _static_heights: Dictionary = {}
+var _static_blockers: Dictionary = {}
 var _dynamic_blockers: Dictionary = {}
 
 # CACHE
@@ -159,6 +160,10 @@ func has_line_of_sight(start_hex: Vector3i, target_hex: Vector3i, ignored_hex: V
 		if current_3d != ignored_hex and _has_dynamic_blocker(current_3d):
 			return false
 			
+		# AAA : Bloqueurs statiques (Murs, Arbres) O(1)
+		if _static_blockers.has(current_3d):
+			return false
+			
 		# AAA : Topologie 2.5D O(1)
 		var max_z: int = max(start_hex.z, target_hex.z)
 		if current_z > max_z:
@@ -175,9 +180,16 @@ func _connect_to_events() -> void:
 
 func _on_grid_topology_ready(topology: Dictionary) -> void:
 	_static_heights.clear()
+	_static_blockers.clear()
 	for hex_3d: Vector3i in topology.keys():
 		var hex_2d := Vector2i(hex_3d.x, hex_3d.y)
 		_static_heights[hex_2d] = hex_3d.z
+		
+		# Mise en cache des bloqueurs statiques (ex: Piliers, Arbres)
+		var terrain: TerrainData = topology[hex_3d]
+		if terrain and terrain.blocks_line_of_sight:
+			_static_blockers[hex_3d] = true
+			
 	_invalidate_los_cache()
 
 func _on_dynamic_blocker_changed(_unit: Node, from_hex: Vector3i, to_hex: Vector3i) -> void:

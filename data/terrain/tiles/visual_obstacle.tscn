@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://b23v20a233b"]
+
+[ext_resource type="Material" uid="uid://dp1e2y3f4h5j6" path="res://data/terrain/visuals/mat_hex_dirt.tres" id="1_mat"]
+[ext_resource type="ArrayMesh" uid="uid://bhkn5v2swm7hy" path="res://assets/3d/msh_hex_base.res" id="2_mesh"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="3_tex"]
+
+[node name="VisualObstacle" type="MeshInstance3D"]
+material_override = ExtResource("1_mat")
+mesh = ExtResource("2_mesh")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+cast_shadow = 1
+offset = Vector2(0, 64)
+pixel_size = 0.015
+billboard = 2
+alpha_cut = 2
+texture = ExtResource("3_tex")

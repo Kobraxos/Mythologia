@@ -62,6 +62,10 @@ func _process_displacement(origin_unit: Unit, target_unit: Unit, distance: int, 
 		if GridManager.unit_positions.has(next_hex_3d) and GridManager.unit_positions[next_hex_3d] != target_unit: break # Bloqué par une autre unité
 		if z - current_hex_3d.z > MAX_ELEVATION_DIFF: break # Mur infranchissable
 			
+		# AAA : Vérification du bloqueur statique (Obstacles)
+		var terrain: TerrainData = GridManager.get_active_terrain(next_hex_3d)
+		if not terrain or not terrain.is_walkable: break
+			
 		final_hex = next_hex_3d
 		current_hex_3d = final_hex
 		
@@ -74,8 +78,13 @@ func _resolve_caster_destination(caster: Unit, target_hex: Vector3i, check_path:
 		var target_3d := Vector3i(target_hex.x, target_hex.y, target_z)
 		var is_free: bool = not GridManager.unit_positions.has(target_3d) or GridManager.unit_positions[target_3d] == caster
 		
+		# AAA : Vérification stricte du terrain praticable
+		var terrain: TerrainData = GridManager.get_active_terrain(target_3d)
+		if terrain and not terrain.is_walkable:
+			is_free = false
+		
 		if is_free:
-			if not check_path or _check_dash_path(caster.current_hex, target_3d):
+			if not check_path or _check_dash_path(caster, target_3d):
 				return target_3d
 				
 	# AAA 2 : Si la case est occupée (ex: attaque sur un ennemi), on s'arrête sur la case adjacente la plus proche pour frapper en mêlée.
@@ -95,10 +104,15 @@ func _find_best_adjacent_hex(caster: Unit, target_hex: Vector3i, check_path: boo
 		if GridManager.unit_positions.has(hex_3d) and GridManager.unit_positions[hex_3d] != caster:
 			continue
 			
+		# AAA : L'attaquant de mêlée ne peut pas atterrir sur un obstacle !
+		var terrain: TerrainData = GridManager.get_active_terrain(hex_3d)
+		if not terrain or not terrain.is_walkable:
+			continue
+			
 		if abs(z - target_hex.z) > MAX_ELEVATION_DIFF:
 			continue
 			
-		if check_path and not _check_dash_path(origin_hex, hex_3d):
+		if check_path and not _check_dash_path(caster, hex_3d):
 			continue
 			
 		var dist: int = HexMath.distance_2d(origin_hex, hex_3d)
@@ -108,7 +122,8 @@ func _find_best_adjacent_hex(caster: Unit, target_hex: Vector3i, check_path: boo
 			
 	return best_hex
 
-func _check_dash_path(origin_hex: Vector3i, target_hex: Vector3i) -> bool:
+func _check_dash_path(caster: Unit, target_hex: Vector3i) -> bool:
+	var origin_hex := caster.current_hex
 	var origin_2d := Vector2i(origin_hex.x, origin_hex.y)
 	var dest_2d := Vector2i(target_hex.x, target_hex.y)
 	var dist: int = HexMath.distance_2d_flat(origin_2d, dest_2d)
@@ -126,8 +141,16 @@ func _check_dash_path(origin_hex: Vector3i, target_hex: Vector3i) -> bool:
 		
 		# Vérifier que la case traversée n'est pas un obstacle ou une unité bloquante
 		var p_3d := Vector3i(p_2d.x, p_2d.y, p_z)
-		if GridManager.unit_positions.has(p_3d) and p_3d != target_hex:
+		
+		# AAA : Impossible de traverser un bloqueur statique (Obstacles)
+		var terrain: TerrainData = GridManager.get_active_terrain(p_3d)
+		if not terrain or not terrain.is_walkable:
 			return false
+			
+		if GridManager.unit_positions.has(p_3d) and p_3d != target_hex:
+			var blocking_unit: Unit = GridManager.unit_positions[p_3d]
+			if blocking_unit.faction != caster.faction:
+				return false
 			
 		current_hex_3d = p_3d
 		
