@@ -55,9 +55,9 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="SystemActionButton" type="Button" node_paths=PackedStringArray("shortcut_label", "active_overlay")]
-custom_minimum_size = Vector2(64, 64)
-offset_right = 64.0
-offset_bottom = 64.0
+custom_minimum_size = Vector2(80, 80)
+offset_right = 80.0
+offset_bottom = 80.0
 toggle_mode = true
 expand_icon = true
 theme_override_styles/normal = SubResource("StyleBoxFlat_normal")

@@ -7,6 +7,7 @@ extends Button
 
 func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
+	shortcut_in_tooltip = false
 	if toggle_mode:
 		toggled.connect(_on_toggled)
 

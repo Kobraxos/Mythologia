@@ -17,6 +17,7 @@ var _caster: Node
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
+	shortcut_in_tooltip = false
 	pressed.connect(_on_pressed)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)

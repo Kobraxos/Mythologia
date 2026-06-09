@@ -9,40 +9,41 @@ border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
 border_color = Color(0.831, 0.678, 0.211, 1)
-corner_radius_top_left = 40
-corner_radius_top_right = 40
-corner_radius_bottom_right = 40
-corner_radius_bottom_left = 40
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
 shadow_color = Color(0, 0, 0, 0.6)
 shadow_size = 4
 shadow_offset = Vector2(0, 4)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
-bg_color = Color(0.1, 0.08, 0.08, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.831, 0.678, 0.211, 0.5)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1, 0.1, 0.1, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
-bg_color = Color(0.65, 0.16, 0.16, 1)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+bg_color = Color(0.8, 0.15, 0.15, 1)
 
-[node name="UnitFrame" type="VBoxContainer" node_paths=PackedStringArray("portrait_label", "health_bar", "health_text")]
-custom_minimum_size = Vector2(100, 0)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shield_fill"]
+bg_color = Color(0.831, 0.686, 0.216, 0.85)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mana_fill"]
+bg_color = Color(0.15, 0.45, 0.85, 1)
+
+[node name="UnitFrame" type="VBoxContainer" node_paths=PackedStringArray("portrait_label", "portrait_rect", "health_bar", "health_text", "shield_bar", "mana_bar")]
+custom_minimum_size = Vector2(120, 0)
 mouse_filter = 2
 script = ExtResource("1_script")
 portrait_label = NodePath("PortraitMargin/PortraitPanel/Label")
+portrait_rect = NodePath("PortraitMargin/PortraitPanel/PortraitRect")
 health_bar = NodePath("HealthBar")
 health_text = NodePath("HealthBar/HPLabel")
+shield_bar = NodePath("ShieldBar")
+mana_bar = NodePath("ManaBar")
 
 [node name="PortraitMargin" type="MarginContainer" parent="."]
 layout_mode = 2
@@ -52,11 +53,18 @@ theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 5
 
 [node name="PortraitPanel" type="PanelContainer" parent="PortraitMargin"]
-custom_minimum_size = Vector2(80, 80)
+clip_children = 2
+custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_portrait")
+
+[node name="PortraitRect" type="TextureRect" parent="PortraitMargin/PortraitPanel"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
 
 [node name="Label" type="Label" parent="PortraitMargin/PortraitPanel"]
 layout_mode = 2
@@ -66,7 +74,7 @@ text = "Portrait"
 horizontal_alignment = 1
 
 [node name="HealthBar" type="ProgressBar" parent="."]
-custom_minimum_size = Vector2(100, 16)
+custom_minimum_size = Vector2(120, 20)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
@@ -88,3 +96,23 @@ theme_override_font_sizes/font_size = 12
 text = "75 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="ShieldBar" type="ProgressBar" parent="."]
+visible = false
+custom_minimum_size = Vector2(120, 6)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_shield_fill")
+value = 50.0
+show_percentage = false
+
+[node name="ManaBar" type="ProgressBar" parent="."]
+visible = false
+custom_minimum_size = Vector2(120, 6)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_mana_fill")
+value = 50.0
+show_percentage = false
