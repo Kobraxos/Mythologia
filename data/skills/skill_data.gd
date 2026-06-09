@@ -21,8 +21,12 @@ enum AoEHeightPropagation { IGNORE, DOWNWARD_ONLY, UPWARD_ONLY, SAME_LEVEL_ONLY,
 
 ## Modificateurs contextuels modifiant dynamiquement la puissance du sort.
 enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CASTER_CURRENT_MANA, FLAT_HP_DIFFERENCE, ELEVATION_DIFFERENCE }
+enum SkillCategory { ATTACK, SPELL, SUPPORT, MOVEMENT, TERRAIN }
 
 @export_category("Identity & UI")
+@export_group("Lore & Identity")
+@export var category: SkillCategory = SkillCategory.ATTACK
+@export_multiline var flavor_text: String = ""
 @export var id: StringName = &""
 @export var skill_name: String = "New Skill"
 @export_multiline var description: String = ""
@@ -148,28 +152,51 @@ func get_tooltip_data(caster: Node = null) -> Dictionary:
 	else:
 		# Formule de base brute
 		phys_dmg_str = str(physical_damage_multiplier * 100) + "% ATK"
-		heal_str = str(base_healing) + " Soins"
-		
+		heal_str = str(base_healing)
+
+	if hit_count > 1:
+		if physical_damage_multiplier > 0:
+			phys_dmg_str = str(hit_count) + "x " + phys_dmg_str
+		if base_healing > 0:
+			heal_str = str(hit_count) + "x " + heal_str
+			
 	# On remplace les balises dynamiques dans la description
-	final_desc = final_desc.replace("{damage}", "[color=red]" + phys_dmg_str + "[/color]")
-	final_desc = final_desc.replace("{healing}", "[color=green]" + heal_str + "[/color]")
+	final_desc = final_desc.replace("{damage}", "[b][color=#A52A2A]" + phys_dmg_str + "[/color][/b]")
+	final_desc = final_desc.replace("{healing}", "[b][color=#2ECC71]" + heal_str + "[/color][/b]")
 	
 	# Si les balises n'étaient pas utilisées mais que le sort fait des dégâts/soins, on ajoute en bas
 	if not "{damage}" in description and physical_damage_multiplier > 0:
-		final_desc += "\n\nDégâts physiques : [color=red]" + phys_dmg_str + "[/color]"
+		final_desc += "\n\n⚔️ [b][color=#A52A2A]" + phys_dmg_str + "[/color][/b] Dégâts Physiques"
 	if not "{healing}" in description and base_healing > 0:
-		final_desc += "\n\nSoins : [color=green]" + heal_str + "[/color]"
+		final_desc += "\n\n✨ [b][color=#2ECC71]" + heal_str + "[/color][/b] Soins"
+
+	if follow_up_skill != null:
+		final_desc += "\n\nDéclenche ensuite [url=skill:" + str(follow_up_skill.id) + "]" + follow_up_skill.skill_name + "[/url]."
 
 	var payload := {
 		"title": skill_name,
 		"description": final_desc,
+		"category": category,
+		"flavor_text": flavor_text,
+		"skill_element": skill_element,
 		"ap_cost": ap_cost,
 		"mana_cost": mana_cost,
+		"custom_resource_name": custom_resource_name,
+		"custom_resource_cost": custom_resource_cost,
 		"cooldown": cooldown,
 		"icon": icon,
 		"min_range": min_range,
 		"max_range": max_range,
 		"aoe_shape": aoe_shape,
-		"aoe_radius": aoe_radius
+		"aoe_radius": aoe_radius,
+		"requires_line_of_sight": requires_line_of_sight,
+		"smart_targeting": smart_targeting,
+		"destroys_terrain": destroys_terrain,
+		"is_execution": is_execution,
+		"pierces_obstacles": pierces_obstacles,
+		"armor_penetration_bonus": armor_penetration_bonus,
+		"max_elevation_up": max_elevation_up,
+		"max_elevation_down": max_elevation_down,
+		"elevation_range_bonus": elevation_range_bonus
 	}
 	return payload

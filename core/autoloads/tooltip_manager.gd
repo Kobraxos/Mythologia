@@ -74,6 +74,13 @@ func _instantiate_tooltip(data: Dictionary, source_pos: Vector2, source_size: Ve
 	tooltip.panel_mouse_entered.connect(_on_tooltip_mouse_entered)
 	tooltip.panel_mouse_exited.connect(_on_tooltip_mouse_exited)
 	
+	if tooltip.has_signal("size_changed_dynamically"):
+		tooltip.size_changed_dynamically.connect(_on_tooltip_size_changed)
+		
+	tooltip.set_meta("source_pos", source_pos)
+	tooltip.set_meta("source_size", source_size)
+	tooltip.set_meta("is_primary", parent_tooltip == null)
+	
 	tooltip.modulate.a = 0.0 
 	
 	await get_tree().process_frame
@@ -139,6 +146,17 @@ func _close_tooltips_from_index(index: int) -> void:
 	while _active_tooltips.size() > index:
 		var t = _active_tooltips.pop_back()
 		t.queue_free()
+
+func _on_tooltip_size_changed(tooltip: Control) -> void:
+	if not is_instance_valid(tooltip): return
+	var src_pos = tooltip.get_meta("source_pos", Vector2.ZERO)
+	var src_size = tooltip.get_meta("source_size", Vector2.ZERO)
+	var is_primary = tooltip.get_meta("is_primary", true)
+	
+	if is_primary:
+		_apply_smart_positioning(tooltip, src_pos, src_size)
+	else:
+		_apply_side_anchoring(tooltip, src_pos, src_size)
 
 # --- Mock Domain Service (DDD) ---
 
