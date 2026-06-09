@@ -105,6 +105,33 @@ static func get_hexes_in_radius(center: Vector3i, radius: int) -> Array[Vector3i
 			results.append(Vector3i(center.x + x, center.y + y, center.z))
 	return results
 
+## Retourne toutes les coordonnées cubiques contenues dans un rectangle donné.
+static func get_hexes_in_rectangle(center: Vector3i, width: int, height: int) -> Array[Vector3i]:
+	var results: Array[Vector3i] = []
+	for r in range(-height, height + 1):
+		var r_offset = int(floor(r / 2.0))
+		for q in range(-width - r_offset, width - r_offset + 1):
+			results.append(Vector3i(center.x + q, center.y + r, center.z))
+	return results
+
+## Retourne les hexagones situés sur les bords extérieurs d'un ensemble de coordonnées.
+static func get_edge_hexes(coords: Array[Vector3i]) -> Array[Vector3i]:
+	var edges: Array[Vector3i] = []
+	var coords_dict: Dictionary = {}
+	for c in coords:
+		coords_dict[Vector2i(c.x, c.y)] = true
+		
+	for c in coords:
+		var has_empty_neighbor = false
+		for dir in DIRECTIONS:
+			var n = Vector2i(c.x + dir.x, c.y + dir.y)
+			if not coords_dict.has(n):
+				has_empty_neighbor = true
+				break
+		if has_empty_neighbor:
+			edges.append(c)
+	return edges
+
 ## Convertit une position 3D physique (XYZ) en coordonnees de grille abstraite (Axe Q, Axe R, Elevation).
 static func world_to_hex(world_pos: Vector3, hex_size: float, elevation_step: float) -> Vector3i:
 	var q: float = (SQRT_3_3 * world_pos.x - ONE_THIRD * world_pos.z) / hex_size

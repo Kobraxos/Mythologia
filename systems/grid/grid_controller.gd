@@ -74,7 +74,9 @@ func get_hex_under_mouse() -> Vector3i:
 			for test_z: int in range(hex_coord.z, GridManager.max_elevation + 1):
 				var check_hex: Vector3i = Vector3i(hex_coord.x, hex_coord.y, test_z)
 				if GridManager.terrain_tiles.has(check_hex):
-					return check_hex
+					var tile_data = GridManager.terrain_tiles[check_hex]
+					if tile_data.id != &"abyss":
+						return check_hex
 			
 	return INVALID_HEX
 

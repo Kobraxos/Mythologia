@@ -1,223 +1,215 @@
 class_name GridGenerator
 extends Node3D
 
-# EXPORTS
-@export var map_radius: int = 5
+enum MapShape { HEXAGON, RECTANGLE }
+
+@export_category("Dimensions")
+@export var map_shape: MapShape = MapShape.HEXAGON
+@export var map_radius: int = 12
+@export var map_width: int = 15
+@export var map_height: int = 10
 @export var obstacles: Array[Vector3i] = []
 
 @export_category("Procedural Generation")
-## Bruit utilisé pour générer le relief de la carte (Laisser vide pour une carte plate).
 @export var elevation_noise: FastNoiseLite
-## Hauteur maximale (Z) que la génération procédurale peut atteindre.
-@export var max_elevation: int = 3
+@export var max_elevation: int = 8
 
 @export_category("Biome Generation")
-## Palette contenant tous les terrains pour ce niveau
 @export var active_biome: BiomePalette
-## Bruit déterminant l'humidité/fertilité de chaque case
 @export var moisture_noise: FastNoiseLite
-## Bruit déterminant l'apparition d'obstacles
 @export var obstacle_noise: FastNoiseLite
-## Bruit déterminant l'apparition des routes de marbre
 @export var road_noise: FastNoiseLite
-## Bruit déterminant l'apparition des éléments spéciaux (Nectar)
 @export var special_noise: FastNoiseLite
 
 @export_category("Procedural Features")
-## Les structures préfabriquées à tamponner sur la carte.
 @export var features: Array[GridFeature] = []
-## Le nombre de tampons que l'on essaie de placer par défaut.
 @export var feature_count: int = 0
 
-# PUBLIC VARIABLES
-## Dictionnaire contenant toutes les tuiles instanciées sur le plateau.
-## Clé : Vector3i (Coordonnées hexagonales abstraites, ex: (0, 0, 0))
-## Valeur : Node3D (Le modèle 3D physique instancié dans la scène)
-var hex_tiles: Dictionary[Vector3i, Node3D] = {}
+@export_category("AAA Spawns")
+@export var spawn_player_stats: UnitStats
+@export var spawn_enemy_stats: UnitStats
+@export var units_per_team: int = 5
 
-# GODOT BUILT-IN FUNCTIONS
+var hex_tiles: Dictionary = {}
+
 func _ready() -> void:
-	# Le DDD exige que l'Orchestrateur (ex: GameFlowManager) contrôle le moment de la génération.
 	GridEvents.request_grid_generation.connect(generate_grid)
 
-# PUBLIC FUNCTIONS
-## Fonction principale qui assemble le plateau en traduisant les mathématiques en 3D.
+func _exit_tree() -> void:
+	hex_tiles.clear()
+
 func generate_grid() -> void:
-	# Nettoyage de sécurité ciblé : on ne supprime QUE les tuiles générées précédemment
 	for tile: Node3D in hex_tiles.values():
 		if is_instance_valid(tile):
 			tile.queue_free()
 	hex_tiles.clear()
 	
-	# Synchronisation absolue avec la Couche 2 (Modèle de données)
 	GridManager.clear_terrain()
 
-	# Le rayon génère par défaut à Z=0 (Sol). Les obstacles peuvent avoir des Z différents.
-	var coords: Array[Vector3i] = HexMath.get_hexes_in_radius(Vector3i.ZERO, map_radius)
+	var coords: Array[Vector3i] = []
+	if map_shape == MapShape.HEXAGON:
+		coords = HexMath.get_hexes_in_radius(Vector3i.ZERO, map_radius)
+	else:
+		coords = HexMath.get_hexes_in_rectangle(Vector3i.ZERO, map_width, map_height)
+		
 	var local_pathfinder: HexPathfinder = HexPathfinder.new()
-
-	# Dictionnaire temporaire pour trouver rapidement le vrai Z d'une coordonnée 2D (Q, R)
 	var flat_to_3d: Dictionary[Vector2i, Vector3i] = {}
 
-	# Optionnel : On change la graine (seed) à chaque génération pour avoir une carte unique
 	var grid_seed: int = randi()
-	if elevation_noise:
-		elevation_noise.seed = grid_seed
-	if moisture_noise:
-		moisture_noise.seed = grid_seed + 1000 # Graine décalée
-	if obstacle_noise:
-		obstacle_noise.seed = grid_seed + 2000 # Graine décalée
-	if road_noise:
-		road_noise.seed = grid_seed + 3000
-	if special_noise:
-		special_noise.seed = grid_seed + 4000
-		
-	# --- PASSE DE STAMPING (Features) ---
-	var stamped_hexes: Dictionary[Vector2i, GridFeatureNode] = {}
-	var stamped_heights: Dictionary[Vector2i, int] = {}
-	var invalid_centers: Dictionary[Vector2i, bool] = {}
-	
-	if feature_count > 0 and features.size() > 0:
-		for i in range(feature_count):
-			var feature: GridFeature = features.pick_random()
-			if not feature or feature.nodes.is_empty(): continue
-			
-			var valid_centers = coords.filter(func(c): return not invalid_centers.has(Vector2i(c.x, c.y)))
-			if valid_centers.is_empty(): break
-			
-			var center: Vector3i = valid_centers.pick_random()
-			var center_2d := Vector2i(center.x, center.y)
-			
-			var base_z: int = 0
-			if elevation_noise:
-				base_z = roundi(remap(elevation_noise.get_noise_2d(center.x * 10.0, center.y * 10.0), -1.0, 1.0, 0, max_elevation))
-				
-			for node in feature.nodes:
-				var abs_2d = Vector2i(center_2d.x + node.relative_q, center_2d.y + node.relative_r)
-				stamped_hexes[abs_2d] = node
-				stamped_heights[abs_2d] = base_z + node.height_offset
-				invalid_centers[abs_2d] = true
+	if elevation_noise: elevation_noise.seed = grid_seed
+	if moisture_noise: moisture_noise.seed = grid_seed + 1000
+	if obstacle_noise: obstacle_noise.seed = grid_seed + 2000
+	if road_noise: road_noise.seed = grid_seed + 3000
+	if special_noise: special_noise.seed = grid_seed + 4000
 
-	# --- PASSE PRINCIPALE ---
-	for hex_coord: Vector3i in coords:
-		var hex_2d := Vector2i(hex_coord.x, hex_coord.y)
-		var dist_to_center: int = HexMath.distance_2d_flat(Vector2i.ZERO, hex_2d)
+	var temp_heights: Dictionary[Vector2i, int] = {}
+	var temp_terrains: Dictionary[Vector2i, TerrainData] = {}
+	var is_abyss_cache: Dictionary[Vector2i, bool] = {}
+
+	# --- PASS 1 : HEIGHT & BASE ---
+	for hex_coord in coords:
+		var h2d = Vector2i(hex_coord.x, hex_coord.y)
+		var dist_to_center = HexMath.distance_2d_flat(Vector2i.ZERO, h2d)
 		
-		# Application du relief procédural via le bruit (Noise)
+		var z = 0
 		if elevation_noise:
 			var noise_val: float = elevation_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-			# Remappe la valeur du bruit [-1.0, 1.0] vers un niveau de hauteur entier [0, max_elevation]
-			hex_coord.z = roundi(remap(noise_val, -1.0, 1.0, 0, max_elevation))
-			
-		# AAA : Priorité au Tampon (Override de la génération procédurale)
-		if stamped_hexes.has(hex_2d):
-			var node: GridFeatureNode = stamped_hexes[hex_2d]
-			hex_coord.z = stamped_heights[hex_2d]
-			
-			if active_biome:
-				var chosen_terrain = active_biome.get_terrain_by_role(node.role)
-				if chosen_terrain and chosen_terrain.visual_prefab:
-					var tile: Node3D = chosen_terrain.visual_prefab.instantiate() as Node3D
-					var world_pos: Vector3 = HexMath.hex_to_world(hex_coord, GridManager.hex_size, GridManager.elevation_step)
-					tile.position = world_pos
-					tile.name = "HexTile_Feature_%s_%d_%d_%d" % [chosen_terrain.id, hex_coord.x, hex_coord.y, hex_coord.z]
-					add_child(tile)
-					hex_tiles[hex_coord] = tile
-					GridManager.terrain_tiles[hex_coord] = chosen_terrain
-					local_pathfinder.add_hex(hex_coord, world_pos, chosen_terrain.movement_cost)
-					flat_to_3d[hex_2d] = hex_coord
-			continue
-
-		# Si la coordonnée est déclarée comme obstacle, on l'ignore : elle n'aura ni tuile, ni pathfinding.
-		if obstacles.has(hex_coord):
-			continue
-			
-		# --- BIOME SELECTION ---
-		if not active_biome:
-			push_error("GridGenerator: Aucune BiomePalette assignée !")
-			continue
-
-		var chosen_terrain: TerrainData = active_biome.base_terrain
+			z = roundi(remap(noise_val, -1.0, 1.0, 0, max_elevation))
+		temp_heights[h2d] = z
 		
-		# 0. Abyss Logic (Bords de la carte)
-		if dist_to_center >= map_radius and active_biome.abyss_terrain:
+		var is_abyss = false
+		if map_shape == MapShape.HEXAGON and dist_to_center >= map_radius:
+			is_abyss = true
+		elif map_shape == MapShape.RECTANGLE and (abs(h2d.x) >= map_width or abs(h2d.y) >= map_height):
+			is_abyss = true
+			
+		is_abyss_cache[h2d] = is_abyss
+			
+		var chosen_terrain: TerrainData = active_biome.base_terrain
+		if is_abyss and active_biome.abyss_terrain:
 			chosen_terrain = active_biome.abyss_terrain
 		else:
-			# 1. Vérification de l'eau/liquide (Altitude)
-			if hex_coord.z <= active_biome.water_level:
-				if special_noise and active_biome.special_terrain:
-					var special_val: float = special_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-					if special_val > 0.6:
-						chosen_terrain = active_biome.special_terrain
-					elif active_biome.water_terrain:
-						chosen_terrain = active_biome.water_terrain
-				elif active_biome.water_terrain:
+			if z <= active_biome.water_level:
+				if special_noise and active_biome.special_terrain and special_noise.get_noise_2d(h2d.x * 10.0, h2d.y * 10.0) > 0.6:
+					chosen_terrain = active_biome.special_terrain
+				else:
 					chosen_terrain = active_biome.water_terrain
 			else:
-				# 2. Vérification des obstacles (Bruit haute fréquence)
 				var is_obstacle: bool = false
-				if obstacle_noise and active_biome.obstacle_terrain:
-					var obs_val: float = obstacle_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-					if obs_val > 0.6:
-						chosen_terrain = active_biome.obstacle_terrain
-						is_obstacle = true
-						
-				# 3. Logique de route (Marbre)
-				var is_road: bool = false
-				if not is_obstacle and road_noise and active_biome.road_terrain:
-					var road_val: float = road_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-					if road_val > 0.5:
-						chosen_terrain = active_biome.road_terrain
-						is_road = true
-						
-				# 4. Logique d'humidité (Moisture)
-				if not is_obstacle and not is_road:
-					if moisture_noise:
-						var moisture_val: float = moisture_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-						if moisture_val > 0.0 and active_biome.fertile_terrain:
-							chosen_terrain = active_biome.fertile_terrain
-						elif active_biome.base_terrain:
-							chosen_terrain = active_biome.base_terrain
-					else:
-						if active_biome.base_terrain: chosen_terrain = active_biome.base_terrain
-			
-		if not chosen_terrain:
-			push_error("GridGenerator: Aucun TerrainData valide trouvé dans la palette.")
-			continue
-			
-		if not chosen_terrain.visual_prefab:
-			push_error("GridGenerator: 'visual_prefab' manquant dans la donnée de terrain '%s'." % chosen_terrain.id)
-			continue
-			
-		var tile: Node3D = chosen_terrain.visual_prefab.instantiate() as Node3D
-		if not tile:
-			push_error("GridGenerator: Impossible d'instancier le visuel en tant que Node3D.")
-			continue
+				if obstacle_noise and active_biome.obstacle_terrain and obstacle_noise.get_noise_2d(h2d.x * 10.0, h2d.y * 10.0) > 0.6:
+					chosen_terrain = active_biome.obstacle_terrain
+					is_obstacle = true
+				if not is_obstacle and road_noise and active_biome.road_terrain and road_noise.get_noise_2d(h2d.x * 10.0, h2d.y * 10.0) > 0.5:
+					chosen_terrain = active_biome.road_terrain
+				elif not is_obstacle and moisture_noise and moisture_noise.get_noise_2d(h2d.x * 10.0, h2d.y * 10.0) > 0.0 and active_biome.fertile_terrain:
+					chosen_terrain = active_biome.fertile_terrain
+		temp_terrains[h2d] = chosen_terrain
 
-		# Utilisation de notre utilitaire mathématique pour le placement spatial
+	# --- PASS 2 : SPAWNS ---
+	var spawn_locations: Array[Vector2i] = []
+	var team1_center = Vector2i(-int(map_radius * 0.7), 0)
+	var team2_center = Vector2i(int(map_radius * 0.7), 0)
+	if map_shape == MapShape.RECTANGLE:
+		team1_center = Vector2i(-map_width + 3, 0)
+		team2_center = Vector2i(map_width - 3, 0)
+
+	var team1_spawns = HexMath.get_hexes_in_radius(Vector3i(team1_center.x, team1_center.y, 0), 2)
+	var team2_spawns = HexMath.get_hexes_in_radius(Vector3i(team2_center.x, team2_center.y, 0), 2)
+	
+	var final_t1_spawns: Array[Vector2i] = []
+	var final_t2_spawns: Array[Vector2i] = []
+
+	for i in range(units_per_team):
+		if i < team1_spawns.size() and not is_abyss_cache.get(Vector2i(team1_spawns[i].x, team1_spawns[i].y), true):
+			var h2d = Vector2i(team1_spawns[i].x, team1_spawns[i].y)
+			temp_terrains[h2d] = active_biome.spawn_terrain
+			temp_heights[h2d] = maxi(active_biome.water_level + 1, temp_heights[h2d])
+			final_t1_spawns.append(h2d)
+			spawn_locations.append(h2d)
+			
+		if i < team2_spawns.size() and not is_abyss_cache.get(Vector2i(team2_spawns[i].x, team2_spawns[i].y), true):
+			var h2d = Vector2i(team2_spawns[i].x, team2_spawns[i].y)
+			temp_terrains[h2d] = active_biome.spawn_terrain
+			temp_heights[h2d] = maxi(active_biome.water_level + 1, temp_heights[h2d])
+			final_t2_spawns.append(h2d)
+			spawn_locations.append(h2d)
+
+	# --- PASS 3 : RIVER (A*) ---
+	var edges = HexMath.get_edge_hexes(coords)
+	if edges.size() > 10:
+		var edge_start = edges[randi() % edges.size()]
+		var edge_end = edges[randi() % edges.size()]
+		while HexMath.distance_2d_flat(Vector2i(edge_start.x, edge_start.y), Vector2i(edge_end.x, edge_end.y)) < map_radius:
+			edge_end = edges[randi() % edges.size()]
+			
+		var river_path = HexMath.draw_line(edge_start, edge_end)
+		for rh in river_path:
+			var h2d = Vector2i(rh.x, rh.y)
+			if temp_terrains.has(h2d) and not is_abyss_cache.get(h2d, true) and not spawn_locations.has(h2d):
+				temp_terrains[h2d] = active_biome.water_terrain
+				temp_heights[h2d] = active_biome.water_level
+
+	# --- PASS 4 : MAIN ROAD (A*) ---
+	var road_path = HexMath.draw_line(Vector3i(team1_center.x, team1_center.y, 0), Vector3i(team2_center.x, team2_center.y, 0))
+	for rh in road_path:
+		var h2d = Vector2i(rh.x, rh.y)
+		if temp_terrains.has(h2d) and not is_abyss_cache.get(h2d, true) and not spawn_locations.has(h2d):
+			if temp_terrains[h2d] == active_biome.water_terrain:
+				temp_terrains[h2d] = active_biome.bridge_terrain
+				temp_heights[h2d] = active_biome.water_level + 1
+			else:
+				temp_terrains[h2d] = active_biome.road_terrain
+				temp_heights[h2d] = maxi(active_biome.water_level + 1, temp_heights[h2d])
+
+	# --- PASS 5 : INSTANTIATION & SPAWN POINTS ---
+	var spawn_group_nodes = get_tree().get_nodes_in_group("spawn_points")
+	var spawn_group_node: Node = null
+	if spawn_group_nodes.is_empty():
+		spawn_group_node = Node3D.new()
+		spawn_group_node.name = "GeneratedSpawnPoints"
+		add_child(spawn_group_node)
+	else:
+		spawn_group_node = spawn_group_nodes[0]
+		for child in spawn_group_node.get_children():
+			child.queue_free()
+
+	for hex_2d in temp_terrains.keys():
+		var chosen_terrain = temp_terrains[hex_2d]
+		if not chosen_terrain or not chosen_terrain.visual_prefab: continue
+		
+		var hex_coord = Vector3i(hex_2d.x, hex_2d.y, temp_heights[hex_2d])
+		var tile: Node3D = chosen_terrain.visual_prefab.instantiate() as Node3D
 		var world_pos: Vector3 = HexMath.hex_to_world(hex_coord, GridManager.hex_size, GridManager.elevation_step)
 		tile.position = world_pos
 		tile.name = "HexTile_%s_%d_%d_%d" % [chosen_terrain.id, hex_coord.x, hex_coord.y, hex_coord.z]
 
 		add_child(tile)
 		hex_tiles[hex_coord] = tile
-		
-		# Injections de données vitales
 		GridManager.terrain_tiles[hex_coord] = chosen_terrain
-		local_pathfinder.add_hex(hex_coord, world_pos, chosen_terrain.movement_cost)
-		flat_to_3d[Vector2i(hex_coord.x, hex_coord.y)] = hex_coord
+		if not obstacles.has(hex_coord):
+			local_pathfinder.add_hex(hex_coord, world_pos, chosen_terrain.movement_cost)
+		flat_to_3d[hex_2d] = hex_coord
+		
+		if chosen_terrain == active_biome.spawn_terrain:
+			var sp = SpawnPoint.new()
+			sp.position = world_pos
+			if final_t1_spawns.has(hex_2d):
+				sp.faction = 0 # PLAYER
+				sp.stats = spawn_player_stats
+				sp.name = "SpawnPlayer_%d_%d" % [hex_2d.x, hex_2d.y]
+			else:
+				sp.faction = 1 # ENEMY
+				sp.stats = spawn_enemy_stats
+				sp.name = "SpawnEnemy_%d_%d" % [hex_2d.x, hex_2d.y]
+			spawn_group_node.add_child(sp)
+			sp.add_to_group("spawn_points")
 
-	# Deuxième passe : Connexion des voisins valides pour la navigation
 	for hex_coord: Vector3i in hex_tiles.keys():
 		for dir: Vector2i in HexMath.DIRECTIONS:
 			var flat_neighbor: Vector2i = Vector2i(hex_coord.x + dir.x, hex_coord.y + dir.y)
 			if flat_to_3d.has(flat_neighbor):
 				local_pathfinder.connect_hexes(hex_coord, flat_to_3d[flat_neighbor])
 
-	# Enregistrement de la hauteur max pour le ray-marching mathématique
 	GridManager.max_elevation = max_elevation
-	# Le graphe est terminé, on le rend disponible publiquement (Data-Driven Design)
 	GridManager.pathfinder = local_pathfinder
-	
-	# AAA : Émission de la topologie pure pour l'initialisation des systèmes DOD (ex: GridLosSystem)
 	GridEvents.grid_topology_ready.emit(GridManager.terrain_tiles)

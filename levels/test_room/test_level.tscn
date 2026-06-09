@@ -55,9 +55,15 @@ size = Vector2(100, 100)
 
 [node name="GridGenerator" type="Node3D" unique_id=1068552106]
 script = ExtResource("1_hw46n")
+map_shape = 0
 map_radius = 12
+map_width = 15
+map_height = 10
 elevation_noise = SubResource("FastNoiseLite_kt0r7")
 max_elevation = 8
+spawn_player_stats = ExtResource("9_4py08")
+spawn_enemy_stats = ExtResource("18_archer")
+units_per_team = 5
 active_biome = ExtResource("10_biome")
 moisture_noise = SubResource("FastNoiseLite_moisture")
 obstacle_noise = SubResource("FastNoiseLite_obstacle")
@@ -125,59 +131,4 @@ script = ExtResource("15_flow")
 [node name="SurfaceVisuals" type="Node3D" parent="." unique_id=1082084624]
 script = ExtResource("16_surface")
 
-[node name="SpawnPoints" type="Node3D" parent="." unique_id=313551619]
 
-[node name="PlayerSpawn1" type="Marker3D" parent="SpawnPoints" unique_id=346153055 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 0)
-script = ExtResource("17_spawn")
-stats = ExtResource("9_4py08")
-
-[node name="PlayerSpawn2" type="Marker3D" parent="SpawnPoints" unique_id=51821423 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 2)
-script = ExtResource("17_spawn")
-stats = ExtResource("9_4py08")
-
-[node name="PlayerSpawn3" type="Marker3D" parent="SpawnPoints" unique_id=741445212 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -2)
-script = ExtResource("17_spawn")
-stats = ExtResource("9_4py08")
-
-[node name="PlayerSpawn4" type="Marker3D" parent="SpawnPoints" unique_id=101010101 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 4)
-script = ExtResource("17_spawn")
-stats = ExtResource("9_4py08")
-
-[node name="PlayerSpawn5" type="Marker3D" parent="SpawnPoints" unique_id=202020202 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -4)
-script = ExtResource("17_spawn")
-stats = ExtResource("9_4py08")
-
-[node name="EnemySpawn1" type="Marker3D" parent="SpawnPoints" unique_id=234985002 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
-script = ExtResource("17_spawn")
-stats = ExtResource("18_archer")
-faction = 1
-
-[node name="EnemySpawn2" type="Marker3D" parent="SpawnPoints" unique_id=2068525436 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 2)
-script = ExtResource("17_spawn")
-stats = ExtResource("19_mage")
-faction = 1
-
-[node name="EnemySpawn3" type="Marker3D" parent="SpawnPoints" unique_id=144832497 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -2)
-script = ExtResource("17_spawn")
-stats = ExtResource("20_warrior")
-faction = 1
-
-[node name="EnemySpawn4" type="Marker3D" parent="SpawnPoints" unique_id=303030303 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 4)
-script = ExtResource("17_spawn")
-stats = ExtResource("18_archer")
-faction = 1
-
-[node name="EnemySpawn5" type="Marker3D" parent="SpawnPoints" unique_id=404040404 groups=["spawn_points"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -4)
-script = ExtResource("17_spawn")
-stats = ExtResource("20_warrior")
-faction = 1

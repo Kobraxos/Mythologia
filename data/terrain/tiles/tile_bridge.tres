@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://tilebridge123"]
+
+[ext_resource type="Script" path="res://data/terrain/terrain_data.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://visualbridge123" path="res://data/terrain/tiles/visual_bridge.tscn" id="2_vis"]
+
+[resource]
+script = ExtResource("1_script")
+is_surface = true
+duration_turns = 0
+id = &"bridge"
+terrain_name = "Pont Antique"
+description = "Permet de traverser les flots."
+is_walkable = true
+movement_cost = 1
+blocks_line_of_sight = false
+terrain_element = 0
+visual_prefab = ExtResource("2_vis")

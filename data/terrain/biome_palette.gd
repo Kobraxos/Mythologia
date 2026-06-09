@@ -4,7 +4,7 @@ extends Resource
 @export_category("Biome Definition")
 @export var biome_name: String = "Nouveau Biome"
 
-enum TerrainRole { BASE, FERTILE, WATER, OBSTACLE, SPECIAL, ROAD, ABYSS }
+enum TerrainRole { BASE, FERTILE, WATER, OBSTACLE, SPECIAL, ROAD, ABYSS, SPAWN, BRIDGE }
 
 @export_category("Topography Rules")
 ## Niveau Z en dessous duquel l'eau apparait automatiquement
@@ -25,6 +25,10 @@ enum TerrainRole { BASE, FERTILE, WATER, OBSTACLE, SPECIAL, ROAD, ABYSS }
 @export var road_terrain: TerrainData
 ## Terrain des gouffres aux bords de la carte (Abysse)
 @export var abyss_terrain: TerrainData
+## Terrain pour l'apparition des unités
+@export var spawn_terrain: TerrainData
+## Terrain pour les ponts sur l'eau
+@export var bridge_terrain: TerrainData
 
 func get_terrain_by_role(role: TerrainRole) -> TerrainData:
 	match role:
@@ -35,4 +39,6 @@ func get_terrain_by_role(role: TerrainRole) -> TerrainData:
 		TerrainRole.SPECIAL: return special_terrain
 		TerrainRole.ROAD: return road_terrain
 		TerrainRole.ABYSS: return abyss_terrain
+		TerrainRole.SPAWN: return spawn_terrain
+		TerrainRole.BRIDGE: return bridge_terrain
 	return base_terrain
