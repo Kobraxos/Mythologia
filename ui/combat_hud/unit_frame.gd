@@ -26,6 +26,7 @@ var _shield_tween: Tween
 var _current_mana: int = 0
 var _max_mana: int = 0
 var _mana_tween: Tween
+var _low_hp_tween: Tween
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
@@ -81,6 +82,7 @@ func track_unit(unit: Unit) -> void:
 			shield_bar.visible = _max_shield > 0
 			
 		_update_health_label()
+		_check_low_health_state()
 		
 	# Branchement au ActionEconomyComponent (pour le Mana)
 	if "action_economy" in unit and unit.action_economy is ActionEconomyComponent:
@@ -115,6 +117,10 @@ func _untrack_health() -> void:
 		_shield_tween.kill()
 	if _mana_tween and _mana_tween.is_valid():
 		_mana_tween.kill()
+	if _low_hp_tween and _low_hp_tween.is_valid():
+		_low_hp_tween.kill()
+	if portrait_rect:
+		portrait_rect.modulate = Color(1, 1, 1, 1)
 
 func _on_health_changed(current: int, max_val: int) -> void:
 	_max_hp = max_val
@@ -133,6 +139,8 @@ func _on_health_changed(current: int, max_val: int) -> void:
 		_hp_tween.set_trans(Tween.TRANS_QUAD)
 		_hp_tween.set_ease(Tween.EASE_OUT)
 		_hp_tween.tween_property(health_bar, "value", target_hp, 0.3)
+		
+	_check_low_health_state()
 
 func _on_shield_changed(current: int, max_val: int) -> void:
 	_max_shield = max_val
@@ -172,3 +180,21 @@ func _update_health_label(val: int = -1) -> void:
 		
 	var display_val = _current_hp if val == -1 else val
 	health_text.text = "%d / %d" % [display_val, _max_hp]
+
+func _check_low_health_state() -> void:
+	if not is_instance_valid(portrait_rect):
+		return
+		
+	var ratio: float = float(_current_hp) / float(_max_hp) if _max_hp > 0 else 1.0
+	var is_low: bool = (ratio <= 0.25) and (_current_hp > 0)
+	
+	if is_low:
+		if not _low_hp_tween or not _low_hp_tween.is_valid():
+			_low_hp_tween = create_tween().set_loops()
+			# AAA UX: Battement de coeur visuel d'urgence
+			_low_hp_tween.tween_property(portrait_rect, "modulate", Color(1.8, 0.5, 0.5, 1.0), 0.6).set_trans(Tween.TRANS_SINE)
+			_low_hp_tween.tween_property(portrait_rect, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.6).set_trans(Tween.TRANS_SINE)
+	else:
+		if _low_hp_tween and _low_hp_tween.is_valid():
+			_low_hp_tween.kill()
+			portrait_rect.modulate = Color(1.0, 1.0, 1.0, 1.0)

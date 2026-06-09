@@ -155,7 +155,15 @@ func _animate_pips(old_val: int, new_val: int) -> void:
 		# L'effet de flash représente la faveur des dieux qui s'allume ou s'éteint
 		var flash_is_full: bool = is_gaining
 		_tweens[i].tween_callback(_get_pip_setter(pip, flash_is_full))
-		_tweens[i].tween_interval(PIP_TWEEN_DURATION * 0.35)
+		
+		# AAA : "Juiciness" (Secousse / Squash) quand on consomme la ressource
+		if not is_gaining:
+			# Squash horizontal brutal puis étirement progressif
+			pip.custom_minimum_size = Vector2(pip_size.x * 1.5, pip_size.y * 0.5)
+			_tweens[i].tween_property(pip, "custom_minimum_size", pip_size, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		else:
+			_tweens[i].tween_interval(PIP_TWEEN_DURATION * 0.35)
+			
 		_tweens[i].tween_callback(_get_pip_setter(pip, is_gaining))
 
 ## Closure pour capturer la référence du pip et le booléen dans le callback.

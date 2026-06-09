@@ -26,6 +26,7 @@ extends Control
 var _tracked_economy: ActionEconomyComponent
 var _tracked_caster: SkillCasterComponent
 var _current_cooldowns: Dictionary = {}
+var _end_turn_tween: Tween
 
 var _active_turn_unit: Unit = null
 var _inspected_unit: Unit = null
@@ -140,6 +141,19 @@ func _update_interactivity() -> void:
 			
 	if end_turn_button:
 		end_turn_button.disabled = not is_active_turn
+		
+		# Reset du tween s'il y en a un
+		if _end_turn_tween and _end_turn_tween.is_valid():
+			_end_turn_tween.kill()
+			end_turn_button.scale = Vector2(1, 1)
+			
+		# AAA : Pulse (Scale) si 0 PA et 0 PM
+		if is_active_turn and is_instance_valid(_tracked_economy):
+			if _tracked_economy.get_current_ap() == 0 and _tracked_economy.get_current_mp() == 0:
+				end_turn_button.pivot_offset = end_turn_button.size / 2.0
+				_end_turn_tween = create_tween().set_loops()
+				_end_turn_tween.tween_property(end_turn_button, "scale", Vector2(1.08, 1.08), 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+				_end_turn_tween.tween_property(end_turn_button, "scale", Vector2(1.0, 1.0), 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		
 	if action_bar:
 		if not is_active_turn:
