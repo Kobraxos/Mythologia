@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dp1e2y3f4h5j6"]
 
-[ext_resource type="Shader" path="res://assets/3d/shd_obsidian_terrain.gdshader" id="1_shader"]
+[ext_resource type="Shader" path="res://assets/3d/shd_hex_pillar.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "mat_dirt"
