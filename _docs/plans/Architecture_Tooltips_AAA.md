@@ -34,15 +34,17 @@ func _on_mouse_exited() -> void:
 ## 3. Contenu Polymorphe et Data-Driven
 
 Le `TooltipManager` instancie (ou réutilise, via un pool) une scène générique `tooltip_panel.tscn`. 
-Ce panneau est capable de "lire" n'importe quelle ressource (`Resource`).
+Ce panneau s'appuie sur le **Principe Ouvert/Fermé (Open-Closed Principle)** pour être évolutif.
+
+Au lieu de faire des vérifications rigides (`if data is SkillData`), chaque ressource implémente une méthode standardisée (ex: `get_tooltip_data() -> Dictionary` ou retourne un objet `TooltipPayload`). Le Manager se contente de construire l'affichage à partir de ces données agnostiques.
 
 ```gdscript
 func show_tooltip(data: Resource, source_pos: Vector2, source_size: Vector2) -> void:
-    if data is SkillData:
-        _build_skill_tooltip(data)
-    elif data is StatusData:
-        _build_status_tooltip(data)
-    # ...
+    if not data.has_method("get_tooltip_data"):
+        return
+        
+    var payload: Dictionary = data.get_tooltip_data()
+    _build_from_payload(payload)
 ```
 
 Un "Skill Tooltip" se construira avec :
@@ -50,9 +52,15 @@ Un "Skill Tooltip" se construira avec :
 - Un `RichTextLabel` pour la description (qui permet les balises BBCode pour colorer les mots clés comme "[color=red]Dégâts[/color]").
 - Un `Label` optionnel pour le Cooldown.
 
-## 4. Smart Positioning (Le "Screen Clamping")
+## 4. Smart Positioning & Sécurité des Clics
 
-C'est la marque d'un jeu fini : le tooltip ne doit **jamais** sortir de l'écran. 
+C'est la marque d'un jeu fini : le tooltip ne doit **jamais** sortir de l'écran, ni bloquer le joueur. 
+
+**A. Sécurité sur les clics (Mouse Filter) :**
+> [!WARNING]
+> La scène `tooltip_panel.tscn` et l'intégralité de ses enfants **DOIVENT** avoir leur propriété `mouse_filter` réglée sur `Ignore`. Dans le cas contraire, le tooltip (même invisible) absorbera les clics de souris, bloquant les actions tactiques en dessous.
+
+**B. Le "Screen Clamping" :**
 Le `TooltipManager` doit calculer mathématiquement sa position :
 1. Il se place généralement au-dessus ou sur le côté du bouton survolé (grâce au `source_pos` et `source_size`).
 2. Il utilise `get_viewport_rect().size` pour vérifier si la boîte du tooltip dépasse de l'écran.
@@ -60,8 +68,9 @@ Le `TooltipManager` doit calculer mathématiquement sa position :
 
 ## 5. Résumé des tâches pour l'implémentation (Demain)
 
-- [ ] **1.** Créer la scène UI `tooltip_panel.tscn` (VBoxContainer propre, avec polices et thème AAA).
-- [ ] **2.** Créer l'Autoload `TooltipManager` (CanvasLayer) et l'ajouter à `project.godot`.
-- [ ] **3.** Implémenter la logique de _Smart Positioning_ (Screen clamp).
-- [ ] **4.** Modifier `skill_button.gd` pour émettre les signaux `mouse_entered` et `mouse_exited`.
-- [ ] **5.** (Optionnel) Ajouter un micro-délai (Timer de 0.2s) dans le manager pour éviter que le tooltip ne "flash" si le joueur traverse l'écran rapidement avec sa souris.
+- [ ] **1.** Créer la scène UI `tooltip_panel.tscn` (VBoxContainer propre, avec polices et thème AAA) en s'assurant de régler tous les `mouse_filter` sur `Ignore`.
+- [ ] **2.** Ajouter une méthode `get_tooltip_data() -> Dictionary` dans `SkillData` (et les autres Data Resources).
+- [ ] **3.** Créer l'Autoload `TooltipManager` (CanvasLayer) et l'ajouter à `project.godot`.
+- [ ] **4.** Implémenter la logique de _Smart Positioning_ (Screen clamp).
+- [ ] **5.** Modifier `skill_button.gd` pour émettre les signaux `mouse_entered` et `mouse_exited`.
+- [ ] **6.** Ajouter le Timer Anti-Flickering (Debounce de 0.2s) dans le manager. **Crucial** : Toujours appeler `timer.stop()` dans la fonction `hide_tooltip()` pour empêcher un affichage fantôme si la souris quitte la zone avant la fin du délai.

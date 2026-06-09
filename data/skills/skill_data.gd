@@ -132,3 +132,15 @@ enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CAST
 @export_group("Summons & Mechanisms")
 ## Entité tactique (Totem, Piège, Illusion) à faire apparaître sur la case ciblée.
 @export var summoned_entity: PackedScene
+
+# --- Tooltip System ---
+func get_tooltip_data() -> Dictionary:
+	var payload := {
+		"title": skill_name,
+		"description": description,
+		"ap_cost": ap_cost,
+		"mana_cost": mana_cost,
+		"cooldown": cooldown,
+		"icon": icon
+	}
+	return payload

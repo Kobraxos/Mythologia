@@ -11,6 +11,8 @@ var _base_text: String = ""
 func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
 	pressed.connect(_on_pressed)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
 
 # PUBLIC FUNCTIONS
 func setup(skill: SkillData, shortcut_text: String = "") -> void:
@@ -43,3 +45,11 @@ func check_usability(available_ap: int, current_cooldown: int = 0) -> void:
 func _on_pressed() -> void:
 	if _skill:
 		CombatEvents.skill_button_clicked.emit(_skill)
+
+func _on_mouse_entered() -> void:
+	if _skill:
+		var data_dict = _skill.get_tooltip_data()
+		TooltipManager.show_tooltip(data_dict, global_position, size)
+
+func _on_mouse_exited() -> void:
+	TooltipManager.hide_tooltip()
