@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://cl846wy55qmn4"]
 
+[ext_resource type="Environment" uid="uid://d3voidenv9999" path="res://levels/test_room/void_environment.tres" id="1_void"]
+[ext_resource type="Material" uid="uid://ol07npqm6q0q" path="res://assets/3d/mat_mythic_sea.tres" id="mat_sea"]
 [ext_resource type="Script" uid="uid://c1net0xfwu22l" path="res://systems/grid/grid_generator/grid_generator.gd" id="1_hw46n"]
 [ext_resource type="PackedScene" uid="uid://dj48qksmd0q8x" path="res://systems/camera/tactical_camera.tscn" id="2_camera"]
 [ext_resource type="Resource" uid="uid://75xqi4b6msv0" path="res://data/terrain/tile_dirt.tres" id="2_kt0r7"]
@@ -32,6 +34,9 @@
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.05
 
+[sub_resource type="PlaneMesh" id="PlaneMesh_sea"]
+size = Vector2(100, 100)
+
 [node name="GridGenerator" type="Node3D" unique_id=1068552106]
 script = ExtResource("1_hw46n")
 default_terrain = ExtResource("2_kt0r7")
@@ -43,6 +48,14 @@ transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 
 shadow_enabled = true
 
 [node name="TacticalCamera" parent="." unique_id=977092963 instance=ExtResource("2_camera")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=314159265]
+environment = ExtResource("1_void")
+
+[node name="MythicSea" type="MeshInstance3D" parent="." unique_id=999888777]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+material_override = ExtResource("mat_sea")
+mesh = SubResource("PlaneMesh_sea")
 
 [node name="GridController" type="Node" parent="." unique_id=1985471039]
 script = ExtResource("4_controller")
