@@ -5,7 +5,7 @@
 [ext_resource type="Theme" uid="uid://cakumsalkyi8a" path="res://ui/themes/theme_greek.tres" id="4_greek"]
 [ext_resource type="PackedScene" uid="uid://act1onbar0001" path="res://ui/combat_hud/action_bar.tscn" id="5_bar"]
 [ext_resource type="PackedScene" uid="uid://resource_panel001" path="res://ui/combat_hud/resource_panel.tscn" id="6_respanel"]
-[ext_resource type="PackedScene" uid="uid://u_frame_placeholder" path="res://ui/combat_hud/unit_frame_placeholder.tscn" id="7_unitframe"]
+[ext_resource type="PackedScene" uid="uid://u_frame_placeholder" path="res://ui/combat_hud/unit_frame.tscn" id="7_unitframe"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_endturn"]
 bg_color = Color(0.137, 0.125, 0.113, 0.95)
@@ -22,7 +22,7 @@ shadow_color = Color(0, 0, 0, 0.6)
 shadow_size = 4
 shadow_offset = Vector2(0, 4)
 
-[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar", "resource_panel", "move_button", "end_turn_button")]
+[node name="CombatHUD" type="Control" node_paths=PackedStringArray("action_bar", "resource_panel", "unit_frame", "move_button", "end_turn_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -38,6 +38,7 @@ faction_themes = {
 }
 action_bar = NodePath("BottomConsole/ConsoleGrid/CenterPillar/ActionBar")
 resource_panel = NodePath("BottomConsole/ConsoleGrid/LeftPillar/LeftContent/ResourcePanel")
+unit_frame = NodePath("BottomConsole/ConsoleGrid/LeftPillar/LeftContent/UnitFramePlaceholder")
 move_button = NodePath("BottomConsole/ConsoleGrid/CenterPillar/ActionBar/MarginContainer/HBoxContainer/MoveButton")
 end_turn_button = NodePath("BottomConsole/ConsoleGrid/RightPillar/EndTurnButton")
 
@@ -95,7 +96,7 @@ mouse_filter = 2
 [node name="EndTurnButton" type="Button" parent="BottomConsole/ConsoleGrid/RightPillar"]
 custom_minimum_size = Vector2(180, 60)
 layout_mode = 2
-size_flags_horizontal = 0
+size_flags_horizontal = 8
 size_flags_vertical = 8
 theme_override_colors/font_color = Color(0.831, 0.678, 0.211, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)

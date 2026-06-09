@@ -15,6 +15,8 @@ extends Control
 @export var action_bar: ActionBar
 ## Panneau PA/PM à pips (ResourcePanel).
 @export var resource_panel: ResourcePanel
+## Le cadre d'unité (Portrait, PV).
+@export var unit_frame: UnitFrame
 ## Bouton permanent dédié à l'activation du mode déplacement.
 @export var move_button: Button
 ## Bouton dédié à la fin de tour.
@@ -24,8 +26,10 @@ extends Control
 var _tracked_economy: ActionEconomyComponent
 var _tracked_caster: SkillCasterComponent
 var _current_cooldowns: Dictionary = {}
-var _current_active_unit: Unit = null
-var _selected_unit: Unit = null
+
+var _active_turn_unit: Unit = null
+var _inspected_unit: Unit = null
+var _cockpit_unit: Unit = null
 
 # GODOT BUILT-IN FUNCTIONS
 func _ready() -> void:
@@ -38,75 +42,111 @@ func _ready() -> void:
 		action_bar.clear()
 	if move_button:
 		move_button.focus_mode = Control.FOCUS_NONE
-		move_button.visible = false
+		move_button.visible = true
 		move_button.pressed.connect(_on_move_button_pressed)
 	if end_turn_button:
 		end_turn_button.focus_mode = Control.FOCUS_NONE
-		end_turn_button.visible = false
+		end_turn_button.visible = true
 		end_turn_button.pressed.connect(_on_end_turn_button_pressed)
 
 # SIGNAL HANDLERS
 func _on_unit_selected(unit: Unit) -> void:
-	# 0. Réinitialisation systématique de l'état interactif (Reset AAA)
-	if action_bar:
-		action_bar.clear()
-	if move_button:
-		move_button.visible = false
-	if end_turn_button:
-		end_turn_button.visible = false
+	if not is_instance_valid(unit):
+		_on_unit_deselected()
+		return
+	_inspected_unit = unit
+	_evaluate_cockpit_state()
 
+func _on_unit_deselected() -> void:
+	_inspected_unit = null
+	_evaluate_cockpit_state()
+
+func _on_active_unit_changed(unit: Unit) -> void:
+	_active_turn_unit = unit
+	_evaluate_cockpit_state()
+
+func _evaluate_cockpit_state() -> void:
+	# 1. Masquage total si c'est au tour d'un monstre
+	if is_instance_valid(_active_turn_unit) and _active_turn_unit.faction != Unit.Faction.PLAYER:
+		if has_node("BottomConsole"):
+			$BottomConsole.hide()
+		return
+		
+	# 2. C'est le tour d'un joueur, la console doit être visible
+	if has_node("BottomConsole"):
+		$BottomConsole.show()
+		
+	# 3. Déterminer l'unité à afficher dans le Cockpit
+	var target_cockpit_unit: Unit = null
+	
+	if is_instance_valid(_inspected_unit):
+		if _inspected_unit.faction == Unit.Faction.PLAYER:
+			# On inspecte un de nos propres héros (que ce soit son tour ou non)
+			target_cockpit_unit = _inspected_unit
+		else:
+			# On inspecte un monstre pendant notre tour : on maintient l'affichage sur notre héros actif
+			target_cockpit_unit = _active_turn_unit
+	else:
+		# Pas d'inspection : on affiche l'unité active par défaut
+		target_cockpit_unit = _active_turn_unit
+
+	# 4. Appliquer les changements si l'unité du cockpit a changé
+	if target_cockpit_unit != _cockpit_unit:
+		_cockpit_unit = target_cockpit_unit
+		_setup_cockpit_for(_cockpit_unit)
+
+	# 5. Mettre à jour l'interactivité (boutons grisés si le cockpit affiche qqn dont ce n'est pas le tour)
+	_update_interactivity()
+
+func _setup_cockpit_for(unit: Unit) -> void:
 	_untrack_action_economy()
 	_untrack_skill_caster()
-	_selected_unit = null
-
+	if action_bar:
+		action_bar.clear()
+		
 	if not is_instance_valid(unit):
 		return
-
-	_selected_unit = unit
-
-	# 1. Habillage Dynamique (Data-Driven Faction UI)
+		
+	# Habillage Dynamique (Data-Driven Faction UI)
 	self.theme = default_theme
-
 	if "stats" in unit and unit.stats is UnitStats:
 		var myth_id: int = unit.stats.mythology
 		if faction_themes.has(myth_id) and faction_themes[myth_id] is Theme:
 			self.theme = faction_themes[myth_id]
 
-	# 2. Tracking des statistiques (Visible pour alliés ET ennemis)
+	# Tracking des statistiques pour l'unité du cockpit
 	_track_action_economy(unit)
 	_track_skill_caster(unit)
+	
+	if unit_frame:
+		unit_frame.track_unit(unit)
+	
+	# Initialisation de l'Action Bar
+	if unit.get("skill_caster"):
+		var skills: Array = unit.skill_caster.get("_known_skills") if "_known_skills" in unit.skill_caster else []
+		if not skills.is_empty() and action_bar:
+			action_bar.setup(skills, unit)
 
-	# 3. AAA : Guard Clause d'Autorité UI — On s'arrête ici si ce n'est pas le joueur
-	if unit.faction != Unit.Faction.PLAYER:
-		return
-
-	# 4. Activation de l'Interface Interactive (Joueur uniquement)
+func _update_interactivity() -> void:
+	var is_active_turn: bool = false
+	if is_instance_valid(_cockpit_unit) and is_instance_valid(_active_turn_unit):
+		is_active_turn = (_cockpit_unit == _active_turn_unit)
+	
 	if move_button:
-		move_button.visible = true
+		if not is_active_turn:
+			move_button.disabled = true
+		else:
+			_update_move_button_usability()
+			
 	if end_turn_button:
-		end_turn_button.visible = true
-
-	# Duck-typing sécurisé pour récupérer le composant lanceur de sort et sa liste
-	if not unit.get("skill_caster"):
-		return
-
-	var skills: Array = unit.skill_caster.get("_known_skills") if "_known_skills" in unit.skill_caster else []
-	if not skills.is_empty() and action_bar:
-		action_bar.setup(skills, unit)
-
-	# Initialisation de l'état interactif global (Boutons grisés si ce n'est pas le tour de l'unité)
-	_update_interactivity()
-
-func _on_unit_deselected() -> void:
-	_selected_unit = null
+		end_turn_button.disabled = not is_active_turn
+		
 	if action_bar:
-		action_bar.clear()
-	_untrack_action_economy()
-	_untrack_skill_caster()
-	if move_button:
-		move_button.visible = false
-	if end_turn_button:
-		end_turn_button.visible = false
+		if not is_active_turn:
+			if action_bar.has_method("set_all_disabled"):
+				action_bar.set_all_disabled(true)
+		else:
+			_update_action_bar_usability()
 
 func _track_action_economy(unit: Unit) -> void:
 	if "action_economy" in unit and unit.action_economy is ActionEconomyComponent:
@@ -148,13 +188,9 @@ func _update_action_bar_usability() -> void:
 		action_bar.update_usable_skills(_tracked_economy.get_current_ap(), _current_cooldowns)
 
 func _on_ap_changed(_current: int, _max_val: int) -> void:
-	# Le ResourcePanel se met à jour seul via ses propres connexions.
-	# On garde ce handler uniquement pour mettre à jour l'usabilité de la barre d'actions.
 	_update_interactivity()
 
 func _on_mp_changed(_current: int, _max_val: int) -> void:
-	# Le ResourcePanel se met à jour seul via ses propres connexions.
-	# On garde ce handler uniquement pour mettre à jour l'usabilité du bouton de déplacement.
 	_update_interactivity()
 
 func _update_move_button_usability() -> void:
@@ -166,28 +202,3 @@ func _on_move_button_pressed() -> void:
 
 func _on_end_turn_button_pressed() -> void:
 	TurnEvents.turn_end_requested.emit()
-
-func _on_active_unit_changed(unit: Unit) -> void:
-	_current_active_unit = unit
-	_update_interactivity()
-
-func _update_interactivity() -> void:
-	var is_active_turn: bool = false
-	if is_instance_valid(_selected_unit) and is_instance_valid(_current_active_unit):
-		is_active_turn = (_selected_unit == _current_active_unit)
-	
-	if move_button:
-		if not is_active_turn:
-			move_button.disabled = true
-		else:
-			_update_move_button_usability()
-			
-	if end_turn_button:
-		end_turn_button.disabled = not is_active_turn
-		
-	if action_bar:
-		if not is_active_turn:
-			if action_bar.has_method("set_all_disabled"):
-				action_bar.set_all_disabled(true)
-		else:
-			_update_action_bar_usability()

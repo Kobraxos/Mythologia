@@ -1,4 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://u_frame_placeholder"]
+[gd_scene load_steps=5 format=3 uid="uid://u_frame_placeholder"]
+
+[ext_resource type="Script" path="res://ui/combat_hud/unit_frame.gd" id="1_script"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_portrait"]
 bg_color = Color(0.137, 0.125, 0.113, 0.95)
@@ -34,9 +36,13 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="UnitFramePlaceholder" type="VBoxContainer"]
+[node name="UnitFrame" type="VBoxContainer" node_paths=PackedStringArray("portrait_label", "health_bar", "health_text")]
 custom_minimum_size = Vector2(100, 0)
 mouse_filter = 2
+script = ExtResource("1_script")
+portrait_label = NodePath("PortraitMargin/PortraitPanel/Label")
+health_bar = NodePath("HealthBar")
+health_text = NodePath("HealthBar/HPLabel")
 
 [node name="PortraitMargin" type="MarginContainer" parent="."]
 layout_mode = 2

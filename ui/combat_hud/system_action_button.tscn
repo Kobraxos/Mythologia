@@ -1,6 +1,58 @@
-[gd_scene load_steps=2 format=3 uid="uid://system_action_btn"]
+[gd_scene load_steps=6 format=3 uid="uid://system_action_btn"]
 
 [ext_resource type="Script" path="res://ui/combat_hud/system_action_button.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_normal"]
+bg_color = Color(0.137, 0.125, 0.113, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.831, 0.678, 0.211, 1)
+border_blend = true
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
+bg_color = Color(0.2, 0.18, 0.16, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.85, 0.4, 1)
+border_blend = true
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pressed"]
+bg_color = Color(0.1, 0.09, 0.08, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.5, 0.1, 1)
+border_blend = true
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_disabled"]
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.3, 1)
+border_blend = true
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="SystemActionButton" type="Button" node_paths=PackedStringArray("shortcut_label", "active_overlay")]
 custom_minimum_size = Vector2(64, 64)
@@ -8,6 +60,13 @@ offset_right = 64.0
 offset_bottom = 64.0
 toggle_mode = true
 expand_icon = true
+theme_override_styles/normal = SubResource("StyleBoxFlat_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_disabled")
+theme_override_colors/font_color = Color(0.831, 0.678, 0.211, 1)
+theme_override_font_sizes/font_size = 28
+text = "🪽"
 script = ExtResource("1_script")
 shortcut_label = NodePath("ShortcutMargin/ShortcutLabel")
 active_overlay = NodePath("ActiveOverlay")
@@ -21,7 +80,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1, 0.843137, 0, 0.3)
+color = Color(0.831, 0.678, 0.211, 0.3)
 
 [node name="ShortcutMargin" type="MarginContainer" parent="."]
 layout_mode = 1

@@ -108,17 +108,18 @@ func _rebuild_pips() -> void:
 		pip.name = "Pip_%d" % i
 
 		var style := StyleBoxFlat.new()
-		style.bg_color = color_empty
+		# AAA: Pip vide (trou dans la pierre)
+		style.bg_color = Color(0.04, 0.04, 0.04, 1.0) # Très sombre
 		style.corner_radius_top_left = pip_corner_radius
 		style.corner_radius_top_right = pip_corner_radius
 		style.corner_radius_bottom_left = pip_corner_radius
 		style.corner_radius_bottom_right = pip_corner_radius
-		# Bordure en bronze antique pour les pips vides
-		style.border_width_left = 1
-		style.border_width_top = 1
-		style.border_width_right = 1
-		style.border_width_bottom = 1
-		style.border_color = Color(label_color.r, label_color.g, label_color.b, 0.30)
+		# Effet d'embossage inversé (Inset)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 0
+		style.border_width_bottom = 0
+		style.border_color = Color(0, 0, 0, 1.0) # Ombre interne
 		pip.add_theme_stylebox_override("panel", style)
 
 		_pip_container.add_child(pip)
@@ -166,17 +167,24 @@ func _set_pip_color(pip: Panel, is_full: bool) -> void:
 	if not style:
 		return
 
-	style.bg_color = color_full if is_full else color_empty
-
 	if is_full:
-		# Aura divine : le pip brille comme un éclair d'Olympe ou une étoile de mer
-		style.border_color = Color(color_full.r, color_full.g, color_full.b, 0.70)
+		# Aura divine : la gemme est pleine et lumineuse
+		style.bg_color = color_full
+		style.border_width_left = 1
 		style.border_width_top = 1
+		style.border_width_right = 1
 		style.border_width_bottom = 1
-		style.shadow_color = Color(color_full.r, color_full.g, color_full.b, 0.65)
+		style.border_color = Color(1.0, 1.0, 1.0, 0.5) # Reflet spéculaire
+		style.shadow_color = Color(color_full.r, color_full.g, color_full.b, 0.5)
 		style.shadow_size = DIVINE_GLOW_SIZE
-		style.shadow_offset = DIVINE_GLOW_OFFSET
+		style.shadow_offset = Vector2.ZERO # Glow centré
+		pip.material = null
 	else:
-		# Pierre antique érodée : le pip s'éteint et redevient une gravure morte
-		style.border_color = Color(label_color.r, label_color.g, label_color.b, 0.30)
+		# Pierre creuse : le pip s'éteint
+		style.bg_color = Color(0.04, 0.04, 0.04, 1.0)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 0
+		style.border_width_bottom = 0
+		style.border_color = Color(0, 0, 0, 1.0)
 		style.shadow_size = 0
