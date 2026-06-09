@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://d1xwa5ns0yj11"]
+
+[ext_resource type="Script" path="res://data/terrain/terrain_data.gd" id="1_yfgsx"]
+[ext_resource type="PackedScene" uid="uid://dvisnectar123" path="res://data/terrain/tiles/visual_nectar.tscn" id="2_vis"]
+[ext_resource type="Resource" uid="uid://dregen123" path="res://data/statuses/regeneration_status.tres" id="3_regen"]
+
+[resource]
+script = ExtResource("1_yfgsx")
+is_surface = false
+duration_turns = 0
+id = &"nectar"
+terrain_name = "Source de Nectar"
+description = "Une source divine qui soigne ceux qui s'y baignent."
+is_walkable = true
+movement_cost = 2
+blocks_line_of_sight = false
+terrain_element = 7
+visual_prefab = ExtResource("2_vis")
+applied_status_effects = Array[Resource]([ExtResource("3_regen")])

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://ce123roadtres"]
+
+[ext_resource type="Script" path="res://data/terrain/terrain_data.gd" id="1_yfgsx"]
+[ext_resource type="PackedScene" uid="uid://droad123" path="res://data/terrain/tiles/visual_road.tscn" id="2_vis"]
+
+[resource]
+script = ExtResource("1_yfgsx")
+is_surface = false
+duration_turns = 0
+id = &"road"
+terrain_name = "Voie de Marbre"
+description = "Une route majestueuse tissée par les dieux."
+is_walkable = true
+movement_cost = 1
+blocks_line_of_sight = false
+terrain_element = 0
+visual_prefab = ExtResource("2_vis")

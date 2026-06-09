@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://droad123"]
+
+[ext_resource type="Material" uid="uid://dmarble123" path="res://data/terrain/visuals/mat_hex_marble.tres" id="1_mat"]
+[ext_resource type="ArrayMesh" uid="uid://bhkn5v2swm7hy" path="res://assets/3d/msh_hex_base.res" id="2_mesh"]
+
+[node name="VisualRoad" type="MeshInstance3D"]
+material_override = ExtResource("1_mat")
+mesh = ExtResource("2_mesh")

@@ -42,6 +42,12 @@ frequency = 0.02
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_obstacle"]
 frequency = 0.05
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_road"]
+frequency = 0.08
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_special"]
+frequency = 0.1
+
 [sub_resource type="PlaneMesh" id="PlaneMesh_sea"]
 size = Vector2(100, 100)
 
@@ -53,6 +59,8 @@ max_elevation = 5
 active_biome = ExtResource("10_biome")
 moisture_noise = SubResource("FastNoiseLite_moisture")
 obstacle_noise = SubResource("FastNoiseLite_obstacle")
+road_noise = SubResource("FastNoiseLite_road")
+special_noise = SubResource("FastNoiseLite_special")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=131529003]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)

@@ -5,6 +5,9 @@
 [ext_resource type="Resource" path="res://data/terrain/tile_grass.tres" id="3_grass"]
 [ext_resource type="Resource" path="res://data/terrain/tile_water.tres" id="4_water"]
 [ext_resource type="Resource" path="res://data/terrain/tiles/tile_obstacle.tres" id="5_obstacle"]
+[ext_resource type="Resource" uid="uid://ce123abysstres" path="res://data/terrain/tiles/tile_abyss.tres" id="6_abyss"]
+[ext_resource type="Resource" uid="uid://ce123roadtres" path="res://data/terrain/tiles/tile_road.tres" id="7_road"]
+[ext_resource type="Resource" uid="uid://tilenectar123" path="res://data/terrain/tiles/tile_nectar.tres" id="8_nectar"]
 
 [resource]
 script = ExtResource("1_script")
@@ -14,3 +17,6 @@ base_terrain = ExtResource("2_dirt")
 fertile_terrain = ExtResource("3_grass")
 water_terrain = ExtResource("4_water")
 obstacle_terrain = ExtResource("5_obstacle")
+special_terrain = ExtResource("8_nectar")
+road_terrain = ExtResource("7_road")
+abyss_terrain = ExtResource("6_abyss")

@@ -17,3 +17,9 @@ extends Resource
 @export var water_terrain: TerrainData
 ## Obstacles infranchissables (piliers)
 @export var obstacle_terrain: TerrainData
+## Terrain spécial (Nectar, Lave, etc.)
+@export var special_terrain: TerrainData
+## Terrain de route (Marbre, Pavés)
+@export var road_terrain: TerrainData
+## Terrain des gouffres aux bords de la carte (Abysse)
+@export var abyss_terrain: TerrainData

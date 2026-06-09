@@ -18,6 +18,10 @@ extends Node3D
 @export var moisture_noise: FastNoiseLite
 ## Bruit déterminant l'apparition d'obstacles
 @export var obstacle_noise: FastNoiseLite
+## Bruit déterminant l'apparition des routes de marbre
+@export var road_noise: FastNoiseLite
+## Bruit déterminant l'apparition des éléments spéciaux (Nectar)
+@export var special_noise: FastNoiseLite
 
 # PUBLIC VARIABLES
 ## Dictionnaire contenant toutes les tuiles instanciées sur le plateau.
@@ -57,8 +61,14 @@ func generate_grid() -> void:
 		moisture_noise.seed = grid_seed + 1000 # Graine décalée
 	if obstacle_noise:
 		obstacle_noise.seed = grid_seed + 2000 # Graine décalée
+	if road_noise:
+		road_noise.seed = grid_seed + 3000
+	if special_noise:
+		special_noise.seed = grid_seed + 4000
 
 	for hex_coord: Vector3i in coords:
+		var dist_to_center: int = HexMath.distance_2d_flat(Vector2i.ZERO, Vector2i(hex_coord.x, hex_coord.y))
+		
 		# Application du relief procédural via le bruit (Noise)
 		if elevation_noise:
 			var noise_val: float = elevation_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
@@ -76,28 +86,47 @@ func generate_grid() -> void:
 
 		var chosen_terrain: TerrainData = active_biome.base_terrain
 		
-		# 1. Vérification de l'eau (Altitude)
-		if hex_coord.z <= active_biome.water_level and active_biome.water_terrain:
-			chosen_terrain = active_biome.water_terrain
+		# 0. Abyss Logic (Bords de la carte)
+		if dist_to_center >= map_radius and active_biome.abyss_terrain:
+			chosen_terrain = active_biome.abyss_terrain
 		else:
-			# 2. Vérification des obstacles (Bruit haute fréquence)
-			var is_obstacle: bool = false
-			if obstacle_noise and active_biome.obstacle_terrain:
-				var obs_val: float = obstacle_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-				if obs_val > 0.6:
-					chosen_terrain = active_biome.obstacle_terrain
-					is_obstacle = true
-					
-			# 3. Logique d'humidité (Moisture)
-			if not is_obstacle:
-				if moisture_noise:
-					var moisture_val: float = moisture_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
-					if moisture_val > 0.0 and active_biome.fertile_terrain:
-						chosen_terrain = active_biome.fertile_terrain
-					elif active_biome.base_terrain:
-						chosen_terrain = active_biome.base_terrain
-				else:
-					if active_biome.base_terrain: chosen_terrain = active_biome.base_terrain
+			# 1. Vérification de l'eau/liquide (Altitude)
+			if hex_coord.z <= active_biome.water_level:
+				if special_noise and active_biome.special_terrain:
+					var special_val: float = special_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
+					if special_val > 0.6:
+						chosen_terrain = active_biome.special_terrain
+					elif active_biome.water_terrain:
+						chosen_terrain = active_biome.water_terrain
+				elif active_biome.water_terrain:
+					chosen_terrain = active_biome.water_terrain
+			else:
+				# 2. Vérification des obstacles (Bruit haute fréquence)
+				var is_obstacle: bool = false
+				if obstacle_noise and active_biome.obstacle_terrain:
+					var obs_val: float = obstacle_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
+					if obs_val > 0.6:
+						chosen_terrain = active_biome.obstacle_terrain
+						is_obstacle = true
+						
+				# 3. Logique de route (Marbre)
+				var is_road: bool = false
+				if not is_obstacle and road_noise and active_biome.road_terrain:
+					var road_val: float = road_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
+					if road_val > 0.5:
+						chosen_terrain = active_biome.road_terrain
+						is_road = true
+						
+				# 4. Logique d'humidité (Moisture)
+				if not is_obstacle and not is_road:
+					if moisture_noise:
+						var moisture_val: float = moisture_noise.get_noise_2d(hex_coord.x * 10.0, hex_coord.y * 10.0)
+						if moisture_val > 0.0 and active_biome.fertile_terrain:
+							chosen_terrain = active_biome.fertile_terrain
+						elif active_biome.base_terrain:
+							chosen_terrain = active_biome.base_terrain
+					else:
+						if active_biome.base_terrain: chosen_terrain = active_biome.base_terrain
 			
 		if not chosen_terrain:
 			push_error("GridGenerator: Aucun TerrainData valide trouvé dans la palette.")

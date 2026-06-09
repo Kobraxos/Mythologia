@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://dhqfnbgam60q1"]
+
+[ext_resource type="Script" path="res://data/terrain/terrain_data.gd" id="1_yfgsx"]
+[ext_resource type="PackedScene" path="res://data/terrain/tiles/visual_abyss.tscn" id="2_vis"]
+
+[resource]
+script = ExtResource("1_yfgsx")
+is_surface = false
+duration_turns = 0
+id = &"abyss"
+terrain_name = "Abysse Céleste"
+description = "Un vide infini. Quiconque y tombe périt."
+is_walkable = false
+movement_cost = 99
+blocks_line_of_sight = false
+terrain_element = 0
+visual_prefab = ExtResource("2_vis")

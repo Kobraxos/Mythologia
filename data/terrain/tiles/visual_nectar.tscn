@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dvisnectar123"]
+
+[ext_resource type="Material" uid="uid://dnectar123" path="res://data/terrain/visuals/mat_hex_nectar.tres" id="1_mat"]
+[ext_resource type="ArrayMesh" uid="uid://bhkn5v2swm7hy" path="res://assets/3d/msh_hex_base.res" id="2_mesh"]
+
+[node name="VisualNectar" type="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 0.9, 0, 0, 0, 1, 0, -0.05, 0)
+material_override = ExtResource("1_mat")
+mesh = ExtResource("2_mesh")
