@@ -92,7 +92,7 @@ func _on_unit_selected(unit: Unit) -> void:
 
 	var skills: Array = unit.skill_caster.get("_known_skills") if "_known_skills" in unit.skill_caster else []
 	if not skills.is_empty() and action_bar:
-		action_bar.setup(skills)
+		action_bar.setup(skills, unit)
 
 	# Initialisation de l'état interactif global (Boutons grisés si ce n'est pas le tour de l'unité)
 	_update_interactivity()

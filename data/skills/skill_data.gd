@@ -134,13 +134,42 @@ enum DamageScaling { NONE, TARGET_MISSING_HP, TARGET_MAX_HP, CASTER_MAX_HP, CAST
 @export var summoned_entity: PackedScene
 
 # --- Tooltip System ---
-func get_tooltip_data() -> Dictionary:
+func get_tooltip_data(caster: Node = null) -> Dictionary:
+	var final_desc = description
+	
+	var phys_dmg_str = ""
+	var heal_str = ""
+	
+	if caster and "stats" in caster and caster.stats != null:
+		var phys_dmg = int(caster.stats.base_physical_damage * physical_damage_multiplier)
+		var heal = base_healing # Scaling can be added here later
+		phys_dmg_str = str(phys_dmg)
+		heal_str = str(heal)
+	else:
+		# Formule de base brute
+		phys_dmg_str = str(physical_damage_multiplier * 100) + "% ATK"
+		heal_str = str(base_healing) + " Soins"
+		
+	# On remplace les balises dynamiques dans la description
+	final_desc = final_desc.replace("{damage}", "[color=red]" + phys_dmg_str + "[/color]")
+	final_desc = final_desc.replace("{healing}", "[color=green]" + heal_str + "[/color]")
+	
+	# Si les balises n'étaient pas utilisées mais que le sort fait des dégâts/soins, on ajoute en bas
+	if not "{damage}" in description and physical_damage_multiplier > 0:
+		final_desc += "\n\nDégâts physiques : [color=red]" + phys_dmg_str + "[/color]"
+	if not "{healing}" in description and base_healing > 0:
+		final_desc += "\n\nSoins : [color=green]" + heal_str + "[/color]"
+
 	var payload := {
 		"title": skill_name,
-		"description": description,
+		"description": final_desc,
 		"ap_cost": ap_cost,
 		"mana_cost": mana_cost,
 		"cooldown": cooldown,
-		"icon": icon
+		"icon": icon,
+		"min_range": min_range,
+		"max_range": max_range,
+		"aoe_shape": aoe_shape,
+		"aoe_radius": aoe_radius
 	}
 	return payload

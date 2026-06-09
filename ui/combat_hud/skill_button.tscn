@@ -1,9 +1,115 @@
-[gd_scene format=3 uid="uid://d3x7y81aw1v2u"]
+[gd_scene load_steps=4 format=3 uid="uid://d3x7y81aw1v2u"]
 
 [ext_resource type="Script" path="res://ui/combat_hud/skill_button.gd" id="1_skill"]
 
-[node name="SkillButton" type="Button"]
-custom_minimum_size = Vector2(180, 50)
-offset_right = 180.0
-offset_bottom = 50.0
+[sub_resource type="Gradient" id="Gradient_cd"]
+colors = PackedColorArray(0, 0, 0, 0.75, 0, 0, 0, 0.75)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_cd"]
+gradient = SubResource("Gradient_cd")
+width = 64
+height = 64
+
+[node name="SkillButton" type="Button" node_paths=PackedStringArray("shortcut_label", "ap_cost_label", "ap_cost_container", "cooldown_progress", "cooldown_label")]
+custom_minimum_size = Vector2(64, 64)
+offset_right = 64.0
+offset_bottom = 64.0
+expand_icon = true
 script = ExtResource("1_skill")
+shortcut_label = NodePath("ShortcutMargin/ShortcutLabel")
+ap_cost_label = NodePath("APCostContainer/CostLabel")
+ap_cost_container = NodePath("APCostContainer")
+cooldown_progress = NodePath("CooldownProgress")
+cooldown_label = NodePath("CooldownLabel")
+
+[node name="APCostContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -20.0
+offset_bottom = 20.0
+grow_horizontal = 0
+mouse_filter = 2
+
+[node name="Background" type="ColorRect" parent="APCostContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12549, 0.443137, 0.709804, 0.9)
+
+[node name="CostLabel" type="Label" parent="APCostContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 14
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ShortcutMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+offset_right = 24.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_bottom = 2
+
+[node name="ShortcutLabel" type="Label" parent="ShortcutMargin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 12
+text = "1"
+vertical_alignment = 2
+
+[node name="CooldownProgress" type="TextureProgressBar" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+step = 0.1
+value = 66.0
+fill_mode = 5
+nine_patch_stretch = true
+texture_progress = SubResource("GradientTexture2D_cd")
+
+[node name="CooldownLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 2
+theme_override_font_sizes/font_size = 28
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1

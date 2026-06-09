@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://system_action_btn"]
+
+[ext_resource type="Script" path="res://ui/combat_hud/system_action_button.gd" id="1_script"]
+
+[node name="SystemActionButton" type="Button" node_paths=PackedStringArray("shortcut_label", "active_overlay")]
+custom_minimum_size = Vector2(64, 64)
+offset_right = 64.0
+offset_bottom = 64.0
+toggle_mode = true
+expand_icon = true
+script = ExtResource("1_script")
+shortcut_label = NodePath("ShortcutMargin/ShortcutLabel")
+active_overlay = NodePath("ActiveOverlay")
+
+[node name="ActiveOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.843137, 0, 0.3)
+
+[node name="ShortcutMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+offset_right = 24.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_bottom = 2
+
+[node name="ShortcutLabel" type="Label" parent="ShortcutMargin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 12
+text = "M"
+vertical_alignment = 2

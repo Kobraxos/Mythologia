@@ -1,10 +1,52 @@
-[gd_scene format=3 uid="uid://ct1onbar0001"]
+[gd_scene load_steps=6 format=3 uid="uid://ct1onbar0001"]
 
 [ext_resource type="Script" path="res://ui/combat_hud/action_bar.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://d3x7y81aw1v2u" path="res://ui/combat_hud/skill_button.tscn" id="2_btn"]
+[ext_resource type="Theme" path="res://ui/themes/master_theme.tres" id="3_theme"]
+[ext_resource type="PackedScene" uid="uid://system_action_btn" path="res://ui/combat_hud/system_action_button.tscn" id="4_sys_btn"]
 
-[node name="ActionBar" type="HBoxContainer"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.137, 0.125, 0.113, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.831, 0.678, 0.211, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 4
+shadow_offset = Vector2(0, 4)
+
+[node name="ActionBar" type="PanelContainer" node_paths=PackedStringArray("skill_container", "move_button")]
 mouse_filter = 2
-alignment = 1
+theme = ExtResource("3_theme")
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 script = ExtResource("1_script")
 skill_button_prefab = ExtResource("2_btn")
+skill_container = NodePath("MarginContainer/HBoxContainer")
+move_button = NodePath("MarginContainer/HBoxContainer/MoveButton")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="MoveButton" parent="MarginContainer/HBoxContainer" instance=ExtResource("4_sys_btn")]
+layout_mode = 2
+text = "MOV"
+
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
