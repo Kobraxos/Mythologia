@@ -10,7 +10,7 @@ uniform float uv_scale = 0.4; // MUCH lower scale = huge, rare veins instead of 
 uniform float crack_thickness : hint_range(0.0, 1.0) = 0.015; // VERY thin hairline fractures
 
 uniform float fade_start_y = 0.0;
-uniform float fade_end_y = -0.5;
+uniform float fade_end_y = -15.0;
 
 uniform float roughness_base : hint_range(0.0, 1.0) = 0.1;
 uniform float metallic_base : hint_range(0.0, 1.0) = 0.1;

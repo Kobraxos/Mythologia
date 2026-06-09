@@ -9,7 +9,7 @@ uniform float wave_speed = 0.5;
 uniform float wave_scale = 2.0;
 
 uniform float fade_start_y = 0.0;
-uniform float fade_end_y = -0.5;
+uniform float fade_end_y = -15.0;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
