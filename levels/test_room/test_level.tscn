@@ -27,8 +27,8 @@
 [ext_resource type="Script" uid="uid://mtrnannmya6l" path="res://systems/grid/visuals/surface_visuals.gd" id="16_surface"]
 [ext_resource type="Resource" uid="uid://satyr" path="res://data/units/monsters/archer_satyr.tres" id="18_archer"]
 [ext_resource type="Script" uid="uid://cw2a56lp8x7ql" path="res://systems/combat/player_input_controller.gd" id="21_pic"]
-[ext_resource type="Resource" path="res://data/terrain/features/feat_olympian_lake.tres" id="feat_lake"]
-[ext_resource type="Resource" path="res://data/terrain/features/feat_nectar_altar.tres" id="feat_nectar"]
+[ext_resource type="Resource" uid="uid://d1otb8sbn3umq" path="res://data/terrain/features/feat_olympian_lake.tres" id="feat_lake"]
+[ext_resource type="Resource" uid="uid://drglboyrhme8i" path="res://data/terrain/features/feat_nectar_altar.tres" id="feat_nectar"]
 [ext_resource type="Material" uid="uid://ol07npqm6q0q" path="res://assets/3d/mat_mythic_sea.tres" id="mat_sea"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
@@ -51,7 +51,6 @@ size = Vector2(100, 100)
 
 [node name="GridGenerator" type="Node3D" unique_id=1068552106]
 script = ExtResource("1_hw46n")
-map_shape = 1
 elevation_noise = SubResource("FastNoiseLite_kt0r7")
 active_biome = ExtResource("10_biome")
 moisture_noise = SubResource("FastNoiseLite_moisture")

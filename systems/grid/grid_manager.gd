@@ -29,19 +29,27 @@ var max_elevation: int = 0
 var _elevation_map: Dictionary[Vector2i, int] = {}
 
 func _ready() -> void:
-	# Invalidation du cache dynamique via des lambdas (sécurité de signature AAA face aux Event Bus)
+	# Invalidation du cache dynamique (sans lambdas pour éviter les memory leaks au F8)
 	if CombatEvents.has_signal("unit_died"):
-		CombatEvents.unit_died.connect(func(_unit: Unit) -> void: clear_pathfinding_cache())
+		CombatEvents.unit_died.connect(_on_unit_died)
 		
 	if TurnEvents.has_signal("active_unit_changed"):
-		TurnEvents.active_unit_changed.connect(func(_unit: Unit) -> void: clear_pathfinding_cache())
+		TurnEvents.active_unit_changed.connect(_on_active_unit_changed)
 		
 	if GridEvents.has_signal("grid_topology_ready"):
 		GridEvents.grid_topology_ready.connect(_build_elevation_cache)
 		
-	# S'il existe un événement lié aux mouvements complétés, le relier ici :
 	if GridEvents.has_signal("unit_moved"):
-		GridEvents.unit_moved.connect(func(_unit: Unit, _from_hex: Vector3i, _to_hex: Vector3i) -> void: clear_pathfinding_cache())
+		GridEvents.unit_moved.connect(_on_unit_moved)
+
+func _on_unit_died(_unit: Unit) -> void:
+	clear_pathfinding_cache()
+
+func _on_active_unit_changed(_unit: Unit) -> void:
+	clear_pathfinding_cache()
+
+func _on_unit_moved(_unit: Unit, _from_hex: Vector3i, _to_hex: Vector3i) -> void:
+	clear_pathfinding_cache()
 
 ## Purgation manuelle à déclencher après toute altération de l'état du plateau (mouvement, mort, spawn)
 func clear_pathfinding_cache() -> void:
