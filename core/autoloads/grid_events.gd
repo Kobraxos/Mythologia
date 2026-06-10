@@ -67,6 +67,11 @@ signal grid_topology_ready(topology: Dictionary)
 signal request_grid_generation()
 
 @warning_ignore("unused_signal")
+## Émis par le GridGenerator une fois la logique (données mathématiques) finalisée.
+## Le contexte permet au constructeur visuel (GridVisualBuilder) de bâtir les vues 3D.
+signal grid_generation_logic_done(context: Object)
+
+@warning_ignore("unused_signal")
 ## Émis lorsqu'une unité a terminé un déplacement. Sert de déclencheur pour les systèmes Data-Oriented.
 signal unit_moved(unit: Unit, from_hex: Vector3i, to_hex: Vector3i)
 

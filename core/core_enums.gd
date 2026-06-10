@@ -47,3 +47,7 @@ enum FloatingTextType {
 	IMMUNE,
 	MISS
 }
+
+## Factions pour les unités et points de spawn.
+enum Faction { PLAYER, ENEMY }
+
