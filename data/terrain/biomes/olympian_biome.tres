@@ -7,9 +7,9 @@
 [ext_resource type="Resource" path="res://data/terrain/tiles/tile_obstacle.tres" id="5_obstacle"]
 [ext_resource type="Resource" uid="uid://ce123abysstres" path="res://data/terrain/tiles/tile_abyss.tres" id="6_abyss"]
 [ext_resource type="Resource" uid="uid://ce123roadtres" path="res://data/terrain/tiles/tile_road.tres" id="7_road"]
-[ext_resource type="Resource" uid="uid://tilenectar123" path="res://data/terrain/tiles/tile_nectar.tres" id="8_nectar"]
-[ext_resource type="Resource" uid="uid://tilespawn123" path="res://data/terrain/tiles/tile_spawn.tres" id="9_spawn"]
-[ext_resource type="Resource" uid="uid://tilebridge123" path="res://data/terrain/tiles/tile_bridge.tres" id="10_bridge"]
+[ext_resource type="Resource" path="res://data/terrain/tiles/tile_nectar.tres" id="8_nectar"]
+[ext_resource type="Resource" path="res://data/terrain/tiles/tile_spawn.tres" id="9_spawn"]
+[ext_resource type="Resource" path="res://data/terrain/tiles/tile_bridge.tres" id="10_bridge"]
 
 [resource]
 script = ExtResource("1_script")

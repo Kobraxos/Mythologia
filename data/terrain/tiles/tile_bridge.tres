@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="TerrainData" format=3 uid="uid://tilebridge123"]
+[gd_resource type="Resource" script_class="TerrainData" format=3]
 
 [ext_resource type="Script" path="res://data/terrain/terrain_data.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://visualbridge123" path="res://data/terrain/tiles/visual_bridge.tscn" id="2_vis"]
+[ext_resource type="PackedScene" path="res://data/terrain/tiles/visual_bridge.tscn" id="2_vis"]
 
 [resource]
 script = ExtResource("1_script")

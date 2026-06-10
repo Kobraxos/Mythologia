@@ -3,11 +3,9 @@
 [ext_resource type="Script" uid="uid://c1net0xfwu22l" path="res://systems/grid/grid_generator/grid_generator.gd" id="1_hw46n"]
 [ext_resource type="Environment" uid="uid://olympianenv" path="res://levels/test_room/olympian_environment.tres" id="1_void"]
 [ext_resource type="PackedScene" uid="uid://dj48qksmd0q8x" path="res://systems/camera/tactical_camera.tscn" id="2_camera"]
-[ext_resource type="Resource" uid="uid://75xqi4b6msv0" path="res://data/terrain/tile_dirt.tres" id="2_kt0r7"]
-[ext_resource type="Resource" path="res://data/terrain/tile_grass.tres" id="3_grass"]
+[ext_resource type="Script" uid="uid://fnodrt0kpmyg" path="res://systems/grid/grid_generator/grid_feature.gd" id="3_cftqd"]
 [ext_resource type="PackedScene" uid="uid://d3j1abc123def" path="res://entities/unit/base/unit.tscn" id="3_unit"]
 [ext_resource type="Script" uid="uid://car7yf0c3gkxo" path="res://systems/grid/grid_controller.gd" id="4_controller"]
-[ext_resource type="Resource" path="res://data/terrain/biomes/olympian_biome.tres" id="10_biome"]
 [ext_resource type="Script" uid="uid://c2cgnt703ea2e" path="res://systems/grid/highlights/highlight_manager.gd" id="5_highlight"]
 [ext_resource type="PackedScene" uid="uid://bfohpuopwfs7j" path="res://systems/grid/highlights/highlight_move.tscn" id="6_hw3ya"]
 [ext_resource type="PackedScene" uid="uid://bvnnrvkf264q4" path="res://systems/grid/highlights/highlight_attack.tscn" id="7_dajra"]
@@ -15,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://872f7lqg2uh6" path="res://systems/grid/highlights/highlight_range.tscn" id="8_ay6kr"]
 [ext_resource type="Resource" uid="uid://bimd4xsmjnvm" path="res://data/units/heroes/base_unit_stats.tres" id="9_4py08"]
 [ext_resource type="PackedScene" uid="uid://nmtvw20rchy3" path="res://systems/grid/highlights/highlight_path.tscn" id="9_ubm0v"]
+[ext_resource type="Resource" path="res://data/terrain/biomes/olympian_biome.tres" id="10_biome"]
 [ext_resource type="PackedScene" uid="uid://c5w53b5wqmtcv" path="res://systems/grid/highlights/hover_cursor.tscn" id="10_hover_cursor"]
 [ext_resource type="PackedScene" uid="uid://pathline0001" path="res://systems/grid/highlights/highlight_path_line.tscn" id="10_ki72p"]
 [ext_resource type="Script" uid="uid://cwh1s6wn21flg" path="res://systems/turn_logic/turn_manager.gd" id="10_ly45u"]
@@ -26,14 +25,11 @@
 [ext_resource type="PackedScene" path="res://ui/timeline/timeline_ui.tscn" id="14_timeline"]
 [ext_resource type="Script" uid="uid://dukkgcotn43i4" path="res://systems/combat/game_flow_manager.gd" id="15_flow"]
 [ext_resource type="Script" uid="uid://mtrnannmya6l" path="res://systems/grid/visuals/surface_visuals.gd" id="16_surface"]
-[ext_resource type="Script" uid="uid://coysqme8rcoh2" path="res://systems/combat/spawn_point.gd" id="17_spawn"]
 [ext_resource type="Resource" uid="uid://satyr" path="res://data/units/monsters/archer_satyr.tres" id="18_archer"]
-[ext_resource type="Resource" uid="uid://mcyclops" path="res://data/units/monsters/mage_cyclops.tres" id="19_mage"]
-[ext_resource type="Resource" uid="uid://wminotaur" path="res://data/units/monsters/warrior_minotaur.tres" id="20_warrior"]
 [ext_resource type="Script" uid="uid://cw2a56lp8x7ql" path="res://systems/combat/player_input_controller.gd" id="21_pic"]
+[ext_resource type="Resource" path="res://data/terrain/features/feat_olympian_lake.tres" id="feat_lake"]
+[ext_resource type="Resource" path="res://data/terrain/features/feat_nectar_altar.tres" id="feat_nectar"]
 [ext_resource type="Material" uid="uid://ol07npqm6q0q" path="res://assets/3d/mat_mythic_sea.tres" id="mat_sea"]
-[ext_resource type="Resource" uid="uid://nectar_altar_123" path="res://data/terrain/features/feat_nectar_altar.tres" id="feat_nectar"]
-[ext_resource type="Resource" uid="uid://feat_lake_123" path="res://data/terrain/features/feat_olympian_lake.tres" id="feat_lake"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_kt0r7"]
 frequency = 0.02
@@ -55,22 +51,17 @@ size = Vector2(100, 100)
 
 [node name="GridGenerator" type="Node3D" unique_id=1068552106]
 script = ExtResource("1_hw46n")
-map_shape = 0
-map_radius = 12
-map_width = 15
-map_height = 10
+map_shape = 1
 elevation_noise = SubResource("FastNoiseLite_kt0r7")
-max_elevation = 8
-spawn_player_stats = ExtResource("9_4py08")
-spawn_enemy_stats = ExtResource("18_archer")
-units_per_team = 5
 active_biome = ExtResource("10_biome")
 moisture_noise = SubResource("FastNoiseLite_moisture")
 obstacle_noise = SubResource("FastNoiseLite_obstacle")
 road_noise = SubResource("FastNoiseLite_road")
 special_noise = SubResource("FastNoiseLite_special")
-features = Array[Resource("res://systems/grid/grid_generator/grid_feature.gd")]([ExtResource("feat_nectar"), ExtResource("feat_lake")])
+features = Array[ExtResource("3_cftqd")]([ExtResource("feat_nectar"), ExtResource("feat_lake")])
 feature_count = 3
+spawn_player_stats = ExtResource("9_4py08")
+spawn_enemy_stats = ExtResource("18_archer")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=131529003]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)
@@ -130,5 +121,3 @@ script = ExtResource("15_flow")
 
 [node name="SurfaceVisuals" type="Node3D" parent="." unique_id=1082084624]
 script = ExtResource("16_surface")
-
-

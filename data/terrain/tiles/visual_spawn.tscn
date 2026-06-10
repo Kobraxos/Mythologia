@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://visualspawn123"]
+[gd_scene format=3]
 
 [ext_resource type="Material" path="res://data/terrain/visuals/mat_hex_spawn.tres" id="1_mat"]
 [ext_resource type="ArrayMesh" uid="uid://bhkn5v2swm7hy" path="res://assets/3d/msh_hex_base.res" id="2_mesh"]

@@ -1,5 +1,7 @@
 class_name GridFeatureNode
 extends Resource
+## Composant élémentaire (un hexagone) appartenant à un GridFeature. 
+## Permet de définir les coordonnées relatives et le rôle de cette tuile dans le motif global.
 
 @export_category("Feature Node")
 ## Coordonnée axiale (X) relative au centre du tampon (0,0)

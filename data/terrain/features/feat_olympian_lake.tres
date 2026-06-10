@@ -1,25 +1,21 @@
-[gd_resource type="Resource" script_class="GridFeature" format=3 uid="uid://feat_lake_123"]
+[gd_resource type="Resource" script_class="GridFeature" format=3 uid="uid://d1otb8sbn3umq"]
 
-[ext_resource type="Script" path="res://systems/grid/grid_generator/grid_feature.gd" id="1_script"]
-[ext_resource type="Script" path="res://systems/grid/grid_generator/grid_feature_node.gd" id="2_node"]
+[ext_resource type="Script" uid="uid://fnodrt0kpmyg" path="res://systems/grid/grid_generator/grid_feature.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://d2kiwith6acxm" path="res://systems/grid/grid_generator/grid_feature_node.gd" id="2_node"]
 
 [sub_resource type="Resource" id="Resource_water_0"]
 script = ExtResource("2_node")
-relative_q = 0
-relative_r = 0
 height_offset = -1
 role = 2
 
 [sub_resource type="Resource" id="Resource_water_1"]
 script = ExtResource("2_node")
 relative_q = 1
-relative_r = 0
 height_offset = -1
 role = 2
 
 [sub_resource type="Resource" id="Resource_water_2"]
 script = ExtResource("2_node")
-relative_q = 0
 relative_r = -1
 height_offset = -1
 role = 2
@@ -27,13 +23,11 @@ role = 2
 [sub_resource type="Resource" id="Resource_water_3"]
 script = ExtResource("2_node")
 relative_q = -1
-relative_r = 0
 height_offset = -1
 role = 2
 
 [sub_resource type="Resource" id="Resource_water_4"]
 script = ExtResource("2_node")
-relative_q = 0
 relative_r = 1
 height_offset = -1
 role = 2
@@ -56,28 +50,22 @@ role = 2
 script = ExtResource("2_node")
 relative_q = 2
 relative_r = -1
-height_offset = 0
 role = 1
 
 [sub_resource type="Resource" id="Resource_fert_2"]
 script = ExtResource("2_node")
 relative_q = -2
 relative_r = 1
-height_offset = 0
 role = 1
 
 [sub_resource type="Resource" id="Resource_fert_3"]
 script = ExtResource("2_node")
-relative_q = 0
 relative_r = 2
-height_offset = 0
 role = 1
 
 [sub_resource type="Resource" id="Resource_fert_4"]
 script = ExtResource("2_node")
-relative_q = 0
 relative_r = -2
-height_offset = 0
 role = 1
 
 [resource]
